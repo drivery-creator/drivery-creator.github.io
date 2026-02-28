@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Drivery - Registro</title>
+
+    <style>
+        * { box-sizing: border-box; }
+        @media (min-width: 1024px) { body, html, button { cursor: none !important; } }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            background-color: #000;
+            font-family: -apple-system, sans-serif; 
+            overflow: hidden; touch-action: none; 
+        }
+
+        /* 💡 LUCES DE ESTADIO SIMULADAS EN EL FONDO 💡 */
+        .estadio-luces {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 85% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 15% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 85% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        #aviso-bienvenida { 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; min-height: 100vh; width: 100%;
+            text-align: center; padding: 20px; color: white; 
+            position: relative; z-index: 10;
+        }
+
+        /* ⚾ PELOTA CON GIRO Y SOMBRA 3D ⚾ */
+        #ball-container {
+            position: fixed; width: 32px; height: 32px;
+            pointer-events: none; z-index: 10000;
+            left: 0; top: 0;
+            transform: translate(0, 0);
+        }
+
+        #ball-cursor {
+            width: 100%; height: 100%; background-color: #fff;
+            border-radius: 50%; border: 1.5px solid #ccc;
+            overflow: hidden; position: relative;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            animation: rotateBall 8s linear infinite; /* Giro lento */
+        }
+
+        #ball-cursor::before, #ball-cursor::after {
+            content: ""; position: absolute; width: 100%; height: 100%;
+            border: 2px dashed red; border-radius: 50%;
+        }
+        #ball-cursor::before { left: -70%; }
+        #ball-cursor::after { right: -70%; }
+
+        #ball-shadow {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            box-shadow: inset -6px -6px 12px rgba(0,0,0,0.6); /* Sombra estática */
+            z-index: 2;
+        }
+
+        @keyframes rotateBall {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* TARJETA DE REGISTRO (SIN GLASS, FONDO SÓLIDO ELEGANTE) */
+        #contenido-registro {
+            background: #111; /* Negro suave para contrastar con el fondo puro */
+            padding: 40px 30px;
+            border-radius: 30px;
+            border: 1px solid #333; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            max-width: 360px;
+            width: 90%;
+        }
+
+        #logo-app { width: 100px; height: 100px; margin-bottom: 20px; border-radius: 22px; border: 2px solid #32BC81; }
+        h2 { font-size: 22px; margin: 0 0 25px 0; font-weight: bold; }
+        
+        .pasos-container { text-align: left; margin-bottom: 30px; }
+        .paso { margin-bottom: 20px; display: flex; align-items: flex-start; line-height: 1.4; font-size: 15px; color: #ccc; }
+        .paso-numero { background: #32BC81; color: #000; font-weight: bold; border-radius: 50%; min-width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 13px; }
+        .highlight { color: #32BC81; font-weight: 600; }
+        
+        .btn-entrar { 
+            background-color: #32BC81; color: #fff; padding: 18px 0; border-radius: 16px; 
+            font-weight: bold; font-size: 16px; border: none; width: 100%; 
+            box-shadow: 0 10px 20px rgba(50, 188, 129, 0.3); pointer-events: auto;
+        }
+
+        #mensaje-ligas { 
+            display: none; font-size: 26px; font-weight: 900; color: #32BC81; 
+            text-transform: uppercase; letter-spacing: 1px; 
+            text-shadow: 0 0 20px rgba(50, 188, 129, 0.8); 
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), glow 2s infinite alternate; 
+        }
+
+        .footer-stamp { position: absolute; bottom: 25px; left: 0; width: 100%; font-size: 10px; color: #444; letter-spacing: 4px; text-transform: uppercase; text-align: center; }
+
+        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes glow { from { text-shadow: 0 0 10px rgba(50, 188, 129, 0.4); } to { text-shadow: 0 0 30px rgba(50, 188, 129, 1), 0 0 10px #fff; } }
+        .fade-out { opacity: 0; visibility: hidden; transition: 0.8s all ease; }
+    </style>
+</head>
+<body>
+
+    <div class="estadio-luces"></div>
+
+    <div id="ball-container">
+        <div id="ball-cursor"></div>
+        <div id="ball-shadow"></div>
+    </div>
+
+    <div id="aviso-bienvenida">
+        <div id="contenido-registro">
+            <img src="logo-app.png" alt="Drivery Logo" id="logo-app">
+            <h2>Pasos de Registro</h2>
+            <div class="pasos-container">
+                <div class="paso">
+                    <div class="paso-numero">1</div>
+                    <div>Pulsa <span class="highlight">Agregar numero de telefono</span>, coloca el codigo y sube tu foto.</div>
+                </div>
+                <div class="paso">
+                    <div class="paso-numero">2</div>
+                    <div><span class="highlight">Agrega a pantalla de inicio</span> y ancla la app en tu movil.</div>
+                </div>
+            </div>
+            <button class="btn-entrar" onclick="finalizar()">ENTENDIDO</button>
+        </div>
+        
+        <div id="mensaje-ligas">¡Bienvenido a las<br>Grandes Ligas!</div>
+        <div class="footer-stamp">DRIVERY &nbsp; | &nbsp; 2026</div>
+    </div>
+
+    <script>
+        const ballContainer = document.getElementById('ball-container');
+        let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
+        let velX = 2.5, velY = 2.5;
+        let isUserControlled = false;
+
+        function animate() {
+            if (!isUserControlled) {
+                posX += velX; posY += velY;
+                if (posX + 32 >= window.innerWidth || posX <= 0) velX *= -1;
+                if (posY + 32 >= window.innerHeight || posY <= 0) velY *= -1;
+                
+                ballContainer.style.transform = `translate(${posX}px, ${posY}px)`;
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function handleInput(x, y) {
+            isUserControlled = true;
+            ballContainer.style.transform = `translate(${x - 16}px, ${y - 16}px)`;
+        }
+
+        document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
+        document.addEventListener('touchmove', (e) => {
+            handleInput(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
+        function finalizar() {
+            document.getElementById('contenido-registro').style.display = 'none';
+            document.getElementById('mensaje-ligas').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('aviso-bienvenida').classList.add('fade-out');
+                setTimeout(() => { window.location.href = "https://15147507-4.ondelight.app"; }, 800);
+            }, 2200);
+        }
+    </script>
+</body>
+</html>
