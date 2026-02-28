@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Drivery - Registro</title>
+
+    <meta property="og:title" content="Drivery">
+    <meta property="og:description" content="Sigue los pasos y registrate en la app mas rapida.">
+    <meta property="og:image" content="https://drivery.netlify.app/logo-app.png">
+
+    <style>
+        * { box-sizing: border-box; }
+        
+        /* Ocultar cursor en Desktop para usar la pelota */
+        @media (min-width: 1024px) {
+            body, html, button { cursor: none !important; }
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            /* Fondo con degradado animado sutil para resaltar el efecto cristal */
+            background: linear-gradient(45deg, #000, #0a1f16, #000);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            overflow: hidden; touch-action: none; 
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        #aviso-bienvenida { 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; min-height: 100vh; width: 100%;
+            text-align: center; padding: 20px; color: white; position: relative;
+        }
+
+        /* ⚾ PELOTA DE BÉISBOL (Costuras corregidas y física) ⚾ */
+        #ball-cursor {
+            position: fixed; 
+            width: 32px; 
+            height: 32px; 
+            background-color: #fff;
+            border-radius: 50%; 
+            pointer-events: none; 
+            z-index: 10000;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8); 
+            border: 1.5px solid #ccc;
+            overflow: hidden; /* Corta las costuras para que no se salgan */
+            left: 0; 
+            top: 0;
+            display: block;
+        }
+
+        #ball-cursor::before, #ball-cursor::after {
+            content: ""; position: absolute; width: 100%; height: 100%;
+            border: 2px dashed red; border-radius: 50%;
+        }
+        #ball-cursor::before { left: -70%; }
+        #ball-cursor::after { right: -70%; }
+
+        /* ✨ TARJETA EFECTO GLASS (Glassmorphism) ✨ */
+        #contenido-registro {
+            background: rgba(255, 255, 255, 0.07); /* Capa translúcida */
+            backdrop-filter: blur(20px); /* Desenfoque de fondo estilo iOS */
+            -webkit-backdrop-filter: blur(20px); 
+            padding: 40px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Borde de luz */
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            max-width: 360px;
+            width: 90%;
+            z-index: 5;
+        }
+
+        #logo-app { 
+            width: 100px; height: 100px; margin-bottom: 20px; 
+            border-radius: 22px; border: 2px solid #32BC81; 
+        }
+
+        h2 { font-size: 22px; margin-bottom: 25px; font-weight: bold; letter-spacing: -0.5px; }
+        
+        .pasos-container { text-align: left; margin-bottom: 30px; }
+        .paso { 
+            margin-bottom: 20px; display: flex; align-items: flex-start; 
+            line-height: 1.4; font-size: 15px; color: rgba(255,255,255,0.9); 
+        }
+        .paso-numero { 
+            background: #32BC81; color: #000; font-weight: bold; 
+            border-radius: 50%; min-width: 26px; height: 26px; 
+            display: flex; align-items: center; justify-content: center; 
+            margin-right: 12px; font-size: 13px; 
+        }
+        .highlight { color: #32BC81; font-weight: 600; }
+        
+        .btn-entrar { 
+            background-color: #32BC81; color: #fff; padding: 18px 0; 
+            border-radius: 16px; font-weight: bold; font-size: 16px; 
+            border: none; width: 100%; 
+            box-shadow: 0 10px 20px rgba(50, 188, 129, 0.3); 
+            pointer-events: auto; 
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-entrar:active { transform: scale(0.96); background-color: #2da874; }
+
+        /* Mensaje Final */
+        #mensaje-ligas { 
+            display: none; font-size: 28px; font-weight: 900; 
+            color: #32BC81; text-transform: uppercase; 
+            letter-spacing: 2px; text-shadow: 0 0 20px rgba(50, 188, 129, 0.6); 
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), glow 2s infinite alternate; 
+        }
+
+        /* Sello 2026 Centrado */
+        .footer-stamp { 
+            position: absolute; bottom: 25px; left: 0; width: 100%; 
+            font-size: 10px; color: rgba(255,255,255,0.3); 
+            letter-spacing: 4px; text-transform: uppercase; text-align: center; 
+        }
+
+        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes glow { from { text-shadow: 0 0 10px rgba(50, 188, 129, 0.4); } to { text-shadow: 0 0 30px rgba(50, 188, 129, 0.9), 0 0 10px #fff; } }
+        .fade-out { opacity: 0; visibility: hidden; transition: 0.8s all ease; }
+    </style>
+</head>
+<body>
+
+    <div id="ball-cursor"></div>
+
+    <div id="aviso-bienvenida">
+        <div id="contenido-registro">
+            <img src="logo-app.png" alt="Drivery Logo" id="logo-app">
+            <h2>Pasos de Registro</h2>
+            <div class="pasos-container">
+                <div class="paso">
+                    <div class="paso-numero">1</div>
+                    <div>Pulsa <span class="highlight">Agregar numero</span>, coloca el codigo y sube tu foto.</div>
+                </div>
+                <div class="paso">
+                    <div class="paso-numero">2</div>
+                    <div><span class="highlight">Agrega a inicio</span> y ancla la app en tu movil.</div>
+                </div>
+            </div>
+            <button class="btn-entrar" onclick="finalizar()">ENTENDIDO</button>
+        </div>
+        
+        <div id="mensaje-ligas">¡Bienvenido a las<br>Grandes Ligas!</div>
+        
+        <div class="footer-stamp">DRIVERY &nbsp; | &nbsp; 2026</div>
+    </div>
+
+    <script>
+        const ball = document.getElementById('ball-cursor');
+        let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
+        let velX = 2.5, velY = 2.5;
+        let isUserControlled = false;
+
+        function animate() {
+            if (!isUserControlled) {
+                posX += velX; posY += velY;
+                
+                // Rebote en bordes
+                if (posX + 32 >= window.innerWidth || posX <= 0) velX *= -1;
+                if (posY + 32 >= window.innerHeight || posY <= 0) velY *= -1;
+                
+                ball.style.left = posX + 'px'; 
+                ball.style.top = posY + 'px';
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function handleInput(x, y) {
+            isUserControlled = true;
+            ball.style.left = (x - 16) + 'px'; 
+            ball.style.top = (y - 16) + 'px';
+        }
+
+        document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
+        document.addEventListener('touchmove', (e) => {
+            handleInput(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
+        function finalizar() {
+            document.getElementById('contenido-registro').style.display = 'none';
+            document.getElementById('mensaje-ligas').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('aviso-bienvenida').classList.add('fade-out');
+                setTimeout(() => { 
+                    window.location.href = "https://15147507-4.ondelight.app"; 
+                }, 800);
+            }, 2200);
+        }
+    </script>
+</body>
+</html>
