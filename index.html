@@ -15,17 +15,31 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             overflow: hidden; touch-action: none; 
             color: white;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* 💡 LUCES DE ESTADIO FONDO 💡 */
-        .estadio-luces {
+        /* 💡 LUCES DE FONDO TENUES MOVIMIENTO LENTO 💡 */
+        .luces-fondo {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
-                radial-gradient(circle at 85% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
-                radial-gradient(circle at 15% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
-                radial-gradient(circle at 85% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%);
             z-index: 1; pointer-events: none;
+            overflow: hidden;
+        }
+        .luz {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: 0.12;
+            animation: moverLuz 25s linear infinite alternate;
+        }
+        .luz-1 { width: 400px; height: 400px; background: rgba(50, 188, 129, 0.4); top: -100px; left: -100px; animation-duration: 30s; }
+        .luz-2 { width: 350px; height: 350px; background: rgba(50, 188, 129, 0.3); bottom: -50px; right: -50px; animation-delay: -5s; animation-duration: 25s; }
+        .luz-3 { width: 300px; height: 300px; background: rgba(50, 188, 129, 0.25); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: moverLuzCentro 20s linear infinite alternate; }
+
+        @keyframes moverLuz {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 30px) scale(1.1); }
+        }
+        @keyframes moverLuzCentro {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-45%, -48%) scale(1.05); }
         }
 
         /* ⚾ PELOTA 3D ANIMADA ⚾ */
@@ -41,61 +55,68 @@
 
         @keyframes rotateBall { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* CONTENEDOR DE TARJETAS */
+        /* ✨ CONTENEDOR GLASSMORPHISM ✨ */
         #main-wrapper { 
             position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; 
-            min-height: 100vh; padding: 20px; width: 100%;
+            width: 100%; padding: 20px;
         }
 
         .card {
-            background: #111; padding: 35px 25px; border-radius: 35px; border: 1px solid #222;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8); max-width: 360px; width: 100%;
-            display: none; animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: rgba(20, 20, 20, 0.65);
+            padding: 35px 25px; border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            max-width: 380px; width: 100%;
+            display: none; animation: slideUp 0.4s ease-out;
             text-align: center;
         }
         .active { display: block; }
 
-        #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 2px solid #32BC81; }
+        #logo-app { width: 80px; height: 80px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
         h2 { font-size: 22px; margin: 0 0 25px 0; font-weight: 800; }
 
-        /* BOTONES DE SELECCIÓN */
         .btn-choice {
-            background: #1a1a1a; color: white; border: 1px solid #333; padding: 22px;
+            background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); padding: 22px;
             width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold;
             display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .btn-choice:active { transform: scale(0.98); background: #222; }
-        .btn-choice i { font-style: normal; font-size: 20px; }
 
-        /* FORMULARIO Y PASOS */
-        .paso { margin-bottom: 18px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: #bbb; }
-        .paso-numero { background: #32BC81; color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
+        .paso { margin-bottom: 15px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+        .paso-numero { background: rgba(50, 188, 129, 0.9); color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
         
-        input, select {
-            width: 100%; background: #000 !important; border: 1px solid #333; color: white !important;
-            padding: 16px; border-radius: 14px; margin-bottom: 12px; font-size: 15px;
-            -webkit-appearance: none;
+        input, select, textarea {
+            width: 100%; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.1); color: white !important;
+            padding: 15px; border-radius: 14px; margin-bottom: 12px; font-size: 15px; font-family: inherit;
         }
-        input:focus { border-color: #32BC81; }
+        textarea { height: 80px; resize: none; }
+        input:focus, textarea:focus { border-color: rgba(50, 188, 129, 0.6); }
 
         .btn-primary { 
-            background-color: #32BC81; color: #fff; padding: 18px; border-radius: 16px; 
+            background-color: rgba(50, 188, 129, 0.9); color: #fff; padding: 18px; border-radius: 16px; 
             font-weight: bold; font-size: 16px; border: none; width: 100%; margin-top: 10px;
             box-shadow: 0 8px 20px rgba(50, 188, 129, 0.2); cursor: pointer;
         }
-        .btn-primary:disabled { background-color: #222; color: #555; cursor: not-allowed; }
 
-        .btn-back { background: none; border: none; color: #555; font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: none; }
+        .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        #mensaje-exito { display: none; font-size: 26px; color: #32BC81; font-weight: 900; text-transform: uppercase; }
-        .fade-out { opacity: 0; transition: 0.8s; }
+        
+        #mensaje-exito, #mensaje-exito-conductor { display: none; line-height: 1.4; padding: 20px; }
+        #mensaje-exito { font-size: 26px; color: #32BC81; font-weight: 900; }
+        #mensaje-exito-conductor { font-size: 19px; color: #fff; font-weight: 600; }
+        #mensaje-exito-conductor b { color: #32BC81; }
+        .fade-out { opacity: 0; transition: 1s; }
     </style>
 </head>
 <body>
 
-    <div class="estadio-luces"></div>
+    <div class="luces-fondo">
+        <div class="luz luz-1"></div>
+        <div class="luz luz-2"></div>
+        <div class="luz luz-3"></div>
+    </div>
 
     <div id="ball-container">
         <div id="ball-cursor"></div>
@@ -124,15 +145,17 @@
                 <div class="paso-numero">2</div>
                 <div><b>Agrega a inicio</b> y ancla la app en tu móvil.</div>
             </div>
-            <button class="btn-primary" onclick="mostrarMensajeFinal()">ENTENDIDO</button>
+            <button class="btn-primary" onclick="finalizarUsuario()">ENTENDIDO</button>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
         </div>
 
         <div id="screen-driver" class="card">
-            <h2>Datos de Conductor</h2>
+            <h2 style="margin-bottom: 15px;">Registro Conductor</h2>
             <form id="form-conductor">
-                <input type="text" name="Nombre" placeholder="Nombre y Apellido" required>
-                <input type="tel" name="Telefono" placeholder="Número de contacto" required>
+                <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
+                <input type="text" name="Cedula" placeholder="C.I. (Cédula de Identidad)" required>
+                <input type="tel" name="Telefono" placeholder="Número de teléfono" required>
+                <textarea name="Direccion" placeholder="Dirección de domicilio" required></textarea>
                 <select name="Vehiculo" required>
                     <option value="" disabled selected>Tipo de vehículo</option>
                     <option value="Sedan">Carro Sedán</option>
@@ -140,12 +163,13 @@
                     <option value="Moto">Motocicleta</option>
                     <option value="Otro">Otro</option>
                 </select>
-                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR SOLICITUD</button>
+                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS</button>
             </form>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
         </div>
 
         <div id="mensaje-exito">¡A JUGAR EN<br>LAS GRANDES LIGAS!</div>
+        <div id="mensaje-exito-conductor">Te avisaremos cuando ya seas parte de nuestro <b>rooster</b>!<br><br>¡Gracias por elegirnos!</div>
     </div>
 
     <script>
@@ -154,7 +178,6 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // CONTROL DE LA PELOTA
         const ballContainer = document.getElementById('ball-container');
         let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
         let velX = 2.5, velY = 2.5, isUserControlled = false;
@@ -177,7 +200,6 @@
         document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
         document.addEventListener('touchmove', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
 
-        // ENVÍO PRIVADO CON FORMSPREE
         const form = document.getElementById('form-conductor');
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -195,28 +217,31 @@
                 });
 
                 if (response.ok) {
-                    mostrarMensajeFinal();
+                    finalizarConductor();
                 } else {
-                    alert("Error al enviar. Inténtalo de nuevo.");
-                    btn.innerText = "ENVIAR SOLICITUD";
+                    alert("Error. Revisa tu conexión.");
+                    btn.innerText = "ENVIAR DATOS";
                     btn.disabled = false;
                 }
             } catch (error) {
-                alert("Sin conexión.");
-                btn.innerText = "ENVIAR SOLICITUD";
+                alert("Error de red.");
+                btn.innerText = "ENVIAR DATOS";
                 btn.disabled = false;
             }
         });
 
-        function mostrarMensajeFinal() {
+        function finalizarUsuario() { mostrarMensajeFinal('mensaje-exito'); }
+        function finalizarConductor() { mostrarMensajeFinal('mensaje-exito-conductor'); }
+
+        function mostrarMensajeFinal(idMensaje) {
             document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
-            document.getElementById('mensaje-exito').style.display = 'block';
+            document.getElementById(idMensaje).style.display = 'block';
             setTimeout(() => {
                 document.getElementById('main-wrapper').classList.add('fade-out');
                 setTimeout(() => { 
                     window.location.href = "https://15147507-4.ondelight.app"; 
-                }, 800);
-            }, 2500);
+                }, 1000);
+            }, 3500);
         }
     </script>
 </body>
