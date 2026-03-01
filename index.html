@@ -64,10 +64,21 @@
         }
         .paso { margin-bottom: 15px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
         .paso-numero { background: rgba(50, 188, 129, 0.9); color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
+        
+        /* 🎨 INPUTS Y SELECT CORREGIDOS 🎨 */
         input, select, textarea {
-            width: 100%; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.1); color: white !important;
+            width: 100%; background: rgba(255, 255, 255, 0.06) !important; border: 1px solid rgba(255, 255, 255, 0.15); color: white !important;
             padding: 15px; border-radius: 14px; margin-bottom: 12px; font-size: 15px; font-family: inherit;
+            appearance: none; -webkit-appearance: none; /* Quita estilo de sistema */
         }
+        
+        /* Esto arregla la visibilidad del menú desplegable */
+        select option {
+            background-color: #1a1a1a; /* Fondo oscuro para el menú */
+            color: white;
+            padding: 10px;
+        }
+
         textarea { height: 70px; resize: none; }
         .btn-primary { 
             background-color: rgba(50, 188, 129, 0.9); color: #fff; padding: 18px; border-radius: 16px; 
@@ -109,13 +120,15 @@
                 <input type="text" name="Cedula" placeholder="C.I. (Cédula de Identidad)" required>
                 <input type="tel" name="Telefono" placeholder="Número de teléfono" required>
                 <textarea name="Direccion" placeholder="Dirección de domicilio" required></textarea>
+                
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected>Tipo de vehículo</option>
+                    <option value="" disabled selected style="color: rgba(255,255,255,0.5);">Tipo de vehículo</option>
                     <option value="Sedan">Carro Sedán</option>
                     <option value="SUV">Camioneta / SUV</option>
                     <option value="Moto">Motocicleta</option>
                     <option value="Otro">Otro</option>
                 </select>
+
                 <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
                     Al enviar, autoriza el uso de sus datos para fines de verificación de seguridad en Drivery.
                 </p>
@@ -158,7 +171,6 @@
             btn.innerText = "PROCESANDO...";
             btn.disabled = true;
 
-            // URL DE GOOGLE ACTUALIZADA POR TI
             const scriptURL = "https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec";
 
             const formData = new FormData(form);
