@@ -3,172 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Drivery - Registro</title>
-
-    <meta property="og:title" content="Drivery">
-    <meta property="og:description" content="Sigue los pasos y registrate en la app mas rapida.">
-    <meta property="og:image" content="https://drivery.netlify.app/logo-app.png">
+    <title>Drivery - Inicio</title>
 
     <style>
-        * { box-sizing: border-box; }
-        
-        /* Ocultar cursor en Desktop para usar la pelota */
-        @media (min-width: 1024px) {
-            body, html, button { cursor: none !important; }
-        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        @media (min-width: 1024px) { body, html, button { cursor: none !important; } }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            /* Fondo con degradado animado sutil para resaltar el efecto cristal */
-            background: linear-gradient(45deg, #000, #0a1f16, #000);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: #000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             overflow: hidden; touch-action: none; 
+            color: white;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        #aviso-bienvenida { 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; min-height: 100vh; width: 100%;
-            text-align: center; padding: 20px; color: white; position: relative;
+        /* 💡 LUCES DE ESTADIO FONDO 💡 */
+        .estadio-luces {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 85% 15%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 15% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%),
+                radial-gradient(circle at 85% 85%, rgba(50, 188, 129, 0.15) 0%, rgba(0,0,0,0) 60%);
+            z-index: 1; pointer-events: none;
         }
 
-        /* ⚾ PELOTA DE BÉISBOL (Costuras corregidas y física) ⚾ */
+        /* ⚾ PELOTA 3D ANIMADA ⚾ */
+        #ball-container { position: fixed; width: 32px; height: 32px; pointer-events: none; z-index: 10000; left: 0; top: 0; }
         #ball-cursor {
-            position: fixed; 
-            width: 32px; 
-            height: 32px; 
-            background-color: #fff;
-            border-radius: 50%; 
-            pointer-events: none; 
-            z-index: 10000;
-            box-shadow: 0 0 15px rgba(255,255,255,0.8); 
-            border: 1.5px solid #ccc;
-            overflow: hidden; /* Corta las costuras para que no se salgan */
-            left: 0; 
-            top: 0;
-            display: block;
+            width: 100%; height: 100%; background-color: #fff; border-radius: 50%; border: 1.5px solid #ccc;
+            overflow: hidden; position: relative; box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            animation: rotateBall 8s linear infinite;
+        }
+        #ball-cursor::before, #ball-cursor::after { content: ""; position: absolute; width: 100%; height: 100%; border: 2px dashed red; border-radius: 50%; }
+        #ball-cursor::before { left: -70%; } #ball-cursor::after { right: -70%; }
+        #ball-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; box-shadow: inset -6px -6px 12px rgba(0,0,0,0.6); z-index: 2; }
+
+        @keyframes rotateBall { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* CONTENEDOR DE TARJETAS */
+        #main-wrapper { 
+            position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; 
+            min-height: 100vh; padding: 20px; width: 100%;
         }
 
-        #ball-cursor::before, #ball-cursor::after {
-            content: ""; position: absolute; width: 100%; height: 100%;
-            border: 2px dashed red; border-radius: 50%;
+        .card {
+            background: #111; padding: 35px 25px; border-radius: 35px; border: 1px solid #222;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8); max-width: 360px; width: 100%;
+            display: none; animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: center;
         }
-        #ball-cursor::before { left: -70%; }
-        #ball-cursor::after { right: -70%; }
+        .active { display: block; }
 
-        /* ✨ TARJETA EFECTO GLASS (Glassmorphism) ✨ */
-        #contenido-registro {
-            background: rgba(255, 255, 255, 0.07); /* Capa translúcida */
-            backdrop-filter: blur(20px); /* Desenfoque de fondo estilo iOS */
-            -webkit-backdrop-filter: blur(20px); 
-            padding: 40px 30px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Borde de luz */
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-            max-width: 360px;
-            width: 90%;
-            z-index: 5;
+        #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 2px solid #32BC81; }
+        h2 { font-size: 22px; margin: 0 0 25px 0; font-weight: 800; }
+
+        /* BOTONES DE SELECCIÓN */
+        .btn-choice {
+            background: #1a1a1a; color: white; border: 1px solid #333; padding: 22px;
+            width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            transition: all 0.2s ease;
         }
+        .btn-choice:active { transform: scale(0.98); background: #222; }
+        .btn-choice i { font-style: normal; font-size: 20px; }
 
-        #logo-app { 
-            width: 100px; height: 100px; margin-bottom: 20px; 
-            border-radius: 22px; border: 2px solid #32BC81; 
-        }
-
-        h2 { font-size: 22px; margin-bottom: 25px; font-weight: bold; letter-spacing: -0.5px; }
+        /* FORMULARIO Y PASOS */
+        .paso { margin-bottom: 18px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: #bbb; }
+        .paso-numero { background: #32BC81; color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
         
-        .pasos-container { text-align: left; margin-bottom: 30px; }
-        .paso { 
-            margin-bottom: 20px; display: flex; align-items: flex-start; 
-            line-height: 1.4; font-size: 15px; color: rgba(255,255,255,0.9); 
+        input, select {
+            width: 100%; background: #000 !important; border: 1px solid #333; color: white !important;
+            padding: 16px; border-radius: 14px; margin-bottom: 12px; font-size: 15px;
+            -webkit-appearance: none;
         }
-        .paso-numero { 
-            background: #32BC81; color: #000; font-weight: bold; 
-            border-radius: 50%; min-width: 26px; height: 26px; 
-            display: flex; align-items: center; justify-content: center; 
-            margin-right: 12px; font-size: 13px; 
-        }
-        .highlight { color: #32BC81; font-weight: 600; }
-        
-        .btn-entrar { 
-            background-color: #32BC81; color: #fff; padding: 18px 0; 
-            border-radius: 16px; font-weight: bold; font-size: 16px; 
-            border: none; width: 100%; 
-            box-shadow: 0 10px 20px rgba(50, 188, 129, 0.3); 
-            pointer-events: auto; 
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        .btn-entrar:active { transform: scale(0.96); background-color: #2da874; }
+        input:focus { border-color: #32BC81; }
 
-        /* Mensaje Final */
-        #mensaje-ligas { 
-            display: none; font-size: 28px; font-weight: 900; 
-            color: #32BC81; text-transform: uppercase; 
-            letter-spacing: 2px; text-shadow: 0 0 20px rgba(50, 188, 129, 0.6); 
-            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), glow 2s infinite alternate; 
+        .btn-primary { 
+            background-color: #32BC81; color: #fff; padding: 18px; border-radius: 16px; 
+            font-weight: bold; font-size: 16px; border: none; width: 100%; margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(50, 188, 129, 0.2); cursor: pointer;
         }
+        .btn-primary:disabled { background-color: #222; color: #555; cursor: not-allowed; }
 
-        /* Sello 2026 Centrado */
-        .footer-stamp { 
-            position: absolute; bottom: 25px; left: 0; width: 100%; 
-            font-size: 10px; color: rgba(255,255,255,0.3); 
-            letter-spacing: 4px; text-transform: uppercase; text-align: center; 
-        }
+        .btn-back { background: none; border: none; color: #555; font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: none; }
 
-        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes glow { from { text-shadow: 0 0 10px rgba(50, 188, 129, 0.4); } to { text-shadow: 0 0 30px rgba(50, 188, 129, 0.9), 0 0 10px #fff; } }
-        .fade-out { opacity: 0; visibility: hidden; transition: 0.8s all ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #mensaje-exito { display: none; font-size: 26px; color: #32BC81; font-weight: 900; text-transform: uppercase; }
+        .fade-out { opacity: 0; transition: 0.8s; }
     </style>
 </head>
 <body>
 
-    <div id="ball-cursor"></div>
+    <div class="estadio-luces"></div>
 
-    <div id="aviso-bienvenida">
-        <div id="contenido-registro">
-            <img src="logo-app.png" alt="Drivery Logo" id="logo-app">
-            <h2>Pasos de Registro</h2>
-            <div class="pasos-container">
-                <div class="paso">
-                    <div class="paso-numero">1</div>
-                    <div>Pulsa <span class="highlight">Agregar numero</span>, coloca el codigo y sube tu foto.</div>
-                </div>
-                <div class="paso">
-                    <div class="paso-numero">2</div>
-                    <div><span class="highlight">Agrega a inicio</span> y ancla la app en tu movil.</div>
-                </div>
-            </div>
-            <button class="btn-entrar" onclick="finalizar()">ENTENDIDO</button>
+    <div id="ball-container">
+        <div id="ball-cursor"></div>
+        <div id="ball-shadow"></div>
+    </div>
+
+    <div id="main-wrapper">
+        <div id="screen-choice" class="card active">
+            <img src="logo-app.png" alt="Logo" id="logo-app">
+            <h2>Bienvenido a Drivery</h2>
+            <button class="btn-choice" onclick="showScreen('screen-user')">
+                Soy Usuario <i>👤</i>
+            </button>
+            <button class="btn-choice" onclick="showScreen('screen-driver')">
+                Soy Conductor <i>🚗</i>
+            </button>
         </div>
-        
-        <div id="mensaje-ligas">¡Bienvenido a las<br>Grandes Ligas!</div>
-        
-        <div class="footer-stamp">DRIVERY &nbsp; | &nbsp; 2026</div>
+
+        <div id="screen-user" class="card">
+            <h2>Pasos de Registro</h2>
+            <div class="paso">
+                <div class="paso-numero">1</div>
+                <div>Pulsa <b>Agregar número</b>, coloca el código y sube tu foto.</div>
+            </div>
+            <div class="paso">
+                <div class="paso-numero">2</div>
+                <div><b>Agrega a inicio</b> y ancla la app en tu móvil.</div>
+            </div>
+            <button class="btn-primary" onclick="mostrarMensajeFinal()">ENTENDIDO</button>
+            <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
+        </div>
+
+        <div id="screen-driver" class="card">
+            <h2>Datos de Conductor</h2>
+            <form id="form-conductor">
+                <input type="text" name="Nombre" placeholder="Nombre y Apellido" required>
+                <input type="tel" name="Telefono" placeholder="Número de contacto" required>
+                <select name="Vehiculo" required>
+                    <option value="" disabled selected>Tipo de vehículo</option>
+                    <option value="Sedan">Carro Sedán</option>
+                    <option value="SUV">Camioneta / SUV</option>
+                    <option value="Moto">Motocicleta</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR SOLICITUD</button>
+            </form>
+            <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
+        </div>
+
+        <div id="mensaje-exito">¡A JUGAR EN<br>LAS GRANDES LIGAS!</div>
     </div>
 
     <script>
-        const ball = document.getElementById('ball-cursor');
+        function showScreen(screenId) {
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // CONTROL DE LA PELOTA
+        const ballContainer = document.getElementById('ball-container');
         let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
-        let velX = 2.5, velY = 2.5;
-        let isUserControlled = false;
+        let velX = 2.5, velY = 2.5, isUserControlled = false;
 
         function animate() {
             if (!isUserControlled) {
                 posX += velX; posY += velY;
-                
-                // Rebote en bordes
                 if (posX + 32 >= window.innerWidth || posX <= 0) velX *= -1;
                 if (posY + 32 >= window.innerHeight || posY <= 0) velY *= -1;
-                
-                ball.style.left = posX + 'px'; 
-                ball.style.top = posY + 'px';
+                ballContainer.style.transform = `translate(${posX}px, ${posY}px)`;
             }
             requestAnimationFrame(animate);
         }
@@ -176,25 +172,51 @@
 
         function handleInput(x, y) {
             isUserControlled = true;
-            ball.style.left = (x - 16) + 'px'; 
-            ball.style.top = (y - 16) + 'px';
+            ballContainer.style.transform = `translate(${x - 16}px, ${y - 16}px)`;
         }
-
         document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
-        document.addEventListener('touchmove', (e) => {
-            handleInput(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: false });
+        document.addEventListener('touchmove', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
 
-        function finalizar() {
-            document.getElementById('contenido-registro').style.display = 'none';
-            document.getElementById('mensaje-ligas').style.display = 'block';
-            
+        // ENVÍO PRIVADO CON FORMSPREE
+        const form = document.getElementById('form-conductor');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-envio');
+            btn.innerText = "ENVIANDO...";
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch("https://formspree.io/f/xgolblvj", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    mostrarMensajeFinal();
+                } else {
+                    alert("Error al enviar. Inténtalo de nuevo.");
+                    btn.innerText = "ENVIAR SOLICITUD";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert("Sin conexión.");
+                btn.innerText = "ENVIAR SOLICITUD";
+                btn.disabled = false;
+            }
+        });
+
+        function mostrarMensajeFinal() {
+            document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
+            document.getElementById('mensaje-exito').style.display = 'block';
             setTimeout(() => {
-                document.getElementById('aviso-bienvenida').classList.add('fade-out');
+                document.getElementById('main-wrapper').classList.add('fade-out');
                 setTimeout(() => { 
                     window.location.href = "https://15147507-4.ondelight.app"; 
                 }, 800);
-            }, 2200);
+            }, 2500);
         }
     </script>
 </body>
