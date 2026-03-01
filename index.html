@@ -116,6 +116,9 @@
                     <option value="Moto">Motocicleta</option>
                     <option value="Otro">Otro</option>
                 </select>
+                <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
+                    Al enviar, autoriza el uso de sus datos para fines de verificación de seguridad en Drivery.
+                </p>
                 <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS</button>
             </form>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
@@ -155,6 +158,7 @@
             btn.innerText = "PROCESANDO...";
             btn.disabled = true;
 
+            // URL DE GOOGLE ACTUALIZADA POR TI
             const scriptURL = "https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec";
 
             const formData = new FormData(form);
