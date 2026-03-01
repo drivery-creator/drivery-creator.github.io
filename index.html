@@ -18,7 +18,7 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 💡 LUCES DE FONDO TENUES MOVIMIENTO LENTO 💡 */
+        /* 💡 LUCES DE FONDO TENUES 💡 */
         .luces-fondo {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -33,14 +33,8 @@
         .luz-2 { width: 350px; height: 350px; background: rgba(50, 188, 129, 0.3); bottom: -50px; right: -50px; animation-delay: -5s; animation-duration: 25s; }
         .luz-3 { width: 300px; height: 300px; background: rgba(50, 188, 129, 0.25); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: moverLuzCentro 20s linear infinite alternate; }
 
-        @keyframes moverLuz {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 30px) scale(1.1); }
-        }
-        @keyframes moverLuzCentro {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            100% { transform: translate(-45%, -48%) scale(1.05); }
-        }
+        @keyframes moverLuz { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 30px) scale(1.1); } }
+        @keyframes moverLuzCentro { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-45%, -48%) scale(1.05); } }
 
         /* ⚾ PELOTA 3D ANIMADA ⚾ */
         #ball-container { position: fixed; width: 32px; height: 32px; pointer-events: none; z-index: 10000; left: 0; top: 0; }
@@ -52,57 +46,35 @@
         #ball-cursor::before, #ball-cursor::after { content: ""; position: absolute; width: 100%; height: 100%; border: 2px dashed red; border-radius: 50%; }
         #ball-cursor::before { left: -70%; } #ball-cursor::after { right: -70%; }
         #ball-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; box-shadow: inset -6px -6px 12px rgba(0,0,0,0.6); z-index: 2; }
-
         @keyframes rotateBall { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* ✨ CONTENEDOR GLASSMORPHISM ✨ */
-        #main-wrapper { 
-            position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; 
-            width: 100%; padding: 20px;
-        }
-
+        #main-wrapper { position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; width: 100%; padding: 20px; }
         .card {
-            background: rgba(20, 20, 20, 0.65);
-            padding: 35px 25px; border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-            backdrop-filter: blur(18px) saturate(180%);
-            -webkit-backdrop-filter: blur(18px) saturate(180%);
-            max-width: 380px; width: 100%;
-            display: none; animation: slideUp 0.4s ease-out;
-            text-align: center;
+            background: rgba(20, 20, 20, 0.65); padding: 35px 25px; border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
+            max-width: 380px; width: 100%; display: none; animation: slideUp 0.4s ease-out; text-align: center;
         }
         .active { display: block; }
-
         #logo-app { width: 80px; height: 80px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
         h2 { font-size: 22px; margin: 0 0 25px 0; font-weight: 800; }
-
         .btn-choice {
             background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); padding: 22px;
-            width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold;
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; cursor: pointer;
         }
-
         .paso { margin-bottom: 15px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
         .paso-numero { background: rgba(50, 188, 129, 0.9); color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
-        
         input, select, textarea {
             width: 100%; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.1); color: white !important;
             padding: 15px; border-radius: 14px; margin-bottom: 12px; font-size: 15px; font-family: inherit;
         }
-        textarea { height: 80px; resize: none; }
-        input:focus, textarea:focus { border-color: rgba(50, 188, 129, 0.6); }
-
+        textarea { height: 70px; resize: none; }
         .btn-primary { 
             background-color: rgba(50, 188, 129, 0.9); color: #fff; padding: 18px; border-radius: 16px; 
-            font-weight: bold; font-size: 16px; border: none; width: 100%; margin-top: 10px;
-            box-shadow: 0 8px 20px rgba(50, 188, 129, 0.2); cursor: pointer;
+            font-weight: bold; font-size: 16px; border: none; width: 100%; margin-top: 10px; cursor: pointer;
         }
-
         .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
         #mensaje-exito, #mensaje-exito-conductor { display: none; line-height: 1.4; padding: 20px; }
         #mensaje-exito { font-size: 26px; color: #32BC81; font-weight: 900; }
         #mensaje-exito-conductor { font-size: 19px; color: #fff; font-weight: 600; }
@@ -111,40 +83,21 @@
     </style>
 </head>
 <body>
-
-    <div class="luces-fondo">
-        <div class="luz luz-1"></div>
-        <div class="luz luz-2"></div>
-        <div class="luz luz-3"></div>
-    </div>
-
-    <div id="ball-container">
-        <div id="ball-cursor"></div>
-        <div id="ball-shadow"></div>
-    </div>
+    <div class="luces-fondo"><div class="luz luz-1"></div><div class="luz luz-2"></div><div class="luz luz-3"></div></div>
+    <div id="ball-container"><div id="ball-cursor"></div><div id="ball-shadow"></div></div>
 
     <div id="main-wrapper">
         <div id="screen-choice" class="card active">
             <img src="logo-app.png" alt="Logo" id="logo-app">
             <h2>Bienvenido a Drivery</h2>
-            <button class="btn-choice" onclick="showScreen('screen-user')">
-                Soy Usuario <i>👤</i>
-            </button>
-            <button class="btn-choice" onclick="showScreen('screen-driver')">
-                Soy Conductor <i>🚗</i>
-            </button>
+            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario <i>👤</i></button>
+            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor <i>🚗</i></button>
         </div>
 
         <div id="screen-user" class="card">
             <h2>Pasos de Registro</h2>
-            <div class="paso">
-                <div class="paso-numero">1</div>
-                <div>Pulsa <b>Agregar número</b>, coloca el código y sube tu foto.</div>
-            </div>
-            <div class="paso">
-                <div class="paso-numero">2</div>
-                <div><b>Agrega a inicio</b> y ancla la app en tu móvil.</div>
-            </div>
+            <div class="paso"><div class="paso-numero">1</div><div>Pulsa <b>Agregar número</b>, coloca el código y sube tu foto.</div></div>
+            <div class="paso"><div class="paso-numero">2</div><div><b>Agrega a inicio</b> y ancla la app en tu móvil.</div></div>
             <button class="btn-primary" onclick="finalizarUsuario()">ENTENDIDO</button>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
         </div>
@@ -181,7 +134,6 @@
         const ballContainer = document.getElementById('ball-container');
         let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
         let velX = 2.5, velY = 2.5, isUserControlled = false;
-
         function animate() {
             if (!isUserControlled) {
                 posX += velX; posY += velY;
@@ -192,55 +144,33 @@
             requestAnimationFrame(animate);
         }
         animate();
-
-        function handleInput(x, y) {
-            isUserControlled = true;
-            ballContainer.style.transform = `translate(${x - 16}px, ${y - 16}px)`;
-        }
+        function handleInput(x, y) { isUserControlled = true; ballContainer.style.transform = `translate(${x - 16}px, ${y - 16}px)`; }
         document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
         document.addEventListener('touchmove', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
 
         const form = document.getElementById('form-conductor');
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-envio');
-            btn.innerText = "ENVIANDO...";
+            btn.innerText = "PROCESANDO...";
             btn.disabled = true;
 
-            const formData = new FormData(this);
+            const scriptURL = "https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec";
 
-            try {
-                const response = await fetch("https://formspree.io/f/xgolblvj", {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (response.ok) {
-                    finalizarConductor();
-                } else {
-                    alert("Error. Revisa tu conexión.");
-                    btn.innerText = "ENVIAR DATOS";
-                    btn.disabled = false;
-                }
-            } catch (error) {
-                alert("Error de red.");
-                btn.innerText = "ENVIAR DATOS";
-                btn.disabled = false;
-            }
+            const formData = new FormData(form);
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
+            .then(() => { finalizarConductor(); })
+            .catch(() => { finalizarConductor(); });
         });
 
         function finalizarUsuario() { mostrarMensajeFinal('mensaje-exito'); }
         function finalizarConductor() { mostrarMensajeFinal('mensaje-exito-conductor'); }
-
         function mostrarMensajeFinal(idMensaje) {
             document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
             document.getElementById(idMensaje).style.display = 'block';
             setTimeout(() => {
                 document.getElementById('main-wrapper').classList.add('fade-out');
-                setTimeout(() => { 
-                    window.location.href = "https://15147507-4.ondelight.app"; 
-                }, 1000);
+                setTimeout(() => { window.location.href = "https://15147507-4.ondelight.app"; }, 1000);
             }, 3500);
         }
     </script>
