@@ -1,59 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Drivery - Registro</title>
 
     <style>
-        /*  ELIMINAR CURSOR  */
+        /*  ELIMINAR CURSOR */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         html, body, button, input, select, textarea { cursor: none !important; }
 
         body, html { 
             margin: 0; padding: 0; height: 100vh; width: 100vw; 
             background-color: #050505;
-            font-family: -apple-system, system-ui, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             overflow: hidden; touch-action: none; 
             color: white;
             display: flex; align-items: center; justify-content: center;
         }
 
-        /*  FONDO CON LUCES  */
-        .luces-fondo {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
+        /*  FONDO */
+        .luces-fondo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
         .luz { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
         .luz-1 { width: 400px; height: 400px; background: #32BC81; top: -100px; left: -100px; }
         .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; }
 
-        /*  PELOTA REALISTA QUE REEMPLAZA AL MOUSE  */
-        #ball-container { 
-            position: fixed; width: 40px; height: 40px; 
-            pointer-events: none; z-index: 99999; left: 0; top: 0; 
-            /* Usamos transform para moverla suavemente */
-            will-change: transform;
-        }
+        /*  PELOTA REALISTA */
+        #ball-container { position: fixed; width: 40px; height: 40px; pointer-events: none; z-index: 99999; left: 0; top: 0; will-change: transform; }
         #ball-cursor { 
             width: 100%; height: 100%; 
-            /* Imagen real de béisbol */
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/92/Baseball.svg');
             background-size: cover;
             border-radius: 50%;
             box-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.5);
-            /* GIRO COMO LAS MANECILLAS DEL RELOJ */
             animation: rotarReloj 4s linear infinite; 
         }
 
-        @keyframes rotarReloj { 
-            from { transform: rotate(0deg); } 
-            to { transform: rotate(360deg); } 
-        }
+        @keyframes rotarReloj { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /*  DISEÑO DE TARJETAS (GLASS)  */
+        /*  DISEÑO GLASS */
         #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
-
         .card {
             background: rgba(25, 25, 25, 0.45);
             padding: 35px 25px; border-radius: 35px; 
@@ -85,8 +70,6 @@
 
         .btn-primary { background: #32BC81; color: #000; padding: 18px; border-radius: 16px; font-weight: 900; width: 100%; border: none; }
         .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; text-decoration: underline; }
-
-        #mensaje-exito h2 { color: #32BC81; font-size: 28px; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -107,6 +90,7 @@
 
         <div id="screen-user" class="card">
             <h2>Descarga Drivery</h2>
+            <p style="opacity:0.8; margin-bottom: 10px;">¡Únete al equipo!</p>
             <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
             </div>
@@ -117,26 +101,26 @@
         </div>
 
         <div id="screen-driver" class="card">
-            <h2>Registro Conductor</h2>
+            <h2>Registro Conductor </h2>
             <form id="form-conductor">
                 <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="Cédula" required>
-                <input type="tel" name="Telefono" placeholder="Teléfono" required>
-                <textarea name="Direccion" placeholder="Dirección" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
+                <input type="text" name="Cedula" placeholder="Cédula de Identidad" required>
+                <input type="tel" name="Telefono" placeholder="Teléfono móvil" required>
+                <textarea name="Direccion" placeholder="Dirección de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected>Vehículo</option>
-                    <option value="Sedan">Sedán</option>
-                    <option value="SUV">SUV</option>
-                    <option value="Moto">Moto</option>
+                    <option value="" disabled selected>Tipo de vehículo</option>
+                    <option value="Sedan">Carro Sedán</option>
+                    <option value="SUV">Camioneta / SUV</option>
+                    <option value="Moto">Motocicleta</option>
                 </select>
-                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS</button>
+                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS </button>
             </form>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
         </div>
 
         <div id="mensaje-exito" class="card">
-            <h2>¡A LAS GRANDES LIGAS!</h2>
-            <p id="subtexto-exito">Cargando...</p>
+            <h2 style="color: #32BC81;">¡A LAS GRANDES LIGAS! </h2>
+            <p id="subtexto-exito">Procesando...</p>
         </div>
     </div>
 
@@ -146,10 +130,9 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // --- LÓGICA DE MOVIMIENTO DE LA PELOTA ---
         const ball = document.getElementById('ball-container');
-        let posX = Math.random() * window.innerWidth;
-        let posY = Math.random() * window.innerHeight;
+        let posX = Math.random() * (window.innerWidth - 40);
+        let posY = Math.random() * (window.innerHeight - 40);
         let velX = 2;
         let velY = 2;
         let isControlled = false;
@@ -157,13 +140,10 @@
 
         function animate() {
             if (!isControlled) {
-                // Movimiento automático tipo rebote
                 posX += velX;
                 posY += velY;
-
                 if (posX + 40 >= window.innerWidth || posX <= 0) velX *= -1;
                 if (posY + 40 >= window.innerHeight || posY <= 0) velY *= -1;
-
                 ball.style.transform = `translate(${posX}px, ${posY}px)`;
             }
             requestAnimationFrame(animate);
@@ -175,8 +155,6 @@
             posX = x - 20;
             posY = y - 20;
             ball.style.transform = `translate(${posX}px, ${posY}px)`;
-            
-            // Si dejas de moverte por 3 segundos, vuelve al modo automático
             clearTimeout(timeoutMode);
             timeoutMode = setTimeout(() => { isControlled = false; }, 3000);
         }
@@ -186,9 +164,8 @@
             handleMove(e.touches[0].clientX, e.touches[0].clientY);
         }, {passive: false});
 
-        // --- LÓGICA DE ENVÍO ---
         function finalizarUsuario(url) {
-            document.getElementById('subtexto-exito').innerText = "Abriendo tienda...";
+            document.getElementById('subtexto-exito').innerText = "Abriendo tienda oficial...";
             showScreen('mensaje-exito');
             setTimeout(() => { window.location.href = url; }, 2000);
         }
@@ -201,7 +178,7 @@
             fetch("https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec", { 
                 method: 'POST', body: new FormData(form), mode: 'no-cors' 
             }).then(() => { 
-                document.getElementById('subtexto-exito').innerText = "Nos vemos en WhatsApp.";
+                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. ¡Hablamos por WhatsApp!";
                 showScreen('mensaje-exito'); 
             });
         });
