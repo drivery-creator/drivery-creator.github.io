@@ -1,144 +1,177 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Drivery - Inicio</title>
+    <title>Drivery - Registro</title>
 
     <style>
+        /* 🚫 CURSOR INVISIBLE 🚫 */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        @media (min-width: 1024px) { body, html, button { cursor: none !important; } }
+        html, body, button, input, select, textarea { cursor: none !important; }
 
         body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background-color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; padding: 0; height: 100vh; width: 100vw; 
+            background-color: #050505;
+            font-family: -apple-system, system-ui, sans-serif; 
             overflow: hidden; touch-action: none; 
             color: white;
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 💡 LUCES DE FONDO TENUES 💡 */
+        /* 💡 LUCES DE FONDO 💡 */
         .luces-fondo {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-            overflow: hidden;
+            z-index: 1; pointer-events: none; overflow: hidden;
         }
         .luz {
             position: absolute; border-radius: 50%;
-            filter: blur(80px); opacity: 0.12;
-            animation: moverLuz 25s linear infinite alternate;
+            filter: blur(80px); opacity: 0.3;
+            animation: moverLuz 20s linear infinite alternate;
         }
-        .luz-1 { width: 400px; height: 400px; background: rgba(50, 188, 129, 0.4); top: -100px; left: -100px; animation-duration: 30s; }
-        .luz-2 { width: 350px; height: 350px; background: rgba(50, 188, 129, 0.3); bottom: -50px; right: -50px; animation-delay: -5s; animation-duration: 25s; }
-        .luz-3 { width: 300px; height: 300px; background: rgba(50, 188, 129, 0.25); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: moverLuzCentro 20s linear infinite alternate; }
+        .luz-1 { width: 400px; height: 400px; background: #32BC81; top: -100px; left: -100px; }
+        .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; animation-delay: -5s; }
+        
+        @keyframes moverLuz { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
 
-        @keyframes moverLuz { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 30px) scale(1.1); } }
-        @keyframes moverLuzCentro { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-45%, -48%) scale(1.05); } }
-
-        /* ⚾ PELOTA 3D ANIMADA ⚾ */
-        #ball-container { position: fixed; width: 32px; height: 32px; pointer-events: none; z-index: 10000; left: 0; top: 0; }
-        #ball-cursor {
-            width: 100%; height: 100%; background-color: #fff; border-radius: 50%; border: 1.5px solid #ccc;
-            overflow: hidden; position: relative; box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            animation: rotateBall 8s linear infinite;
+        /* ⚾ PELOTA 3D ⚾ */
+        #ball-container { 
+            position: fixed; width: 35px; height: 35px; 
+            pointer-events: none; z-index: 99999; left: 0; top: 0; 
+            transition: transform 0.05s linear;
+            perspective: 1000px;
         }
-        #ball-cursor::before, #ball-cursor::after { content: ""; position: absolute; width: 100%; height: 100%; border: 2px dashed red; border-radius: 50%; }
-        #ball-cursor::before { left: -70%; } #ball-cursor::after { right: -70%; }
-        #ball-shadow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; box-shadow: inset -6px -6px 12px rgba(0,0,0,0.6); z-index: 2; }
-        @keyframes rotateBall { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #ball-cursor { 
+            width: 100%; height: 100%; 
+            background: radial-gradient(circle at 30% 30%, #fff 0%, #eee 40%, #ccc 80%, #999 100%);
+            border-radius: 50%; position: relative; overflow: hidden;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 10px rgba(0,0,0,0.3);
+            animation: rotar 6s linear infinite;
+            transform-style: preserve-3d;
+        }
+        #ball-cursor::before, #ball-cursor::after {
+            content: ""; position: absolute; width: 100%; height: 100%;
+            border: 2.5px solid #ff0000; border-radius: 50%; top: 0; left: 0;
+            box-sizing: border-box; opacity: 0.8;
+        }
+        #ball-cursor::before { transform: rotateY(30deg) rotateX(15deg) scale(1.05); }
+        #ball-cursor::after { transform: rotateY(-30deg) rotateX(-15deg) scale(1.05); }
 
-        /* ✨ CONTENEDOR GLASSMORPHISM ✨ */
-        #main-wrapper { position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; width: 100%; padding: 20px; }
+        @keyframes rotar { 
+            from { transform: rotate3d(1, 1, 0, 0deg); } 
+            to { transform: rotate3d(1, 1, 0, 360deg); } 
+        }
+
+        /* ✨ GLASSMORPHISM ✨ */
+        #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
+
         .card {
-            background: rgba(20, 20, 20, 0.65); padding: 35px 25px; border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
-            max-width: 380px; width: 100%; display: none; animation: slideUp 0.4s ease-out; text-align: center;
+            background: rgba(25, 25, 25, 0.45);
+            padding: 35px 25px; border-radius: 35px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            max-width: 380px; width: 100%; 
+            display: none; text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
-        .active { display: block; }
-        #logo-app { width: 80px; height: 80px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
-        h2 { font-size: 22px; margin: 0 0 25px 0; font-weight: 800; }
+        .active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
+        
+        .store-button {
+            display: block;
+            margin: 15px auto;
+            width: 200px;
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+        .store-button img { width: 100%; height: auto; border-radius: 8px; }
+
         .btn-choice {
-            background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); padding: 22px;
-            width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-        }
-        .paso { margin-bottom: 15px; display: flex; align-items: flex-start; text-align: left; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
-        .paso-numero { background: rgba(50, 188, 129, 0.9); color: #000; font-weight: bold; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
-        
-        /* 🎨 INPUTS Y SELECT CORREGIDOS 🎨 */
-        input, select, textarea {
-            width: 100%; background: rgba(255, 255, 255, 0.06) !important; border: 1px solid rgba(255, 255, 255, 0.15); color: white !important;
-            padding: 15px; border-radius: 14px; margin-bottom: 12px; font-size: 15px; font-family: inherit;
-            appearance: none; -webkit-appearance: none; /* Quita estilo de sistema */
-        }
-        
-        /* Esto arregla la visibilidad del menú desplegable */
-        select option {
-            background-color: #1a1a1a; /* Fondo oscuro para el menú */
-            color: white;
-            padding: 10px;
+            background: rgba(255, 255, 255, 0.07); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 22px; width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: 700; 
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        textarea { height: 70px; resize: none; }
-        .btn-primary { 
-            background-color: rgba(50, 188, 129, 0.9); color: #fff; padding: 18px; border-radius: 16px; 
-            font-weight: bold; font-size: 16px; border: none; width: 100%; margin-top: 10px; cursor: pointer;
+        input, select, textarea {
+            width: 100%; background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: white !important; padding: 16px; border-radius: 16px; margin-bottom: 12px; font-size: 15px;
         }
-        .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        #mensaje-exito, #mensaje-exito-conductor { display: none; line-height: 1.4; padding: 20px; }
-        #mensaje-exito { font-size: 26px; color: #32BC81; font-weight: 900; }
-        #mensaje-exito-conductor { font-size: 19px; color: #fff; font-weight: 600; }
-        #mensaje-exito-conductor b { color: #32BC81; }
-        .fade-out { opacity: 0; transition: 1s; }
+        
+        select option { background-color: #111; color: white; }
+
+        .btn-primary { 
+            background: #32BC81; color: #000; padding: 18px; 
+            border-radius: 16px; font-weight: 900; font-size: 16px; border: none; width: 100%; 
+        }
+
+        .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; text-decoration: underline; }
+
+        /* ÉXITO */
+        #mensaje-exito h2 { color: #32BC81; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="luces-fondo"><div class="luz luz-1"></div><div class="luz luz-2"></div><div class="luz luz-3"></div></div>
-    <div id="ball-container"><div id="ball-cursor"></div><div id="ball-shadow"></div></div>
+    <div class="luces-fondo">
+        <div class="luz luz-1"></div>
+        <div class="luz luz-2"></div>
+    </div>
+    
+    <div id="ball-container"><div id="ball-cursor"></div></div>
 
     <div id="main-wrapper">
         <div id="screen-choice" class="card active">
             <img src="logo-app.png" alt="Logo" id="logo-app">
             <h2>Bienvenido a Drivery</h2>
-            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario <i>👤</i></button>
-            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor <i>🚗</i></button>
+            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario 👤</button>
+            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor 🚗</button>
         </div>
 
         <div id="screen-user" class="card">
-            <h2>Pasos de Registro</h2>
-            <div class="paso"><div class="paso-numero">1</div><div>Pulsa <b>Agregar número</b>, coloca el código y sube tu foto.</div></div>
-            <div class="paso"><div class="paso-numero">2</div><div><b>Agrega a inicio</b> y ancla la app en tu móvil.</div></div>
-            <button class="btn-primary" onclick="finalizarUsuario()">ENTENDIDO</button>
-            <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
+            <h2>Descarga Drivery</h2>
+            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">Tu viaje comienza aquí.</p>
+            
+            <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
+            </div>
+
+            <div class="store-button" onclick="finalizarUsuario('https://15147507-4.ondelight.app/')">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store">
+            </div>
+
+            <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
         </div>
 
         <div id="screen-driver" class="card">
-            <h2 style="margin-bottom: 15px;">Registro Conductor</h2>
+            <h2>Registro Conductor</h2>
             <form id="form-conductor">
                 <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="C.I. (Cédula de Identidad)" required>
-                <input type="tel" name="Telefono" placeholder="Número de teléfono" required>
-                <textarea name="Direccion" placeholder="Dirección de domicilio" required></textarea>
+                <input type="text" name="Cedula" placeholder="Cédula de Identidad" required>
+                <input type="tel" name="Telefono" placeholder="Teléfono" required>
+                <textarea name="Direccion" placeholder="Dirección corta" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; height:70px; color:white; font-family:inherit; resize:none;"></textarea>
                 
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected style="color: rgba(255,255,255,0.5);">Tipo de vehículo</option>
+                    <option value="" disabled selected>Tipo de vehículo</option>
                     <option value="Sedan">Carro Sedán</option>
                     <option value="SUV">Camioneta / SUV</option>
                     <option value="Moto">Motocicleta</option>
-                    <option value="Otro">Otro</option>
                 </select>
 
                 <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
-                    Al enviar, autoriza el uso de sus datos para fines de verificación de seguridad en Drivery.
+                    Verificaremos sus datos por WhatsApp.
                 </p>
                 <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS</button>
             </form>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrás</button>
         </div>
 
-        <div id="mensaje-exito">¡A JUGAR EN<br>LAS GRANDES LIGAS!</div>
-        <div id="mensaje-exito-conductor">Te avisaremos cuando ya seas parte de nuestro <b>rooster</b>!<br><br>¡Gracias por elegirnos!</div>
+        <div id="mensaje-exito" class="card">
+            <h2>¡A LAS GRANDES LIGAS!</h2>
+            <p id="subtexto-exito">Cargando...</p>
+        </div>
     </div>
 
     <script>
@@ -148,47 +181,53 @@
         }
 
         const ballContainer = document.getElementById('ball-container');
-        let posX = window.innerWidth / 2, posY = window.innerHeight / 2;
-        let velX = 2.5, velY = 2.5, isUserControlled = false;
+        let posX = 100, posY = 100, velX = 2.5, velY = 2.5, isControlled = false;
+
         function animate() {
-            if (!isUserControlled) {
+            if (!isControlled) {
                 posX += velX; posY += velY;
-                if (posX + 32 >= window.innerWidth || posX <= 0) velX *= -1;
-                if (posY + 32 >= window.innerHeight || posY <= 0) velY *= -1;
+                if (posX + 35 >= window.innerWidth || posX <= 0) velX *= -1;
+                if (posY + 35 >= window.innerHeight || posY <= 0) velY *= -1;
                 ballContainer.style.transform = `translate(${posX}px, ${posY}px)`;
             }
             requestAnimationFrame(animate);
         }
         animate();
-        function handleInput(x, y) { isUserControlled = true; ballContainer.style.transform = `translate(${x - 16}px, ${y - 16}px)`; }
-        document.addEventListener('mousemove', (e) => handleInput(e.clientX, e.clientY));
-        document.addEventListener('touchmove', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
 
+        function mover(x, y) {
+            isControlled = true;
+            ballContainer.style.transform = `translate(${x - 17}px, ${y - 17}px)`;
+        }
+        document.addEventListener('mousemove', (e) => mover(e.clientX, e.clientY));
+        document.addEventListener('touchmove', (e) => mover(e.touches[0].clientX, e.touches[0].clientY), {passive:false});
+
+        // LÓGICA DE USUARIO CON MENSAJE
+        function finalizarUsuario(url) {
+            document.getElementById('subtexto-exito').innerText = "Abriendo la tienda...";
+            showScreen('mensaje-exito');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 2000); // 2 segundos de gloria antes de salir
+        }
+
+        // LÓGICA DE CONDUCTOR
         const form = document.getElementById('form-conductor');
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-envio');
-            btn.innerText = "PROCESANDO...";
-            btn.disabled = true;
-
+            btn.innerText = "PROCESANDO..."; btn.disabled = true;
             const scriptURL = "https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec";
-
-            const formData = new FormData(form);
-            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
-            .then(() => { finalizarConductor(); })
-            .catch(() => { finalizarConductor(); });
+            
+            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+            .then(() => { 
+                document.getElementById('subtexto-exito').innerText = "Te contactaremos pronto por WhatsApp.";
+                showScreen('mensaje-exito'); 
+            })
+            .catch(() => { 
+                document.getElementById('subtexto-exito').innerText = "Registro enviado.";
+                showScreen('mensaje-exito'); 
+            });
         });
-
-        function finalizarUsuario() { mostrarMensajeFinal('mensaje-exito'); }
-        function finalizarConductor() { mostrarMensajeFinal('mensaje-exito-conductor'); }
-        function mostrarMensajeFinal(idMensaje) {
-            document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
-            document.getElementById(idMensaje).style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('main-wrapper').classList.add('fade-out');
-                setTimeout(() => { window.location.href = "https://15147507-4.ondelight.app"; }, 1000);
-            }, 3500);
-        }
     </script>
 </body>
-</html>
+</html
