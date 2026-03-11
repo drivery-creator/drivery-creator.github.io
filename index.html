@@ -34,32 +34,35 @@
         
         @keyframes moverLuz { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
 
-        /* ⚾ PELOTA 3D ⚾ */
+        /* ⚾ RECUPERACIÓN DE LA PELOTA ORIGINAL ⚾ */
         #ball-container { 
-            position: fixed; width: 35px; height: 35px; 
+            position: fixed; width: 36px; height: 36px; 
             pointer-events: none; z-index: 99999; left: 0; top: 0; 
             transition: transform 0.05s linear;
-            perspective: 1000px;
         }
         #ball-cursor { 
             width: 100%; height: 100%; 
-            background: radial-gradient(circle at 30% 30%, #fff 0%, #eee 40%, #ccc 80%, #999 100%);
-            border-radius: 50%; position: relative; overflow: hidden;
-            box-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 10px rgba(0,0,0,0.3);
-            animation: rotar 6s linear infinite;
-            transform-style: preserve-3d;
+            background: #fff; 
+            border-radius: 50%; 
+            position: relative; 
+            overflow: hidden;
+            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), 0 0 15px rgba(255,255,255,0.3);
+            animation: rotarPelota 4s linear infinite;
         }
+        /* Costuras Rojas Originales */
         #ball-cursor::before, #ball-cursor::after {
-            content: ""; position: absolute; width: 100%; height: 100%;
-            border: 2.5px solid #ff0000; border-radius: 50%; top: 0; left: 0;
-            box-sizing: border-box; opacity: 0.8;
+            content: ""; position: absolute;
+            width: 120%; height: 120%;
+            border: 2px dashed #ff0000;
+            border-radius: 50%;
+            left: -10%;
         }
-        #ball-cursor::before { transform: rotateY(30deg) rotateX(15deg) scale(1.05); }
-        #ball-cursor::after { transform: rotateY(-30deg) rotateX(-15deg) scale(1.05); }
+        #ball-cursor::before { top: -70%; }
+        #ball-cursor::after { bottom: -70%; }
 
-        @keyframes rotar { 
-            from { transform: rotate3d(1, 1, 0, 0deg); } 
-            to { transform: rotate3d(1, 1, 0, 360deg); } 
+        @keyframes rotarPelota { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
         }
 
         /* ✨ GLASSMORPHISM ✨ */
@@ -81,6 +84,7 @@
 
         #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
         
+        /* BOTONES TIENDAS */
         .store-button {
             display: block;
             margin: 15px auto;
@@ -91,7 +95,7 @@
         .store-button img { width: 100%; height: auto; border-radius: 8px; }
 
         .btn-choice {
-            background: rgba(255, 255, 255, 0.07); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(25, 25, 25, 0.6); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
             padding: 22px; width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: 700; 
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -186,8 +190,8 @@
         function animate() {
             if (!isControlled) {
                 posX += velX; posY += velY;
-                if (posX + 35 >= window.innerWidth || posX <= 0) velX *= -1;
-                if (posY + 35 >= window.innerHeight || posY <= 0) velY *= -1;
+                if (posX + 36 >= window.innerWidth || posX <= 0) velX *= -1;
+                if (posY + 36 >= window.innerHeight || posY <= 0) velY *= -1;
                 ballContainer.style.transform = `translate(${posX}px, ${posY}px)`;
             }
             requestAnimationFrame(animate);
@@ -196,21 +200,17 @@
 
         function mover(x, y) {
             isControlled = true;
-            ballContainer.style.transform = `translate(${x - 17}px, ${y - 17}px)`;
+            ballContainer.style.transform = `translate(${x - 18}px, ${y - 18}px)`;
         }
         document.addEventListener('mousemove', (e) => mover(e.clientX, e.clientY));
         document.addEventListener('touchmove', (e) => mover(e.touches[0].clientX, e.touches[0].clientY), {passive:false});
 
-        // LÓGICA DE USUARIO CON MENSAJE
         function finalizarUsuario(url) {
             document.getElementById('subtexto-exito').innerText = "Abriendo la tienda...";
             showScreen('mensaje-exito');
-            setTimeout(() => {
-                window.location.href = url;
-            }, 2000); // 2 segundos de gloria antes de salir
+            setTimeout(() => { window.location.href = url; }, 2000);
         }
 
-        // LÓGICA DE CONDUCTOR
         const form = document.getElementById('form-conductor');
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -230,4 +230,4 @@
         });
     </script>
 </body>
-</html
+</html>
