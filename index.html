@@ -5,7 +5,7 @@
     <title>Drivery - Registro</title>
 
     <style>
-        /*  ELIMINAR CURSOR */
+        /* ðŸš« ELIMINAR CURSOR */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         html, body, button, input, select, textarea { cursor: none !important; }
 
@@ -18,13 +18,13 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /*  FONDO */
+        /* ðŸ’¡ FONDO */
         .luces-fondo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
         .luz { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
         .luz-1 { width: 400px; height: 400px; background: #32BC81; top: -100px; left: -100px; }
         .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; }
 
-        /*  PELOTA REALISTA */
+        /* âš¾ PELOTA REALISTA */
         #ball-container { position: fixed; width: 40px; height: 40px; pointer-events: none; z-index: 99999; left: 0; top: 0; will-change: transform; }
         #ball-cursor { 
             width: 100%; height: 100%; 
@@ -37,7 +37,7 @@
 
         @keyframes rotarReloj { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /*  DISEÑO GLASS */
+        /* âœ¨ DISEÃ‘O GLASS */
         #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
         .card {
             background: rgba(25, 25, 25, 0.45);
@@ -84,13 +84,13 @@
         <div id="screen-choice" class="card active">
             <img src="logo-app.png" alt="Logo" id="logo-app">
             <h2>Bienvenido a Drivery</h2>
-            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario </button>
-            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor </button>
+            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario ðŸ‘¤</button>
+            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor ðŸš—</button>
         </div>
 
         <div id="screen-user" class="card">
             <h2>Descarga Drivery</h2>
-            <p style="opacity:0.8; margin-bottom: 10px;">¡Únete al equipo!</p>
+            <p style="opacity:0.8; margin-bottom: 10px;">Â¡Ãšnete al equipo!</p>
             <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
             </div>
@@ -101,25 +101,25 @@
         </div>
 
         <div id="screen-driver" class="card">
-            <h2>Registro Conductor </h2>
+            <h2>Registro Conductor ðŸš—</h2>
             <form id="form-conductor">
                 <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="Cédula de Identidad" required>
-                <input type="tel" name="Telefono" placeholder="Teléfono móvil" required>
-                <textarea name="Direccion" placeholder="Dirección de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
+                <input type="text" name="Cedula" placeholder="CÃ©dula de Identidad" required>
+                <input type="tel" name="Telefono" placeholder="TelÃ©fono mÃ³vil" required>
+                <textarea name="Direccion" placeholder="DirecciÃ³n de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected>Tipo de vehículo</option>
-                    <option value="Sedan">Carro Sedán</option>
+                    <option value="" disabled selected>Tipo de vehÃ­culo</option>
+                    <option value="Sedan">Carro SedÃ¡n</option>
                     <option value="SUV">Camioneta / SUV</option>
                     <option value="Moto">Motocicleta</option>
                 </select>
-                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS </button>
+                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS ðŸš€</button>
             </form>
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
         </div>
 
         <div id="mensaje-exito" class="card">
-            <h2 style="color: #32BC81;">¡A LAS GRANDES LIGAS! </h2>
+            <h2 style="color: #32BC81;">Â¡A LAS GRANDES LIGAS! âš¾</h2>
             <p id="subtexto-exito">Procesando...</p>
         </div>
     </div>
@@ -178,7 +178,7 @@
             fetch("https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec", { 
                 method: 'POST', body: new FormData(form), mode: 'no-cors' 
             }).then(() => { 
-                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. ¡Hablamos por WhatsApp!";
+                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. Â¡Hablamos por WhatsApp!";
                 showScreen('mensaje-exito'); 
             });
         });
