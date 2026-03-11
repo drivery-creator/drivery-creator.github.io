@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Drivery - ¡A las grandes ligas!</title>
-    <meta name="description" content="Regístrate en Drivery y comienza tu viaje con nosotros.">
+    <title>Drivery - Â¡A las grandes ligas!</title>
+    <meta name="description" content="RegÃ­strate en Drivery y comienza tu viaje con nosotros.">
     
     <meta property="og:image" content="https://tu-usuario.github.io/tu-repositorio/logo-app.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="300">
     <meta property="og:image:height" content="300">
     <meta property="og:title" content="Drivery">
-    <meta property="og:description" content="Tu viaje a las grandes ligas comienza aquí.">
+    <meta property="og:description" content="Tu viaje a las grandes ligas comienza aquÃ­.">
     <meta property="og:url" content="https://tu-usuario.github.io/tu-repositorio/">
     <meta property="og:type" content="website">
 
@@ -49,7 +49,7 @@
 
         @keyframes rotarReloj { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /*  DISEÑO GLASS */
+        /*  DISEÃ‘O GLASS */
         #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
         .card {
             background: rgba(25, 25, 25, 0.45);
@@ -102,7 +102,7 @@
 
         <div id="screen-user" class="card">
             <h2>Descarga Drivery</h2>
-            <p style="opacity:0.8; margin-bottom: 10px;">¡Únete al equipo!</p>
+            <p style="opacity:0.8; margin-bottom: 10px;">Â¡Ãšnete al equipo!</p>
             <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
             </div>
@@ -116,12 +116,12 @@
             <h2>Registro Conductor </h2>
             <form id="form-conductor">
                 <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="Cédula de Identidad" required>
-                <input type="tel" name="Telefono" placeholder="Teléfono móvil" required>
-                <textarea name="Direccion" placeholder="Dirección de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
+                <input type="text" name="Cedula" placeholder="CÃ©dula de Identidad" required>
+                <input type="tel" name="Telefono" placeholder="TelÃ©fono mÃ³vil" required>
+                <textarea name="Direccion" placeholder="DirecciÃ³n de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected>Tipo de vehículo</option>
-                    <option value="Sedan">Carro Sedán</option>
+                    <option value="" disabled selected>Tipo de vehÃ­culo</option>
+                    <option value="Sedan">Carro SedÃ¡n</option>
                     <option value="SUV">Camioneta / SUV</option>
                     <option value="Moto">Motocicleta</option>
                 </select>
@@ -131,7 +131,7 @@
         </div>
 
         <div id="mensaje-exito" class="card">
-            <h2 style="color: #32BC81;">¡A LAS GRANDES LIGAS! </h2>
+            <h2 style="color: #32BC81;">Â¡A LAS GRANDES LIGAS! </h2>
             <p id="subtexto-exito">Procesando...</p>
         </div>
     </div>
@@ -191,7 +191,7 @@
             fetch("https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec", { 
                 method: 'POST', body: new FormData(form), mode: 'no-cors' 
             }).then(() => { 
-                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. ¡Hablamos por WhatsApp!";
+                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. Â¡Hablamos por WhatsApp!";
                 showScreen('mensaje-exito'); 
             });
         });
