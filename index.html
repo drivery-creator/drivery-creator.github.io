@@ -6,7 +6,7 @@
     <title>Drivery - Registro</title>
 
     <style>
-        /* ðŸš« CURSOR INVISIBLE ðŸš« */
+        /*  ELIMINAR CURSOR  */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         html, body, button, input, select, textarea { cursor: none !important; }
 
@@ -19,53 +19,39 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* ðŸ’¡ LUCES DE FONDO ðŸ’¡ */
+        /*  FONDO CON LUCES  */
         .luces-fondo {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none; overflow: hidden;
+            z-index: 1; pointer-events: none;
         }
-        .luz {
-            position: absolute; border-radius: 50%;
-            filter: blur(80px); opacity: 0.3;
-            animation: moverLuz 20s linear infinite alternate;
-        }
+        .luz { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
         .luz-1 { width: 400px; height: 400px; background: #32BC81; top: -100px; left: -100px; }
-        .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; animation-delay: -5s; }
-        
-        @keyframes moverLuz { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+        .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; }
 
-        /* âš¾ RECUPERACIÃ“N DE LA PELOTA ORIGINAL âš¾ */
+        /*  PELOTA REALISTA QUE REEMPLAZA AL MOUSE  */
         #ball-container { 
-            position: fixed; width: 36px; height: 36px; 
+            position: fixed; width: 40px; height: 40px; 
             pointer-events: none; z-index: 99999; left: 0; top: 0; 
-            transition: transform 0.05s linear;
+            /* Usamos transform para moverla suavemente */
+            will-change: transform;
         }
         #ball-cursor { 
             width: 100%; height: 100%; 
-            background: #fff; 
-            border-radius: 50%; 
-            position: relative; 
-            overflow: hidden;
-            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), 0 0 15px rgba(255,255,255,0.3);
-            animation: rotarPelota 4s linear infinite;
-        }
-        /* Costuras Rojas Originales */
-        #ball-cursor::before, #ball-cursor::after {
-            content: ""; position: absolute;
-            width: 120%; height: 120%;
-            border: 2px dashed #ff0000;
+            /* Imagen real de béisbol */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/92/Baseball.svg');
+            background-size: cover;
             border-radius: 50%;
-            left: -10%;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.5);
+            /* GIRO COMO LAS MANECILLAS DEL RELOJ */
+            animation: rotarReloj 4s linear infinite; 
         }
-        #ball-cursor::before { top: -70%; }
-        #ball-cursor::after { bottom: -70%; }
 
-        @keyframes rotarPelota { 
+        @keyframes rotarReloj { 
             from { transform: rotate(0deg); } 
             to { transform: rotate(360deg); } 
         }
 
-        /* âœ¨ GLASSMORPHISM âœ¨ */
+        /*  DISEÑO DE TARJETAS (GLASS)  */
         #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
 
         .card {
@@ -76,7 +62,6 @@
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             max-width: 380px; width: 100%; 
             display: none; text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
         .active { display: block; animation: fadeIn 0.5s ease; }
 
@@ -84,18 +69,11 @@
 
         #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
         
-        /* BOTONES TIENDAS */
-        .store-button {
-            display: block;
-            margin: 15px auto;
-            width: 200px;
-            transition: transform 0.2s;
-            text-decoration: none;
-        }
+        .store-button { display: block; margin: 15px auto; width: 200px; transition: transform 0.2s; }
         .store-button img { width: 100%; height: auto; border-radius: 8px; }
 
         .btn-choice {
-            background: rgba(25, 25, 25, 0.6); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(255, 255, 255, 0.07); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
             padding: 22px; width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: 700; 
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -104,18 +82,11 @@
             width: 100%; background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1); 
             color: white !important; padding: 16px; border-radius: 16px; margin-bottom: 12px; font-size: 15px;
         }
-        
-        select option { background-color: #111; color: white; }
 
-        .btn-primary { 
-            background: #32BC81; color: #000; padding: 18px; 
-            border-radius: 16px; font-weight: 900; font-size: 16px; border: none; width: 100%; 
-        }
-
+        .btn-primary { background: #32BC81; color: #000; padding: 18px; border-radius: 16px; font-weight: 900; width: 100%; border: none; }
         .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; text-decoration: underline; }
 
-        /* Ã‰XITO */
-        #mensaje-exito h2 { color: #32BC81; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+        #mensaje-exito h2 { color: #32BC81; font-size: 28px; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -130,22 +101,18 @@
         <div id="screen-choice" class="card active">
             <img src="logo-app.png" alt="Logo" id="logo-app">
             <h2>Bienvenido a Drivery</h2>
-            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario ðŸ‘¤</button>
-            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor ðŸš—</button>
+            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario </button>
+            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor </button>
         </div>
 
         <div id="screen-user" class="card">
             <h2>Descarga Drivery</h2>
-            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">Tu viaje comienza aquÃ­.</p>
-            
             <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
             </div>
-
             <div class="store-button" onclick="finalizarUsuario('https://15147507-4.ondelight.app/')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store">
             </div>
-
             <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
         </div>
 
@@ -153,27 +120,22 @@
             <h2>Registro Conductor</h2>
             <form id="form-conductor">
                 <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="CÃ©dula de Identidad" required>
-                <input type="tel" name="Telefono" placeholder="TelÃ©fono" required>
-                <textarea name="Direccion" placeholder="DirecciÃ³n corta" required style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; height:70px; color:white; font-family:inherit; resize:none;"></textarea>
-                
+                <input type="text" name="Cedula" placeholder="Cédula" required>
+                <input type="tel" name="Telefono" placeholder="Teléfono" required>
+                <textarea name="Direccion" placeholder="Dirección" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
                 <select name="Vehiculo" required>
-                    <option value="" disabled selected>Tipo de vehÃ­culo</option>
-                    <option value="Sedan">Carro SedÃ¡n</option>
-                    <option value="SUV">Camioneta / SUV</option>
-                    <option value="Moto">Motocicleta</option>
+                    <option value="" disabled selected>Vehículo</option>
+                    <option value="Sedan">Sedán</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Moto">Moto</option>
                 </select>
-
-                <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
-                    Verificaremos sus datos por WhatsApp.
-                </p>
                 <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS</button>
             </form>
-            <button class="btn-back" onclick="showScreen('screen-choice')">Volver atrÃ¡s</button>
+            <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
         </div>
 
         <div id="mensaje-exito" class="card">
-            <h2>Â¡A LAS GRANDES LIGAS!</h2>
+            <h2>¡A LAS GRANDES LIGAS!</h2>
             <p id="subtexto-exito">Cargando...</p>
         </div>
     </div>
@@ -184,29 +146,49 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        const ballContainer = document.getElementById('ball-container');
-        let posX = 100, posY = 100, velX = 2.5, velY = 2.5, isControlled = false;
+        // --- LÓGICA DE MOVIMIENTO DE LA PELOTA ---
+        const ball = document.getElementById('ball-container');
+        let posX = Math.random() * window.innerWidth;
+        let posY = Math.random() * window.innerHeight;
+        let velX = 2;
+        let velY = 2;
+        let isControlled = false;
+        let timeoutMode;
 
         function animate() {
             if (!isControlled) {
-                posX += velX; posY += velY;
-                if (posX + 36 >= window.innerWidth || posX <= 0) velX *= -1;
-                if (posY + 36 >= window.innerHeight || posY <= 0) velY *= -1;
-                ballContainer.style.transform = `translate(${posX}px, ${posY}px)`;
+                // Movimiento automático tipo rebote
+                posX += velX;
+                posY += velY;
+
+                if (posX + 40 >= window.innerWidth || posX <= 0) velX *= -1;
+                if (posY + 40 >= window.innerHeight || posY <= 0) velY *= -1;
+
+                ball.style.transform = `translate(${posX}px, ${posY}px)`;
             }
             requestAnimationFrame(animate);
         }
         animate();
 
-        function mover(x, y) {
+        function handleMove(x, y) {
             isControlled = true;
-            ballContainer.style.transform = `translate(${x - 18}px, ${y - 18}px)`;
+            posX = x - 20;
+            posY = y - 20;
+            ball.style.transform = `translate(${posX}px, ${posY}px)`;
+            
+            // Si dejas de moverte por 3 segundos, vuelve al modo automático
+            clearTimeout(timeoutMode);
+            timeoutMode = setTimeout(() => { isControlled = false; }, 3000);
         }
-        document.addEventListener('mousemove', (e) => mover(e.clientX, e.clientY));
-        document.addEventListener('touchmove', (e) => mover(e.touches[0].clientX, e.touches[0].clientY), {passive:false});
 
+        document.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+        document.addEventListener('touchmove', (e) => {
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, {passive: false});
+
+        // --- LÓGICA DE ENVÍO ---
         function finalizarUsuario(url) {
-            document.getElementById('subtexto-exito').innerText = "Abriendo la tienda...";
+            document.getElementById('subtexto-exito').innerText = "Abriendo tienda...";
             showScreen('mensaje-exito');
             setTimeout(() => { window.location.href = url; }, 2000);
         }
@@ -215,16 +197,11 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-envio');
-            btn.innerText = "PROCESANDO..."; btn.disabled = true;
-            const scriptURL = "https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec";
-            
-            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
-            .then(() => { 
-                document.getElementById('subtexto-exito').innerText = "Te contactaremos pronto por WhatsApp.";
-                showScreen('mensaje-exito'); 
-            })
-            .catch(() => { 
-                document.getElementById('subtexto-exito').innerText = "Registro enviado.";
+            btn.innerText = "ENVIANDO..."; btn.disabled = true;
+            fetch("https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec", { 
+                method: 'POST', body: new FormData(form), mode: 'no-cors' 
+            }).then(() => { 
+                document.getElementById('subtexto-exito').innerText = "Nos vemos en WhatsApp.";
                 showScreen('mensaje-exito'); 
             });
         });
