@@ -3,187 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000205">
-    
-    <title>Drivery | Intelligence Command</title>
-    
+    <title>Drivery | Intelligence Active</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <style>
         :root { --blue-glow: rgba(59, 130, 246, 0.5); }
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000; color: #fff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow: hidden;
-        }
-
-        /* EL ESCENARIO: Google Maps de fondo */
-        #map {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; filter: saturate(0.7) brightness(0.35) contrast(1.2);
-        }
-
-        /* CAPA DE PROTECCIÓN: Interfaz de usuario */
-        .ui-overlay {
-            position: absolute; inset: 0; z-index: 5;
-            background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.85) 100%);
-            pointer-events: none; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 2.5rem;
-        }
-
-        /* EL ORBE */
-        .orbe-wrapper {
-            position: relative; width: clamp(260px, 35vw, 360px); height: clamp(260px, 35vw, 360px);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .orbe-core {
-            position: absolute; width: 85%; height: 85%;
-            background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af 65%, #000 100%);
-            border-radius: 50%;
-            box-shadow: 0 0 100px var(--blue-glow), inset -10px -10px 40px rgba(0,0,0,0.9);
-            animation: orbeBreathe 8s infinite ease-in-out;
-            transition: box-shadow 0.5s ease;
-        }
-        .orbe-ring {
-            position: absolute; inset: -15px; border: 1px solid rgba(96, 165, 250, 0.1);
-            border-radius: 50%; animation: spin 40s linear infinite;
-        }
-        @keyframes orbeBreathe {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.04); filter: brightness(1.2); }
-        }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .glass-ui {
-            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08);
-            pointer-events: auto;
-        }
-        .interactive { pointer-events: auto; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+        #map { position: absolute; inset: 0; z-index: 1; filter: saturate(0.7) brightness(0.4) contrast(1.1); }
+        .ui-overlay { position: absolute; inset: 0; z-index: 5; background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.8) 100%); pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; }
+        .orbe-wrapper { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+        .orbe-core { position: absolute; width: 85%; height: 85%; background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af 65%, #000 100%); border-radius: 50%; box-shadow: 0 0 80px var(--blue-glow); animation: breathe 6s infinite ease-in-out; transition: all 0.4s ease; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.2); } }
+        .glass-ui { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); pointer-events: auto; }
     </style>
 </head>
 <body>
-
     <div id="map"></div>
-
     <div class="ui-overlay">
-        
-        <header class="text-center w-full flex flex-col items-center">
-            <div class="flex items-center gap-3 mb-1">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg shadow-lg">D</div>
-                <h1 class="text-3xl font-black tracking-[0.4em] uppercase italic">DRIIVERY</h1>
-            </div>
-            <p class="text-[9px] tracking-[0.4em] text-gray-500 font-bold uppercase">Intelligence Command</p>
-            <div class="flex gap-4 mt-4 items-center">
-                <div class="flex items-center gap-2">
-                    <span id="status-dot" class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></span>
-                    <span id="status-text" class="text-[8px] font-bold tracking-widest text-green-400">STATUS: OPERATIVO</span>
-                </div>
-                <div class="text-gray-800">|</div>
-                <span class="text-[8px] font-bold tracking-widest text-gray-400">V: 48,170</span>
-            </div>
+        <header class="text-center">
+            <h1 class="text-2xl font-black tracking-[0.4em] uppercase italic">DRIIVERY</h1>
+            <p id="status-text" class="text-[8px] font-bold text-green-400 tracking-widest mt-2 uppercase">SISTEMA ONLINE</p>
         </header>
 
-        <main class="flex flex-col items-center justify-center flex-grow py-6">
-            <div class="orbe-wrapper mb-10">
-                <div class="orbe-ring"></div>
-                <div id="orbe-visual" class="orbe-core"></div>
+        <main class="flex flex-col items-center">
+            <div class="orbe-wrapper mb-8">
+                <div id="orbe" class="orbe-core"></div>
             </div>
-
-            <div class="w-full max-w-xl text-center space-y-6">
-                <h2 id="main-prompt" class="text-2xl md:text-3xl font-light tracking-tight italic uppercase opacity-80">¿A dónde vamos hoy?</h2>
-                
-                <div class="w-full glass-ui p-1.5 rounded-2xl flex items-center interactive focus-within:ring-1 ring-blue-500/50 transition-all">
-                    <input id="user-input" type="text" placeholder="Habla o escribe tu destino..." 
-                        class="bg-transparent flex-grow px-6 py-4 outline-none text-xs tracking-[0.1em] font-light placeholder:text-gray-700 uppercase">
-                    <button onclick="enviarComando()" class="text-blue-500 px-6 active:scale-90 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="flex gap-4 justify-center overflow-x-auto no-scrollbar py-2 interactive">
-                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">🚗</button>
-                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">📦</button>
-                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">✚</button>
-                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">💎</button>
-                </div>
+            <div class="w-full max-w-md glass-ui p-2 rounded-2xl flex items-center">
+                <input id="user-input" type="text" placeholder="HACIA DÓNDE VAMOS..." class="bg-transparent flex-grow px-4 py-3 outline-none text-xs uppercase tracking-widest">
+                <button onclick="enviar()" class="px-4 text-blue-500">🎤</button>
             </div>
         </main>
 
-        <footer class="flex justify-start items-end z-10">
-            <div class="glass-ui p-8 md:p-10 rounded-[2.5rem] w-full md:w-auto md:min-w-[400px] border-l-4 border-blue-600 interactive">
-                <h3 class="text-[10px] font-black tracking-[0.4em] uppercase mb-8 text-blue-400 opacity-60">Flotas bajo comando</h3>
-                <div class="flex md:flex-col justify-between gap-10">
-                    <div>
-                        <p class="text-[9px] font-bold tracking-widest uppercase opacity-40">Flota Blue:</p>
-                        <p class="text-4xl md:text-5xl font-black italic tracking-tighter">28,450</p>
-                    </div>
-                    <div class="border-l md:border-l-0 md:border-t border-white/5 pl-6 md:pl-0 md:pt-6">
-                        <p class="text-[9px] font-bold tracking-widest uppercase text-green-400 opacity-40">Flota Green:</p>
-                        <p class="text-4xl md:text-5xl font-black italic tracking-tighter text-gray-200">19,720</p>
-                    </div>
-                </div>
+        <footer class="flex justify-start">
+            <div class="glass-ui p-6 rounded-3xl border-l-4 border-blue-600 min-w-[280px]">
+                <p class="text-[9px] opacity-50 uppercase tracking-widest">Flota Activa</p>
+                <p class="text-3xl font-black italic">48,170</p>
             </div>
         </footer>
     </div>
 
     <script>
-        // CONFIGURACIÓN GOOGLE MAPS
+        // MOTOR DE MAPA
         (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b[maps]||(b[maps]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
             key: "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME",
             v: "beta"
         });
 
-        let map;
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
-            map = new Map(document.getElementById("map"), {
+            const map = new Map(document.getElementById("map"), {
                 center: { lat: 10.4806, lng: -66.8791 },
                 zoom: 16,
                 mapId: "58b489824f2b96dad1f4688e",
-                disableDefaultUI: true, tilt: 45, heading: 0
+                disableDefaultUI: true, tilt: 45
             });
             let heading = 0;
-            function animate() { heading += 0.015; map.setHeading(heading); requestAnimationFrame(animate); }
-            google.maps.event.addListenerOnce(map, 'idle', animate);
+            function anim() { heading += 0.01; map.setHeading(heading); requestAnimationFrame(anim); }
+            google.maps.event.addListenerOnce(map, 'idle', anim);
         }
         initMap();
 
-        // CONEXIÓN AL CEREBRO EN RENDER
-        const socket = io('https://drivery-backend.onrender.com'); 
-
-        function enviarComando() {
+        // MOTOR DE INTELIGENCIA
+        const socket = io('https://drivery-backend.onrender.com');
+        
+        function enviar() {
             const input = document.getElementById('user-input');
-            const orbe = document.getElementById('orbe-visual');
-            const status = document.getElementById('status-text');
             if (!input.value) return;
-
-            orbe.style.boxShadow = "0 0 150px #ffffff";
-            status.innerText = "INTERCEPTANDO DATOS...";
+            document.getElementById('orbe').style.boxShadow = "0 0 120px #ffffff";
+            document.getElementById('status-text').innerText = "INTERCEPTANDO...";
             socket.emit('COMMAND_MASTER', { instruction: input.value });
             input.value = "";
         }
 
         socket.on('ORBE_RESPONSE', (data) => {
-            document.getElementById('orbe-visual').style.boxShadow = "0 0 100px var(--blue-glow)";
-            document.getElementById('status-text').innerText = "STATUS: OPERATIVO";
-            if (data.status === 'SUCCESS') {
-                document.getElementById('main-prompt').innerText = "RESPUESTA RECIBIDA";
-                console.log("Cerebro Drivery:", data.payload);
-            }
-        });
-
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') enviarComando();
+            document.getElementById('orbe').style.boxShadow = "0 0 80px var(--blue-glow)";
+            document.getElementById('status-text').innerText = "SISTEMA ONLINE";
+            if (data.status === 'SUCCESS') alert("Cerebro: " + data.payload);
         });
     </script>
 </body>
