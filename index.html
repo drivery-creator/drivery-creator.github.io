@@ -3,88 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivery OS | Command Center</title>
+    <title>Drivery OS | El Orbe Command Center</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     
     <style>
-        /* CONFIGURACIÓN DEL SET */
+        /* --- ESTÉTICA DEL BÚNKER (CSS) --- */
         body, html { 
             margin: 0; padding: 0; height: 100%; 
             background-color: #010203; overflow: hidden; 
             font-family: 'Inter', sans-serif; 
         }
 
-        #map { 
-            height: 100vh; width: 100%; 
-            position: absolute; top: 0; left: 0; z-index: 1; 
-        }
+        #map { height: 100vh; width: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        /* DISEÑO DEL PANEL DE MANDO (SIDEBAR) */
+        /* PANEL DE MANDO: GLASSMORPHISM */
         #sidebar {
             position: absolute; top: 20px; left: 20px;
-            width: 340px; z-index: 100;
+            width: 320px; z-index: 100;
             background: rgba(10, 15, 23, 0.85);
-            backdrop-filter: blur(25px); /* Efecto Hollywood */
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(0, 210, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            color: white;
+            border-radius: 20px; padding: 30px; color: white;
             box-shadow: 0 25px 60px rgba(0,0,0,0.9);
         }
 
-        /* BRANDING */
-        .logo-container { text-align: center; margin-bottom: 30px; }
+        .logo-container { text-align: center; margin-bottom: 25px; }
         .drivery-logo { 
             font-family: 'Orbitron', sans-serif;
-            font-size: 32px; font-weight: 900; letter-spacing: 8px; 
+            font-size: 30px; font-weight: 900; letter-spacing: 6px; 
             color: #fff; text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
             margin: 0;
         }
-        .rif-tag { 
-            font-size: 10px; color: #5a5f66; margin-top: 8px; 
-            letter-spacing: 3px; font-weight: 700;
-        }
+        .rif-tag { font-size: 10px; color: #5a5f66; margin-top: 5px; letter-spacing: 3px; font-weight: 700; }
 
-        .divider { 
-            height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); 
-            margin: 25px 0; 
-        }
+        .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 20px 0; }
 
-        /* TARJETAS DE DATOS */
-        .stat-card { margin-bottom: 25px; transition: all 0.3s ease; }
-        .stat-label { 
-            font-size: 10px; color: #8a8d91; letter-spacing: 2px; 
-            margin-bottom: 6px; font-weight: 700;
-        }
-        .stat-value { font-size: 28px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
+        .stat-card { margin-bottom: 20px; }
+        .stat-label { font-size: 9px; color: #8a8d91; letter-spacing: 2px; margin-bottom: 4px; font-weight: 700; }
+        .stat-value { font-size: 26px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
 
         #os-status { 
-            color: #39ff14; font-size: 14px; 
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.4); 
+            color: #39ff14; font-size: 12px; font-weight: 800;
             display: flex; align-items: center; gap: 8px;
         }
         #os-status::before {
             content: ''; width: 8px; height: 8px; background: #39ff14; 
-            border-radius: 50%; display: inline-block; animation: pulse 2s infinite;
+            border-radius: 50%; display: inline-block; animation: pulse-status 2s infinite;
         }
 
         .blue-fleet .stat-value { color: #00d2ff; }
         .green-fleet .stat-value { color: #39ff14; }
 
         .total-bar {
-            background: rgba(0, 210, 255, 0.08);
-            padding: 20px; border-radius: 12px; text-align: center;
-            border: 1px solid rgba(0, 210, 255, 0.2);
-            margin-top: 10px;
+            background: rgba(0, 210, 255, 0.08); padding: 15px; border-radius: 12px; 
+            text-align: center; border: 1px solid rgba(0, 210, 255, 0.2);
         }
         .total-label { font-size: 9px; color: #00d2ff; letter-spacing: 2px; font-weight: 900; }
-        .total-value { font-size: 32px; color: #fff; font-weight: 900; margin-top: 5px; }
+        .total-value { font-size: 30px; color: #fff; font-weight: 900; }
 
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
+        /* EFECTO NEÓN PARA LOS PUNTOS DEL ORBE EN EL MAPA */
+        .pulse-marker {
+            width: 12px; height: 12px; border-radius: 50%;
+            position: relative;
+        }
+        .pulse-marker.blue { background: #00d2ff; box-shadow: 0 0 15px #00d2ff; }
+        .pulse-marker.green { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
+
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
         }
     </style>
 </head>
@@ -122,8 +110,13 @@
     <div id="map"></div>
 
     <script>
+        let map;
+        const BACKEND_URL = "wss://drivery-backend.onrender.com";
+        let socket;
+        let markers = [];
+
         function initMap() {
-            // Estética de noche táctica para el mapa
+            // Estilo Oscuro Manual (Cinematográfico)
             const darkStyle = [
                 { "elementType": "geometry", "stylers": [{ "color": "#1d1f21" }] },
                 { "elementType": "labels.text.fill", "stylers": [{ "color": "#8ec3b9" }] },
@@ -131,21 +124,86 @@
                 { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#4b4e52" }] },
                 { "featureType": "landscape", "stylers": [{ "color": "#111214" }] },
                 { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#282a2e" }] },
-                { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#1d1f21" }] },
                 { "featureType": "water", "stylers": [{ "color": "#000000" }] }
             ];
 
-            const mapOptions = {
-                center: { lat: 10.4806, lng: -66.8983 },
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 10.4806, lng: -66.8983 }, // Caracas HQ
                 zoom: 13,
                 styles: darkStyle,
                 disableDefaultUI: true,
                 backgroundColor: "#05070a"
+            });
+
+            console.log("✅ Escenario listo. Iniciando El Orbe...");
+            connectOrbe();
+        }
+
+        // --- CONEXIÓN AL ORBE (WEBSOCKET) ---
+        function connectOrbe() {
+            socket = new WebSocket(BACKEND_URL);
+
+            socket.onopen = () => {
+                document.getElementById('os-status').innerText = "CONEXIÓN SATELITAL ACTIVA";
+                document.getElementById('os-status').style.color = "#00d2ff";
             };
 
-            const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Actualización de métricas con animación
+                if(data.blueCount) animateValue("blue-count", data.blueCount);
+                if(data.greenCount) animateValue("green-count", data.greenCount);
+                if(data.total) animateValue("total-count", data.total);
 
-            console.log("✅ Escenario Drivery OS cargado: Caracas HQ.");
+                // Render de vehículos (Ejemplo de intercepción visual)
+                if(data.vehicles) renderVehicles(data.vehicles);
+            };
+
+            socket.onclose = () => {
+                document.getElementById('os-status').innerText = "RECONECTANDO SISTEMA...";
+                document.getElementById('os-status').style.color = "#ff3e3e";
+                setTimeout(connectOrbe, 5000);
+            };
+        }
+
+        function animateValue(id, end) {
+            const obj = document.getElementById(id);
+            let start = parseInt(obj.innerText.replace(/,/g, ''));
+            if (start === end) return;
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? Math.ceil(range / 20) : Math.floor(range / 20);
+            let timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    clearInterval(timer);
+                    current = end;
+                }
+                obj.innerText = current.toLocaleString();
+            }, 50);
+        }
+
+        function renderVehicles(vehicles) {
+            // Limpiar markers anteriores para optimizar escena
+            markers.forEach(m => m.setMap(null));
+            markers = [];
+
+            vehicles.forEach(v => {
+                const marker = new google.maps.Marker({
+                    position: { lat: v.lat, lng: v.lng },
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: v.type === 'blue' ? '#00d2ff' : '#39ff14',
+                        fillOpacity: 0.9,
+                        strokeWeight: 2,
+                        strokeColor: '#fff',
+                        scale: 6
+                    }
+                });
+                markers.push(marker);
+            });
         }
     </script>
 
