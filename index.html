@@ -13,7 +13,7 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
         #map { position: absolute; inset: 0; z-index: 1; filter: saturate(0.7) brightness(0.4) contrast(1.1); }
         .ui-overlay { position: absolute; inset: 0; z-index: 5; background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.8) 100%); pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; }
-        .orbe-wrapper { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+        .orbe-wrapper { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
         .orbe-core { position: absolute; width: 85%; height: 85%; background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af 65%, #000 100%); border-radius: 50%; box-shadow: 0 0 80px var(--blue-glow); animation: breathe 6s infinite ease-in-out; transition: all 0.4s ease; }
         @keyframes breathe { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.2); } }
         .glass-ui { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); pointer-events: auto; }
@@ -29,11 +29,11 @@
 
         <main class="flex flex-col items-center">
             <div class="orbe-wrapper mb-8">
-                <div id="orbe" class="orbe-core"></div>
+                <div id="orbe-visual" class="orbe-core"></div>
             </div>
             <div class="w-full max-w-md glass-ui p-2 rounded-2xl flex items-center">
-                <input id="user-input" type="text" placeholder="HACIA DÓNDE VAMOS..." class="bg-transparent flex-grow px-4 py-3 outline-none text-xs uppercase tracking-widest">
-                <button onclick="enviar()" class="px-4 text-blue-500">🎤</button>
+                <input id="user-input" type="text" placeholder="¿A DÓNDE VAMOS?" class="bg-transparent flex-grow px-4 py-3 outline-none text-xs uppercase tracking-widest">
+                <button onclick="enviarComando()" class="px-4 text-blue-500">🎤</button>
             </div>
         </main>
 
@@ -46,42 +46,57 @@
     </div>
 
     <script>
-        // MOTOR DE MAPA
-        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b[maps]||(b[maps]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+        // 1. INICIALIZACIÓN DE SOCKET (Al principio para que esté lista)
+        const socket = io('https://drivery-backend.onrender.com');
+
+        // 2. MOTOR DE GOOGLE MAPS (Corregido con comillas en "maps")
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b["maps"]||(b["maps"]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
             key: "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME",
             v: "beta"
         });
 
+        let map;
         async function initMap() {
-            const { Map } = await google.maps.importLibrary("maps");
-            const map = new Map(document.getElementById("map"), {
-                center: { lat: 10.4806, lng: -66.8791 },
-                zoom: 16,
-                mapId: "58b489824f2b96dad1f4688e",
-                disableDefaultUI: true, tilt: 45
-            });
-            let heading = 0;
-            function anim() { heading += 0.01; map.setHeading(heading); requestAnimationFrame(anim); }
-            google.maps.event.addListenerOnce(map, 'idle', anim);
+            try {
+                const { Map } = await google.maps.importLibrary("maps");
+                map = new Map(document.getElementById("map"), {
+                    center: { lat: 10.4806, lng: -66.8791 },
+                    zoom: 16,
+                    mapId: "58b489824f2b96dad1f4688e",
+                    disableDefaultUI: true, tilt: 45
+                });
+                let heading = 0;
+                function anim() { heading += 0.01; map.setHeading(heading); requestAnimationFrame(anim); }
+                google.maps.event.addListenerOnce(map, 'idle', anim);
+            } catch (err) {
+                console.error("Falla en el motor de mapas:", err);
+            }
         }
         initMap();
 
-        // MOTOR DE INTELIGENCIA
-        const socket = io('https://drivery-backend.onrender.com');
-        
-        function enviar() {
+        // 3. LÓGICA DE INTERCEPCIÓN
+        function enviarComando() {
             const input = document.getElementById('user-input');
-            if (!input.value) return;
-            document.getElementById('orbe').style.boxShadow = "0 0 120px #ffffff";
+            const orbe = document.getElementById('orbe-visual');
+            
+            if (!input.value || !socket) return;
+
+            orbe.style.boxShadow = "0 0 120px #ffffff";
             document.getElementById('status-text').innerText = "INTERCEPTANDO...";
+            
             socket.emit('COMMAND_MASTER', { instruction: input.value });
             input.value = "";
         }
 
         socket.on('ORBE_RESPONSE', (data) => {
-            document.getElementById('orbe').style.boxShadow = "0 0 80px var(--blue-glow)";
+            document.getElementById('orbe-visual').style.boxShadow = "0 0 80px var(--blue-glow)";
             document.getElementById('status-text').innerText = "SISTEMA ONLINE";
             if (data.status === 'SUCCESS') alert("Cerebro: " + data.payload);
+        });
+
+        // Enter key support
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enviarComando();
         });
     </script>
 </body>
