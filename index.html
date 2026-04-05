@@ -2,102 +2,154 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Drivery | Intelligence Active</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivery OS | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --blue-glow: rgba(59, 130, 246, 0.5); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
-        #map { position: absolute; inset: 0; z-index: 1; filter: saturate(0.7) brightness(0.4) contrast(1.1); }
-        .ui-overlay { position: absolute; inset: 0; z-index: 5; background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.8) 100%); pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; }
-        .orbe-wrapper { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
-        .orbe-core { position: absolute; width: 85%; height: 85%; background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af 65%, #000 100%); border-radius: 50%; box-shadow: 0 0 80px var(--blue-glow); animation: breathe 6s infinite ease-in-out; transition: all 0.4s ease; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.2); } }
-        .glass-ui { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); pointer-events: auto; }
+        /* CONFIGURACIÓN DEL SET */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            background-color: #010203; overflow: hidden; 
+            font-family: 'Inter', sans-serif; 
+        }
+
+        #map { 
+            height: 100vh; width: 100%; 
+            position: absolute; top: 0; left: 0; z-index: 1; 
+        }
+
+        /* DISEÑO DEL PANEL DE MANDO (SIDEBAR) */
+        #sidebar {
+            position: absolute; top: 20px; left: 20px;
+            width: 340px; z-index: 100;
+            background: rgba(10, 15, 23, 0.85);
+            backdrop-filter: blur(25px); /* Efecto Hollywood */
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+        }
+
+        /* BRANDING */
+        .logo-container { text-align: center; margin-bottom: 30px; }
+        .drivery-logo { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px; font-weight: 900; letter-spacing: 8px; 
+            color: #fff; text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
+            margin: 0;
+        }
+        .rif-tag { 
+            font-size: 10px; color: #5a5f66; margin-top: 8px; 
+            letter-spacing: 3px; font-weight: 700;
+        }
+
+        .divider { 
+            height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); 
+            margin: 25px 0; 
+        }
+
+        /* TARJETAS DE DATOS */
+        .stat-card { margin-bottom: 25px; transition: all 0.3s ease; }
+        .stat-label { 
+            font-size: 10px; color: #8a8d91; letter-spacing: 2px; 
+            margin-bottom: 6px; font-weight: 700;
+        }
+        .stat-value { font-size: 28px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
+
+        #os-status { 
+            color: #39ff14; font-size: 14px; 
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.4); 
+            display: flex; align-items: center; gap: 8px;
+        }
+        #os-status::before {
+            content: ''; width: 8px; height: 8px; background: #39ff14; 
+            border-radius: 50%; display: inline-block; animation: pulse 2s infinite;
+        }
+
+        .blue-fleet .stat-value { color: #00d2ff; }
+        .green-fleet .stat-value { color: #39ff14; }
+
+        .total-bar {
+            background: rgba(0, 210, 255, 0.08);
+            padding: 20px; border-radius: 12px; text-align: center;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            margin-top: 10px;
+        }
+        .total-label { font-size: 9px; color: #00d2ff; letter-spacing: 2px; font-weight: 900; }
+        .total-value { font-size: 32px; color: #fff; font-weight: 900; margin-top: 5px; }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <div class="ui-overlay">
-        <header class="text-center">
-            <h1 class="text-2xl font-black tracking-[0.4em] uppercase italic">DRIIVERY</h1>
-            <p id="status-text" class="text-[8px] font-bold text-green-400 tracking-widest mt-2 uppercase">SISTEMA ONLINE</p>
-        </header>
 
-        <main class="flex flex-col items-center">
-            <div class="orbe-wrapper mb-8">
-                <div id="orbe-visual" class="orbe-core"></div>
-            </div>
-            <div class="w-full max-w-md glass-ui p-2 rounded-2xl flex items-center">
-                <input id="user-input" type="text" placeholder="¿A DÓNDE VAMOS?" class="bg-transparent flex-grow px-4 py-3 outline-none text-xs uppercase tracking-widest">
-                <button onclick="enviarComando()" class="px-4 text-blue-500">🎤</button>
-            </div>
-        </main>
+    <div id="sidebar">
+        <div class="logo-container">
+            <h1 class="drivery-logo">DRIVERY</h1>
+            <div class="rif-tag">RIF: J-50478174-5</div>
+        </div>
 
-        <footer class="flex justify-start">
-            <div class="glass-ui p-6 rounded-3xl border-l-4 border-blue-600 min-w-[280px]">
-                <p class="text-[9px] opacity-50 uppercase tracking-widest">Flota Activa</p>
-                <p class="text-3xl font-black italic">48,170</p>
-            </div>
-        </footer>
+        <div class="divider"></div>
+
+        <div class="stat-card">
+            <div class="stat-label">SISTEMA OPERATIVO</div>
+            <div class="stat-value" id="os-status">TOTALMENTE OPERATIVO</div>
+        </div>
+
+        <div class="stat-card blue-fleet">
+            <div class="stat-label">FLOTA BLUE (PASAJEROS)</div>
+            <div class="stat-value" id="blue-count">28,450</div>
+        </div>
+
+        <div class="stat-card green-fleet">
+            <div class="stat-label">FLOTA GREEN (LOGÍSTICA)</div>
+            <div class="stat-value" id="green-count">19,720</div>
+        </div>
+
+        <div class="total-bar">
+            <div class="total-label">TOTAL UNIDADES MUNDIALES</div>
+            <div class="total-value" id="total-count">48,170</div>
+        </div>
     </div>
 
+    <div id="map"></div>
+
     <script>
-        // 1. INICIALIZACIÓN DE SOCKET (Al principio para que esté lista)
-        const socket = io('https://drivery-backend.onrender.com');
+        function initMap() {
+            // Estética de noche táctica para el mapa
+            const darkStyle = [
+                { "elementType": "geometry", "stylers": [{ "color": "#1d1f21" }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#8ec3b9" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#1d1f21" }] },
+                { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#4b4e52" }] },
+                { "featureType": "landscape", "stylers": [{ "color": "#111214" }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#282a2e" }] },
+                { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#1d1f21" }] },
+                { "featureType": "water", "stylers": [{ "color": "#000000" }] }
+            ];
 
-        // 2. MOTOR DE GOOGLE MAPS (Corregido con comillas en "maps")
-        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b["maps"]||(b["maps"]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-            key: "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME",
-            v: "beta"
-        });
+            const mapOptions = {
+                center: { lat: 10.4806, lng: -66.8983 },
+                zoom: 13,
+                styles: darkStyle,
+                disableDefaultUI: true,
+                backgroundColor: "#05070a"
+            };
 
-        let map;
-        async function initMap() {
-            try {
-                const { Map } = await google.maps.importLibrary("maps");
-                map = new Map(document.getElementById("map"), {
-                    center: { lat: 10.4806, lng: -66.8791 },
-                    zoom: 16,
-                    mapId: "58b489824f2b96dad1f4688e",
-                    disableDefaultUI: true, tilt: 45
-                });
-                let heading = 0;
-                function anim() { heading += 0.01; map.setHeading(heading); requestAnimationFrame(anim); }
-                google.maps.event.addListenerOnce(map, 'idle', anim);
-            } catch (err) {
-                console.error("Falla en el motor de mapas:", err);
-            }
+            const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+            console.log("✅ Escenario Drivery OS cargado: Caracas HQ.");
         }
-        initMap();
-
-        // 3. LÓGICA DE INTERCEPCIÓN
-        function enviarComando() {
-            const input = document.getElementById('user-input');
-            const orbe = document.getElementById('orbe-visual');
-            
-            if (!input.value || !socket) return;
-
-            orbe.style.boxShadow = "0 0 120px #ffffff";
-            document.getElementById('status-text').innerText = "INTERCEPTANDO...";
-            
-            socket.emit('COMMAND_MASTER', { instruction: input.value });
-            input.value = "";
-        }
-
-        socket.on('ORBE_RESPONSE', (data) => {
-            document.getElementById('orbe-visual').style.boxShadow = "0 0 80px var(--blue-glow)";
-            document.getElementById('status-text').innerText = "SISTEMA ONLINE";
-            if (data.status === 'SUCCESS') alert("Cerebro: " + data.payload);
-        });
-
-        // Enter key support
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') enviarComando();
-        });
     </script>
+
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
+
 </body>
 </html>
