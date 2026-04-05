@@ -4,196 +4,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Drivery - ¡Bienvenido a las grandes ligas!</title>
-    <meta name="description" content="Regístrate en Drivery y comienza tu viaje con nosotros.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000205">
     
-    <meta property="og:image" content="https://tu-usuario.github.io/tu-repositorio/logo-app.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="300">
-    <meta property="og:image:height" content="300">
-    <meta property="og:title" content="Drivery">
-    <meta property="og:description" content="Tu viaje a las grandes ligas comienza aquí.">
-    <meta property="og:url" content="https://tu-usuario.github.io/tu-repositorio/">
-    <meta property="og:type" content="website">
+    <title>Drivery | Intelligence Active</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <style>
-        /*  ELIMINAR CURSOR */
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        html, body, button, input, select, textarea { cursor: none !important; }
+        :root { --blue-glow: rgba(59, 130, 246, 0.5); }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100vh; width: 100vw; 
-            background-color: #050505;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            overflow: hidden; touch-action: none; 
-            color: white;
+        /* EL ESCENARIO: Google Maps de fondo */
+        #map {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; /* Al fondo */
+            filter: saturate(0.7) brightness(0.35) contrast(1.2);
+        }
+
+        /* CAPA DE PROTECCIÓN: Para que el UI sea legible */
+        .ui-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 5; /* Sobre el mapa */
+            background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.85) 100%);
+            pointer-events: none; /* Permite tocar lo que hay debajo */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem;
+        }
+
+        /* EL ORBE: Energía Cinética */
+        .orbe-wrapper {
+            position: relative;
+            width: clamp(260px, 35vw, 360px);
+            height: clamp(260px, 35vw, 360px);
             display: flex; align-items: center; justify-content: center;
         }
-
-        /*  FONDO */
-        .luces-fondo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .luz { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; }
-        .luz-1 { width: 400px; height: 400px; background: #32BC81; top: -100px; left: -100px; }
-        .luz-2 { width: 350px; height: 350px; background: #28a36f; bottom: -50px; right: -50px; }
-
-        /*  PELOTA REALISTA */
-        #ball-container { position: fixed; width: 40px; height: 40px; pointer-events: none; z-index: 99999; left: 0; top: 0; will-change: transform; }
-        #ball-cursor { 
-            width: 100%; height: 100%; 
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/92/Baseball.svg');
-            background-size: cover;
+        .orbe-core {
+            position: absolute; width: 85%; height: 85%;
+            background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af 65%, #000 100%);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.5);
-            animation: rotarReloj 4s linear infinite; 
+            box-shadow: 0 0 100px var(--blue-glow), inset -10px -10px 40px rgba(0,0,0,0.9);
+            animation: orbeBreathe 8s infinite ease-in-out;
+            transition: box-shadow 0.5s ease;
         }
-
-        @keyframes rotarReloj { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /*  DISEÑO GLASS */
-        #main-wrapper { position: relative; z-index: 10; width: 100%; padding: 20px; display: flex; justify-content: center; }
-        .card {
-            background: rgba(25, 25, 25, 0.45);
-            padding: 35px 25px; border-radius: 35px; 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            max-width: 380px; width: 100%; 
-            display: none; text-align: center;
+        .orbe-ring {
+            position: absolute; inset: -15px; border: 1px solid rgba(96, 165, 250, 0.1);
+            border-radius: 50%; animation: spin 40s linear infinite;
         }
-        .active { display: block; animation: fadeIn 0.5s ease; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        #logo-app { width: 85px; height: 85px; margin-bottom: 20px; border-radius: 20px; border: 1.5px solid rgba(50, 188, 129, 0.5); }
-        
-        .store-button { display: block; margin: 15px auto; width: 200px; transition: transform 0.2s; }
-        .store-button img { width: 100%; height: auto; border-radius: 8px; }
-
-        .btn-choice {
-            background: rgba(255, 255, 255, 0.07); color: white; border: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 22px; width: 100%; border-radius: 20px; margin-bottom: 15px; font-size: 16px; font-weight: 700; 
-            display: flex; align-items: center; justify-content: space-between;
+        @keyframes orbeBreathe {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.04); filter: brightness(1.2); }
         }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        input, select, textarea {
-            width: 100%; background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1); 
-            color: white !important; padding: 16px; border-radius: 16px; margin-bottom: 12px; font-size: 15px;
+        /* UI BLINDADO */
+        .glass-ui {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto; /* Para que los botones funcionen */
         }
-
-        .btn-primary { background: #32BC81; color: #000; padding: 18px; border-radius: 16px; font-weight: 900; width: 100%; border: none; }
-        .btn-back { background: none; border: none; color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-top: 20px; text-decoration: underline; }
+        .interactive { pointer-events: auto; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
-    <div class="luces-fondo">
-        <div class="luz luz-1"></div>
-        <div class="luz luz-2"></div>
-    </div>
-    
-    <div id="ball-container"><div id="ball-cursor"></div></div>
 
-    <div id="main-wrapper">
-        <div id="screen-choice" class="card active">
-            <img src="logo-app.png" alt="Logo" id="logo-app">
-            <h2>Bienvenido a Drivery</h2>
-            <button class="btn-choice" onclick="showScreen('screen-user')">Soy Usuario </button>
-            <button class="btn-choice" onclick="showScreen('screen-driver')">Soy Conductor </button>
-        </div>
+    <div id="map"></div>
 
-        <div id="screen-user" class="card">
-            <h2>Descarga Drivery</h2>
-            <p style="opacity:0.8; margin-bottom: 10px;">¡Únete al equipo!</p>
-            <div class="store-button" onclick="finalizarUsuario('https://apl.bz/Mlv?l=es_US')">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
+    <div class="ui-overlay">
+        
+        <header class="text-center w-full flex flex-col items-center">
+            <div class="flex items-center gap-3 mb-1">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg shadow-lg">D</div>
+                <h1 class="text-3xl font-black tracking-[0.4em] uppercase italic">DRIIVERY</h1>
             </div>
-            <div class="store-button" onclick="finalizarUsuario('https://15147507-4.ondelight.app/')">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store">
+            <p class="text-[9px] tracking-[0.4em] text-gray-500 font-bold uppercase">Intelligence Command</p>
+            <div class="flex gap-4 mt-4 items-center">
+                <div class="flex items-center gap-2">
+                    <span id="status-dot" class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span id="status-text" class="text-[8px] font-bold tracking-widest text-green-400">STATUS: OPERATIVO</span>
+                </div>
+                <div class="text-gray-800">|</div>
+                <span class="text-[8px] font-bold tracking-widest text-gray-400">V: 48,170</span>
             </div>
-            <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
-        </div>
+        </header>
 
-        <div id="screen-driver" class="card">
-            <h2>Registro Conductor </h2>
-            <form id="form-conductor">
-                <input type="text" name="NombreCompleto" placeholder="Nombre completo" required>
-                <input type="text" name="Cedula" placeholder="Cédula de Identidad" required>
-                <input type="tel" name="Telefono" placeholder="Teléfono móvil" required>
-                <textarea name="Direccion" placeholder="Dirección de domicilio" required style="width:100%; background:rgba(0,0,0,0.4); border-radius:16px; padding:15px; height:70px; color:white; resize:none; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"></textarea>
-                <select name="Vehiculo" required>
-                    <option value="" disabled selected>Tipo de vehículo</option>
-                    <option value="Sedan">Carro Sedán</option>
-                    <option value="SUV">Camioneta / SUV</option>
-                    <option value="Moto">Motocicleta</option>
-                </select>
-                <button type="submit" id="btn-envio" class="btn-primary">ENVIAR DATOS </button>
-            </form>
-            <button class="btn-back" onclick="showScreen('screen-choice')">Volver</button>
-        </div>
+        <main class="flex flex-col items-center justify-center flex-grow py-6">
+            <div class="orbe-wrapper mb-10">
+                <div class="orbe-ring"></div>
+                <div id="orbe-visual" class="orbe-core"></div>
+            </div>
 
-        <div id="mensaje-exito" class="card">
-            <h2 style="color: #32BC81;">¡BIENVENIDO A LAS GRANDES LIGAS! </h2>
-            <p id="subtexto-exito">Procesando...</p>
-        </div>
+            <div class="w-full max-w-xl text-center space-y-6">
+                <h2 id="main-prompt" class="text-2xl md:text-3xl font-light tracking-tight italic uppercase opacity-80 italic">¿A dónde vamos hoy?</h2>
+                
+                <div class="w-full glass-ui p-1.5 rounded-2xl flex items-center interactive group transition-all focus-within:ring-1 ring-blue-500/50">
+                    <input id="user-input" type="text" placeholder="Habla o escribe tu destino..." 
+                        class="bg-transparent flex-grow px-6 py-4 outline-none text-xs tracking-[0.1em] font-light placeholder:text-gray-700 uppercase">
+                    <button onclick="enviarComando()" class="text-blue-500 px-6 active:scale-90 transition">🎤</button>
+                </div>
+
+                <div class="flex gap-4 justify-center overflow-x-auto no-scrollbar py-2 interactive">
+                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">🚗</button>
+                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">📦</button>
+                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">✚</button>
+                    <button class="glass-ui p-6 rounded-2xl min-w-[70px]">💎</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="flex justify-start items-end z-10">
+            <div class="glass-ui p-8 md:p-10 rounded-[2.5rem] w-full md:w-auto md:min-w-[400px] border-l-4 border-blue-600 interactive">
+                <h3 class="text-[10px] font-black tracking-[0.4em] uppercase mb-8 text-blue-400 opacity-60">Flotas bajo comando</h3>
+                <div class="flex md:flex-col justify-between gap-10">
+                    <div>
+                        <p class="text-[9px] font-bold tracking-widest uppercase opacity-40">Flota Blue:</p>
+                        <p class="text-4xl md:text-5xl font-black italic tracking-tighter">28,450</p>
+                    </div>
+                    <div class="border-l md:border-l-0 md:border-t border-white/5 pl-6 md:pl-0 md:pt-6">
+                        <p class="text-[9px] font-bold tracking-widest uppercase text-green-400 opacity-40">Flota Green:</p>
+                        <p class="text-4xl md:text-5xl font-black italic tracking-tighter text-gray-200">19,720</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script>
-        // Mismo script que el anterior...
-        function showScreen(screenId) {
-            document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
+        // 1. CARGA DINÁMICA DE GOOGLE MAPS
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b[maps]||(b[maps]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME",
+            v: "beta"
+        });
 
-        const ball = document.getElementById('ball-container');
-        let posX = Math.random() * (window.innerWidth - 40);
-        let posY = Math.random() * (window.innerHeight - 40);
-        let velX = 2;
-        let velY = 2;
-        let isControlled = false;
-        let timeoutMode;
-
-        function animate() {
-            if (!isControlled) {
-                posX += velX;
-                posY += velY;
-                if (posX + 40 >= window.innerWidth || posX <= 0) velX *= -1;
-                if (posY + 40 >= window.innerHeight || posY <= 0) velY *= -1;
-                ball.style.transform = `translate(${posX}px, ${posY}px)`;
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        function handleMove(x, y) {
-            isControlled = true;
-            posX = x - 20;
-            posY = y - 20;
-            ball.style.transform = `translate(${posX}px, ${posY}px)`;
-            clearTimeout(timeoutMode);
-            timeoutMode = setTimeout(() => { isControlled = false; }, 3000);
-        }
-
-        document.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-        document.addEventListener('touchmove', (e) => {
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        }, {passive: false});
-
-        function finalizarUsuario(url) {
-            document.getElementById('subtexto-exito').innerText = "Abriendo tienda oficial...";
-            showScreen('mensaje-exito');
-            setTimeout(() => { window.location.href = url; }, 2000);
-        }
-
-        const form = document.getElementById('form-conductor');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-envio');
-            btn.innerText = "ENVIANDO..."; btn.disabled = true;
-            fetch("https://script.google.com/macros/s/AKfycbzwXVJMJWLkQZ4iCEPRdMO2dtru57tk9EE0W-c_ZGTkilq73qEZHfgbgbq2g2_cf6EH/exec", { 
-                method: 'POST', body: new FormData(form), mode: 'no-cors' 
-            }).then(() => { 
-                document.getElementById('subtexto-exito').innerText = "Revisaremos tus datos. ¡Hablamos por WhatsApp!";
-                showScreen('mensaje-exito'); 
+        let map;
+        async function initMap() {
+            const { Map } = await google.maps.importLibrary("maps");
+            
+            map = new Map(document.getElementById("map"), {
+                center: { lat: 10.4806, lng: -66.8791 }, // Caracas
+                zoom: 16,
+                mapId: "58b489824f2b96dad1f4688e", // Su ID 3D
+                disableDefaultUI: true,
+                tilt: 45,
+                heading: 0,
             });
+
+            // Animación de Rotación Orbital
+            let heading = 0;
+            function animate() {
+                heading += 0.012; // Velocidad de rotación
+                map.setHeading(heading);
+                requestAnimationFrame(animate);
+            }
+
+            google.maps.event.addListenerOnce(map, 'idle', () => {
+                console.log("✅ MAPA RENDERIZADO");
+                animate();
+            });
+        }
+        initMap();
+
+        // 2. CONEXIÓN AL BACKEND (REMPLAZA ESTA URL)
+        const socket = io('https://tu-app-en-render.onrender.com'); 
+
+        function enviarComando() {
+            const input = document.getElementById('user-input');
+            const orbe = document.getElementById('orbe-visual');
+            const status = document.getElementById('status-text');
+
+            if (!input.value) return;
+
+            // Feedback Visual de Pensamiento
+            orbe.style.boxShadow = "0 0 150px #ffffff";
+            status.innerText = "INTERCEPTANDO DATOS...";
+            
+            socket.emit('COMMAND_MASTER', { instruction: input.value });
+            input.value = "";
+        }
+
+        socket.on('ORBE_RESPONSE', (data) => {
+            document.getElementById('orbe-visual').style.boxShadow = "0 0 100px var(--blue-glow)";
+            document.getElementById('status-text').innerText = "STATUS: OPERATIVO";
+            
+            if (data.status === 'SUCCESS') {
+                document.getElementById('main-prompt').innerText = "RESPUESTA RECIBIDA";
+                console.log("Cerebro Drivery:", data.payload);
+            }
+        });
+
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enviarComando();
         });
     </script>
 </body>
