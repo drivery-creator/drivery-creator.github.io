@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000205">
     
-    <title>Drivery | Intelligence Active</title>
+    <title>Drivery | Intelligence Command</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;800&display=swap" rel="stylesheet">
@@ -17,41 +17,29 @@
     <style>
         :root { --blue-glow: rgba(59, 130, 246, 0.5); }
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background-color: #000;
-            color: #fff;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; color: #fff;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
         }
 
         /* EL ESCENARIO: Google Maps de fondo */
         #map {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1; /* Al fondo */
-            filter: saturate(0.7) brightness(0.35) contrast(1.2);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; filter: saturate(0.7) brightness(0.35) contrast(1.2);
         }
 
-        /* CAPA DE PROTECCIÓN: Para que el UI sea legible */
+        /* CAPA DE PROTECCIÓN: Interfaz de usuario */
         .ui-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 5; /* Sobre el mapa */
+            position: absolute; inset: 0; z-index: 5;
             background: radial-gradient(circle at 50% 50%, rgba(0,2,5,0.1) 0%, rgba(0,2,5,0.85) 100%);
-            pointer-events: none; /* Permite tocar lo que hay debajo */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 2.5rem;
+            pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 2.5rem;
         }
 
-        /* EL ORBE: Energía Cinética */
+        /* EL ORBE */
         .orbe-wrapper {
-            position: relative;
-            width: clamp(260px, 35vw, 360px);
-            height: clamp(260px, 35vw, 360px);
+            position: relative; width: clamp(260px, 35vw, 360px); height: clamp(260px, 35vw, 360px);
             display: flex; align-items: center; justify-content: center;
         }
         .orbe-core {
@@ -72,13 +60,10 @@
         }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* UI BLINDADO */
         .glass-ui {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            pointer-events: auto; /* Para que los botones funcionen */
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto;
         }
         .interactive { pointer-events: auto; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -98,7 +83,7 @@
             <p class="text-[9px] tracking-[0.4em] text-gray-500 font-bold uppercase">Intelligence Command</p>
             <div class="flex gap-4 mt-4 items-center">
                 <div class="flex items-center gap-2">
-                    <span id="status-dot" class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span id="status-dot" class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></span>
                     <span id="status-text" class="text-[8px] font-bold tracking-widest text-green-400">STATUS: OPERATIVO</span>
                 </div>
                 <div class="text-gray-800">|</div>
@@ -113,12 +98,16 @@
             </div>
 
             <div class="w-full max-w-xl text-center space-y-6">
-                <h2 id="main-prompt" class="text-2xl md:text-3xl font-light tracking-tight italic uppercase opacity-80 italic">¿A dónde vamos hoy?</h2>
+                <h2 id="main-prompt" class="text-2xl md:text-3xl font-light tracking-tight italic uppercase opacity-80">¿A dónde vamos hoy?</h2>
                 
-                <div class="w-full glass-ui p-1.5 rounded-2xl flex items-center interactive group transition-all focus-within:ring-1 ring-blue-500/50">
+                <div class="w-full glass-ui p-1.5 rounded-2xl flex items-center interactive focus-within:ring-1 ring-blue-500/50 transition-all">
                     <input id="user-input" type="text" placeholder="Habla o escribe tu destino..." 
                         class="bg-transparent flex-grow px-6 py-4 outline-none text-xs tracking-[0.1em] font-light placeholder:text-gray-700 uppercase">
-                    <button onclick="enviarComando()" class="text-blue-500 px-6 active:scale-90 transition">🎤</button>
+                    <button onclick="enviarComando()" class="text-blue-500 px-6 active:scale-90 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div class="flex gap-4 justify-center overflow-x-auto no-scrollbar py-2 interactive">
@@ -148,7 +137,7 @@
     </div>
 
     <script>
-        // 1. CARGA DINÁMICA DE GOOGLE MAPS
+        // CONFIGURACIÓN GOOGLE MAPS
         (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b[maps]||(b[maps]={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Re-voke white list if needed."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
             key: "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME",
             v: "beta"
@@ -157,45 +146,29 @@
         let map;
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
-            
             map = new Map(document.getElementById("map"), {
-                center: { lat: 10.4806, lng: -66.8791 }, // Caracas
+                center: { lat: 10.4806, lng: -66.8791 },
                 zoom: 16,
-                mapId: "58b489824f2b96dad1f4688e", // Su ID 3D
-                disableDefaultUI: true,
-                tilt: 45,
-                heading: 0,
+                mapId: "58b489824f2b96dad1f4688e",
+                disableDefaultUI: true, tilt: 45, heading: 0
             });
-
-            // Animación de Rotación Orbital
             let heading = 0;
-            function animate() {
-                heading += 0.012; // Velocidad de rotación
-                map.setHeading(heading);
-                requestAnimationFrame(animate);
-            }
-
-            google.maps.event.addListenerOnce(map, 'idle', () => {
-                console.log("✅ MAPA RENDERIZADO");
-                animate();
-            });
+            function animate() { heading += 0.015; map.setHeading(heading); requestAnimationFrame(animate); }
+            google.maps.event.addListenerOnce(map, 'idle', animate);
         }
         initMap();
 
-        // 2. CONEXIÓN AL BACKEND (REMPLAZA ESTA URL)
-        const socket = io('https://tu-app-en-render.onrender.com'); 
+        // CONEXIÓN AL CEREBRO EN RENDER
+        const socket = io('https://drivery-backend.onrender.com'); 
 
         function enviarComando() {
             const input = document.getElementById('user-input');
             const orbe = document.getElementById('orbe-visual');
             const status = document.getElementById('status-text');
-
             if (!input.value) return;
 
-            // Feedback Visual de Pensamiento
             orbe.style.boxShadow = "0 0 150px #ffffff";
             status.innerText = "INTERCEPTANDO DATOS...";
-            
             socket.emit('COMMAND_MASTER', { instruction: input.value });
             input.value = "";
         }
@@ -203,7 +176,6 @@
         socket.on('ORBE_RESPONSE', (data) => {
             document.getElementById('orbe-visual').style.boxShadow = "0 0 100px var(--blue-glow)";
             document.getElementById('status-text').innerText = "STATUS: OPERATIVO";
-            
             if (data.status === 'SUCCESS') {
                 document.getElementById('main-prompt').innerText = "RESPUESTA RECIBIDA";
                 console.log("Cerebro Drivery:", data.payload);
