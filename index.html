@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivery OS | El Orbe Command Center</title>
+    <title>Drivery OS | The Orbe Command Center</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     
@@ -17,7 +17,7 @@
 
         #map { height: 100vh; width: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        /* PANEL DE MANDO: GLASSMORPHISM */
+        /* SIDEBAR: GLASSMORPHISM TÁCTICO */
         #sidebar {
             position: absolute; top: 20px; left: 20px;
             width: 320px; z-index: 100;
@@ -37,18 +37,20 @@
         }
         .rif-tag { font-size: 10px; color: #5a5f66; margin-top: 5px; letter-spacing: 3px; font-weight: 700; }
 
-        .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 20px 0; }
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 20px 0; }
 
+        /* ESTADÍSTICAS */
         .stat-card { margin-bottom: 20px; }
         .stat-label { font-size: 9px; color: #8a8d91; letter-spacing: 2px; margin-bottom: 4px; font-weight: 700; }
         .stat-value { font-size: 26px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
 
         #os-status { 
-            color: #39ff14; font-size: 12px; font-weight: 800;
+            color: #f39c12; font-size: 12px; font-weight: 800;
             display: flex; align-items: center; gap: 8px;
+            transition: color 0.5s ease;
         }
         #os-status::before {
-            content: ''; width: 8px; height: 8px; background: #39ff14; 
+            content: ''; width: 8px; height: 8px; background: currentColor; 
             border-radius: 50%; display: inline-block; animation: pulse-status 2s infinite;
         }
 
@@ -62,17 +64,9 @@
         .total-label { font-size: 9px; color: #00d2ff; letter-spacing: 2px; font-weight: 900; }
         .total-value { font-size: 30px; color: #fff; font-weight: 900; }
 
-        /* EFECTO NEÓN PARA LOS PUNTOS DEL ORBE EN EL MAPA */
-        .pulse-marker {
-            width: 12px; height: 12px; border-radius: 50%;
-            position: relative;
-        }
-        .pulse-marker.blue { background: #00d2ff; box-shadow: 0 0 15px #00d2ff; }
-        .pulse-marker.green { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
-
         @keyframes pulse-status {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(1.2); }
+            50% { opacity: 0.3; transform: scale(1.3); }
         }
     </style>
 </head>
@@ -88,22 +82,22 @@
 
         <div class="stat-card">
             <div class="stat-label">SISTEMA OPERATIVO</div>
-            <div class="stat-value" id="os-status">TOTALMENTE OPERATIVO</div>
+            <div class="stat-value" id="os-status">INICIANDO PROTOCOLOS...</div>
         </div>
 
         <div class="stat-card blue-fleet">
             <div class="stat-label">FLOTA BLUE (PASAJEROS)</div>
-            <div class="stat-value" id="blue-count">28,450</div>
+            <div class="stat-value" id="blue-count">0</div>
         </div>
 
         <div class="stat-card green-fleet">
             <div class="stat-label">FLOTA GREEN (LOGÍSTICA)</div>
-            <div class="stat-value" id="green-count">19,720</div>
+            <div class="stat-value" id="green-count">0</div>
         </div>
 
         <div class="total-bar">
             <div class="total-label">TOTAL UNIDADES MUNDIALES</div>
-            <div class="total-value" id="total-count">48,170</div>
+            <div class="total-value" id="total-count">0</div>
         </div>
     </div>
 
@@ -111,12 +105,65 @@
 
     <script>
         let map;
-        const BACKEND_URL = "wss://drivery-backend.onrender.com";
-        let socket;
         let markers = [];
+        const BACKEND_HTTP = "https://drivery-backend.onrender.com";
+        const BACKEND_WS = "wss://drivery-backend.onrender.com";
+        let socket;
 
+        // --- PROTOCOLO DE REANIMACIÓN (EL DESPERTADOR) ---
+        async function wakeUpAndConnect() {
+            console.log("🎥 Drivery OS: Despertando servidor en Render...");
+            document.getElementById('os-status').innerText = "REANIMANDO EL ORBE...";
+            document.getElementById('os-status').style.color = "#f39c12";
+
+            try {
+                // Toque HTTP para encender la instancia
+                await fetch(BACKEND_HTTP, { mode: 'no-cors' });
+                console.log("⚡ Servidor despierto. Conectando WebSocket...");
+                initWebSocket();
+            } catch (e) {
+                console.error("❌ El Búnker no responde. Reintentando...");
+                setTimeout(wakeUpAndConnect, 5000);
+            }
+        }
+
+        // --- EL ORBE: CONEXIÓN DE DATOS ---
+        function initWebSocket() {
+            socket = new WebSocket(BACKEND_WS);
+
+            socket.onopen = () => {
+                document.getElementById('os-status').innerText = "CONEXIÓN SATELITAL ACTIVA";
+                document.getElementById('os-status').style.color = "#00d2ff";
+                
+                // Mantener latido (Heartbeat)
+                setInterval(() => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        socket.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 20000);
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if(data.metrics) {
+                        animateValue("blue-count", data.metrics.blueFleet);
+                        animateValue("green-count", data.metrics.greenFleet);
+                        animateValue("total-count", data.metrics.totalUnits);
+                    }
+                    if(data.vehicles) renderVehicles(data.vehicles);
+                } catch (err) { console.warn("Señal con interferencia."); }
+            };
+
+            socket.onclose = () => {
+                document.getElementById('os-status').innerText = "RECONECTANDO SISTEMA...";
+                document.getElementById('os-status').style.color = "#ff3e3e";
+                setTimeout(wakeUpAndConnect, 5000);
+            };
+        }
+
+        // --- MAPA: ESCENARIO OSCURO ---
         function initMap() {
-            // Estilo Oscuro Manual (Cinematográfico)
             const darkStyle = [
                 { "elementType": "geometry", "stylers": [{ "color": "#1d1f21" }] },
                 { "elementType": "labels.text.fill", "stylers": [{ "color": "#8ec3b9" }] },
@@ -128,67 +175,37 @@
             ];
 
             map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 10.4806, lng: -66.8983 }, // Caracas HQ
+                center: { lat: 10.4806, lng: -66.8983 },
                 zoom: 13,
                 styles: darkStyle,
-                disableDefaultUI: true,
-                backgroundColor: "#05070a"
+                disableDefaultUI: true
             });
 
-            console.log("✅ Escenario listo. Iniciando El Orbe...");
-            connectOrbe();
+            console.log("✅ Mapa listo. Iniciando secuencia del Orbe...");
+            wakeUpAndConnect();
         }
 
-        // --- CONEXIÓN AL ORBE (WEBSOCKET) ---
-        function connectOrbe() {
-            socket = new WebSocket(BACKEND_URL);
-
-            socket.onopen = () => {
-                document.getElementById('os-status').innerText = "CONEXIÓN SATELITAL ACTIVA";
-                document.getElementById('os-status').style.color = "#00d2ff";
-            };
-
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                // Actualización de métricas con animación
-                if(data.blueCount) animateValue("blue-count", data.blueCount);
-                if(data.greenCount) animateValue("green-count", data.greenCount);
-                if(data.total) animateValue("total-count", data.total);
-
-                // Render de vehículos (Ejemplo de intercepción visual)
-                if(data.vehicles) renderVehicles(data.vehicles);
-            };
-
-            socket.onclose = () => {
-                document.getElementById('os-status').innerText = "RECONECTANDO SISTEMA...";
-                document.getElementById('os-status').style.color = "#ff3e3e";
-                setTimeout(connectOrbe, 5000);
-            };
-        }
-
+        // --- EFECTO CINEMATOGRÁFICO DE CONTEO ---
         function animateValue(id, end) {
             const obj = document.getElementById(id);
-            let start = parseInt(obj.innerText.replace(/,/g, ''));
+            let start = parseInt(obj.innerText.replace(/,/g, '')) || 0;
             if (start === end) return;
-            let range = end - start;
-            let current = start;
-            let increment = end > start ? Math.ceil(range / 20) : Math.floor(range / 20);
-            let timer = setInterval(() => {
-                current += increment;
-                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    clearInterval(timer);
-                    current = end;
-                }
+            let duration = 1000;
+            let startTime = null;
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = Math.min((timestamp - startTime) / duration, 1);
+                let current = Math.floor(progress * (end - start) + start);
                 obj.innerText = current.toLocaleString();
-            }, 50);
+                if (progress < 1) window.requestAnimationFrame(step);
+            }
+            window.requestAnimationFrame(step);
         }
 
         function renderVehicles(vehicles) {
-            // Limpiar markers anteriores para optimizar escena
             markers.forEach(m => m.setMap(null));
             markers = [];
-
             vehicles.forEach(v => {
                 const marker = new google.maps.Marker({
                     position: { lat: v.lat, lng: v.lng },
@@ -196,7 +213,7 @@
                     icon: {
                         path: google.maps.SymbolPath.CIRCLE,
                         fillColor: v.type === 'blue' ? '#00d2ff' : '#39ff14',
-                        fillOpacity: 0.9,
+                        fillOpacity: 0.8,
                         strokeWeight: 2,
                         strokeColor: '#fff',
                         scale: 6
@@ -208,6 +225,5 @@
     </script>
 
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
-
 </body>
 </html>
