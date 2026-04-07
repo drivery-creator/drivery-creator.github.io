@@ -18,18 +18,13 @@
         
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
 
-        /* CAPA DE ILUMINANCIA CIAN */
+        /* AURA DE ILUMINANCIA CIAN */
         .orb-aura {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 850px;
-            height: 850px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 850px; height: 850px;
             background: radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%);
-            z-index: 4;
-            pointer-events: none;
-            border-radius: 50%;
+            z-index: 4; pointer-events: none; border-radius: 50%;
+            transition: all 0.5s ease;
             animation: aura-pulse 4s infinite ease-in-out;
         }
 
@@ -42,23 +37,9 @@
         #ui-layer > * { pointer-events: auto; }
         
         header { display: flex; justify-content: space-between; align-items: flex-start; padding: 40px 60px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        
-        /* BRANDING CON "OS" */
         .brand-box { display: flex; align-items: center; gap: 10px; }
         .logo-main { height: 85px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
-        .os-badge {
-            font-family: var(--font-tech);
-            font-size: 14px;
-            color: var(--drivery-blue);
-            border: 1px solid var(--drivery-blue);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 900;
-            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
-        }
+        .os-badge { font-family: var(--font-tech); font-size: 14px; color: var(--drivery-blue); border: 1px solid var(--drivery-blue); padding: 2px 6px; border-radius: 4px; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
         
         .header-stats { text-align: right; font-family: var(--font-tech); }
         .stat-line { font-size: 13px; letter-spacing: 2px; color: #8a8d91; margin: 4px 0; font-weight: 700; }
@@ -66,21 +47,14 @@
         .total-highlight { color: var(--drivery-blue); font-size: 16px; font-weight: 900; }
         
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; padding: 0 20px; }
-        
-        .orb-master { 
-            width: 450px; height: 450px; position: relative; 
-            display: flex; justify-content: center; align-items: center; 
-            margin-bottom: 10px; z-index: 10; 
-            filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65));
-        }
+        .orb-master { width: 450px; height: 450px; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; z-index: 10; filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65)); }
         
         .search-title { font-size: 38px; font-weight: 700; letter-spacing: 3px; margin-bottom: 25px; text-shadow: 0 4px 15px rgba(0,0,0,1); text-align: center; }
         .search-container { width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 20px 45px; display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
         .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 24px; width: 100%; font-family: var(--font-main); letter-spacing: 1px; }
-        
-        .button-grid { display: flex; gap: 25px; margin-top: 35px; flex-wrap: wrap; justify-content: center; }
-        .action-btn { width: 85px; height: 85px; background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 32px; }
-        
+        .mic-icon { font-size: 28px; color: var(--drivery-blue); cursor: pointer; text-shadow: 0 0 10px var(--drivery-blue); transition: 0.3s; }
+        .mic-icon:hover { transform: scale(1.2); color: #fff; }
+
         #fleet-commander { position: fixed; bottom: 50px; left: 50px; width: 340px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 200; }
         .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
         .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; }
@@ -88,7 +62,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div class="orb-aura"></div>
+    <div class="orb-aura" id="orb-aura"></div>
 
     <div id="ui-layer">
         <header>
@@ -100,33 +74,27 @@
             <div class="header-stats">
                 <p class="stat-line">UN ORBE, TODO TU MUNDO LOGÍSTICO.</p>
                 <p class="stat-line">CARACAS | VENEZUELA</p>
-                <p class="stat-line">STATUS: <span class="status-on">OPERATIVO ●</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
+                <p class="stat-line">STATUS: <span class="status-on" id="sys-status">OPERATIVO ●</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
             </div>
         </header>
+
         <main>
             <div id="main-orbe" class="orb-master"></div>
             <h2 class="search-title">¿A dónde vamos hoy?</h2>
             <div class="search-container">
                 <input id="drivery-input" type="text" placeholder="Habla o escribe tu destino...">
-            </div>
-            <div class="button-grid">
-                <div class="action-btn">🚗</div><div class="action-btn">📦</div><div class="action-btn">🏥</div><div class="action-btn">💎</div>
+                <div class="mic-icon" id="mic-btn">🎤</div>
             </div>
         </main>
+
         <div id="fleet-commander">
             <div class="fleet-entry">
                 <div style="width:12px;height:12px;border-radius:50%;background:var(--drivery-blue);box-shadow:0 0 15px var(--drivery-blue);"></div>
-                <div>
-                    <div style="color:var(--drivery-blue);font-weight:700;font-size:16px;">FLOTA BLUE:</div>
-                    <div class="fleet-number" id="blue-count">28,450</div>
-                </div>
+                <div><div style="color:var(--drivery-blue);font-weight:700;font-size:16px;">FLOTA BLUE:</div><div class="fleet-number" id="blue-count">28,450</div></div>
             </div>
             <div class="fleet-entry">
                 <div style="width:12px;height:12px;border-radius:50%;background:var(--drivery-green);box-shadow:0 0 15px var(--drivery-green);"></div>
-                <div>
-                    <div style="color:var(--drivery-green);font-weight:700;font-size:16px;">FLOTA GREEN:</div>
-                    <div class="fleet-number" id="green-count">19,720</div>
-                </div>
+                <div><div style="color:var(--drivery-green);font-weight:700;font-size:16px;">FLOTA GREEN:</div><div class="fleet-number" id="green-count">19,720</div></div>
             </div>
         </div>
     </div>
@@ -134,43 +102,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let map, sphere, core, coreMat;
-        let baseBlue = 28450;
-        let baseGreen = 19720;
+        const backendURL = "https://drivery-backend.onrender.com"; // URL DE TU RENDER
 
         function initMap() {
-            const forcedStyle = [
+            const tacticalStyle = [
                 { "elementType": "geometry", "stylers": [{ "color": "#000000" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1A1A1A" }] },
-                { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#00FFFF" }] },
-                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#004D4D" }, { "weight": 2 }] },
-                { "elementType": "labels", "stylers": [{ "visibility": "off" }] },
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#121212" }] },
+                { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#004d4d" }] },
+                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.5 }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }, { "lightness": -20 }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#000000" }, { "weight": 2 }] },
+                { "elementType": "labels.icon", "stylers": [{ "visibility": "on" }, { "hue": "#00d2ff" }, { "saturation": -20 }] },
+                { "featureType": "poi", "stylers": [{ "visibility": "on" }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#001a1a" }] }
             ];
 
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 10.4806, lng: -66.8983 },
-                zoom: 16,
-                styles: forcedStyle,
+                zoom: 15,
+                styles: tacticalStyle,
                 disableDefaultUI: true,
                 backgroundColor: "#000"
             });
 
             initThreeJS();
-            startLiveNumbers();
-            initSystem();
-        }
-
-        function startLiveNumbers() {
-            setInterval(() => {
-                let vBlue = Math.floor(Math.random() * 11) - 5;
-                let vGreen = Math.floor(Math.random() * 11) - 5;
-                baseBlue += vBlue;
-                baseGreen += vGreen;
-                let total = baseBlue + baseGreen;
-                document.getElementById('blue-count').innerText = baseBlue.toLocaleString();
-                document.getElementById('green-count').innerText = baseGreen.toLocaleString();
-                document.getElementById('total-count').innerText = total.toLocaleString();
-            }, 3000);
+            initVoiceSystem();
+            initFleetStream();
         }
 
         function initThreeJS() {
@@ -182,9 +139,7 @@
             container.appendChild(renderer.domElement);
             
             const geometry = new THREE.IcosahedronGeometry(1.1, 5); 
-            const material = new THREE.MeshBasicMaterial({ 
-                color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15, wireframeLinewidth: 1 
-            });
+            const material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 });
             sphere = new THREE.Mesh(geometry, material);
             
             const coreGeo = new THREE.IcosahedronGeometry(0.7, 3);
@@ -197,24 +152,78 @@
             
             function animate() {
                 requestAnimationFrame(animate);
-                sphere.rotation.y += 0.003; core.rotation.y -= 0.006; core.rotation.x += 0.002;
+                sphere.rotation.y += 0.003; core.rotation.y -= 0.006;
                 const pulse = 1 + Math.sin(Date.now() * 0.002) * 0.07;
                 core.scale.set(pulse, pulse, pulse);
-                coreMat.opacity = 0.5 + Math.sin(Date.now() * 0.002) * 0.2;
                 renderer.render(scene, camera);
             }
             animate();
         }
 
-        function initSystem() {
-            const socket = new WebSocket("wss://drivery-backend.onrender.com");
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if(data.metrics) {
-                    baseBlue = data.metrics.blueFleet;
-                    baseGreen = data.metrics.greenFleet;
+        // SISTEMA DE VOZ CONECTADO AL BACKEND
+        function initVoiceSystem() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-VE';
+            const mic = document.getElementById('mic-btn');
+            const input = document.getElementById('drivery-input');
+            const aura = document.getElementById('orb-aura');
+
+            mic.onclick = () => { 
+                recognition.start(); 
+                input.placeholder = "Escuchando Comandante...";
+                aura.style.background = "radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%)";
+            };
+
+            recognition.onresult = async (e) => {
+                const cmd = e.results[0][0].transcript;
+                input.value = cmd;
+                
+                // Feedback visual de "Procesando"
+                coreMat.color.setHex(0xffffff); 
+                
+                try {
+                    const response = await fetch(`${backendURL}/api/command`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ command: cmd })
+                    });
+                    const data = await response.json();
+
+                    if (data.coords) {
+                        map.panTo(data.coords);
+                        map.setZoom(data.zoom || 16);
+                    }
+                    input.value = "";
+                    input.placeholder = data.reply;
+                    
+                    // Respuesta por voz (TTS)
+                    const utterance = new SpeechSynthesisUtterance(data.reply);
+                    utterance.lang = 'es-VE';
+                    window.speechSynthesis.speak(utterance);
+
+                } catch (err) {
+                    console.error("Drivery Core Error:", err);
+                    input.placeholder = "Error de conexión con el núcleo.";
+                } finally {
+                    coreMat.color.setHex(0x00d2ff);
+                    aura.style.background = "radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%)";
                 }
             };
+        }
+
+        // STREAM DE FLOTA (WEBSOCKETS)
+        function initFleetStream() {
+            const ws = new WebSocket(backendURL.replace("https", "wss"));
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if(data.metrics) {
+                    document.getElementById('blue-count').innerText = data.metrics.blueFleet.toLocaleString();
+                    document.getElementById('green-count').innerText = data.metrics.greenFleet.toLocaleString();
+                    document.getElementById('total-count').innerText = data.metrics.totalUnits.toLocaleString();
+                }
+            };
+            ws.onopen = () => document.getElementById('sys-status').style.color = "#39ff14";
+            ws.onclose = () => document.getElementById('sys-status').style.color = "#ff4444";
         }
     </script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
