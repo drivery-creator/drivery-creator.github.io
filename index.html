@@ -18,13 +18,11 @@
         
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
 
-        /* AURA DE ILUMINANCIA CIAN */
         .orb-aura {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 850px; height: 850px;
             background: radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%);
             z-index: 4; pointer-events: none; border-radius: 50%;
-            transition: all 0.5s ease;
             animation: aura-pulse 4s infinite ease-in-out;
         }
 
@@ -44,7 +42,7 @@
         .header-stats { text-align: right; font-family: var(--font-tech); }
         .stat-line { font-size: 13px; letter-spacing: 2px; color: #8a8d91; margin: 4px 0; font-weight: 700; }
         .status-on { color: var(--drivery-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
-        .total-highlight { color: var(--drivery-blue); font-size: 16px; font-weight: 900; }
+        .total-highlight { color: var(--drivery-blue); font-size: 16px; font-weight: 900; transition: all 0.5s ease; }
         
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; padding: 0 20px; }
         .orb-master { width: 450px; height: 450px; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; z-index: 10; filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65)); }
@@ -52,17 +50,16 @@
         .search-title { font-size: 38px; font-weight: 700; letter-spacing: 3px; margin-bottom: 25px; text-shadow: 0 4px 15px rgba(0,0,0,1); text-align: center; }
         .search-container { width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 20px 45px; display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
         .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 24px; width: 100%; font-family: var(--font-main); letter-spacing: 1px; }
-        .mic-icon { font-size: 28px; color: var(--drivery-blue); cursor: pointer; text-shadow: 0 0 10px var(--drivery-blue); transition: 0.3s; }
-        .mic-icon:hover { transform: scale(1.2); color: #fff; }
-
+        .mic-icon { font-size: 28px; color: var(--drivery-blue); cursor: pointer; text-shadow: 0 0 10px var(--drivery-blue); }
+        
         #fleet-commander { position: fixed; bottom: 50px; left: 50px; width: 340px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 200; }
         .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; }
+        .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; transition: all 0.5s ease; }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <div class="orb-aura" id="orb-aura"></div>
+    <div class="orb-aura"></div>
 
     <div id="ui-layer">
         <header>
@@ -74,19 +71,17 @@
             <div class="header-stats">
                 <p class="stat-line">UN ORBE, TODO TU MUNDO LOGÍSTICO.</p>
                 <p class="stat-line">CARACAS | VENEZUELA</p>
-                <p class="stat-line">STATUS: <span class="status-on" id="sys-status">OPERATIVO ●</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
+                <p class="stat-line">STATUS: <span class="status-on">OPERATIVO ●</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
             </div>
         </header>
-
         <main>
             <div id="main-orbe" class="orb-master"></div>
             <h2 class="search-title">¿A dónde vamos hoy?</h2>
             <div class="search-container">
                 <input id="drivery-input" type="text" placeholder="Habla o escribe tu destino...">
-                <div class="mic-icon" id="mic-btn">🎤</div>
+                <div class="mic-icon">🎤</div>
             </div>
         </main>
-
         <div id="fleet-commander">
             <div class="fleet-entry">
                 <div style="width:12px;height:12px;border-radius:50%;background:var(--drivery-blue);box-shadow:0 0 15px var(--drivery-blue);"></div>
@@ -102,7 +97,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let map, sphere, core, coreMat;
-        const backendURL = "https://drivery-backend.onrender.com"; // URL DE TU RENDER
+        let baseBlue = 28450;
+        let baseGreen = 19720;
 
         function initMap() {
             const tacticalStyle = [
@@ -126,8 +122,9 @@
             });
 
             initThreeJS();
-            initVoiceSystem();
-            initFleetStream();
+            startLiveNumbers();
+            initVoiceRecognition();
+            initSystem();
         }
 
         function initThreeJS() {
@@ -137,19 +134,15 @@
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(450, 450);
             container.appendChild(renderer.domElement);
-            
             const geometry = new THREE.IcosahedronGeometry(1.1, 5); 
             const material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 });
             sphere = new THREE.Mesh(geometry, material);
-            
             const coreGeo = new THREE.IcosahedronGeometry(0.7, 3);
             coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.5 });
             core = new THREE.Mesh(coreGeo, coreMat);
-            
             sphere.add(core);
             scene.add(sphere);
             camera.position.z = 2.4;
-            
             function animate() {
                 requestAnimationFrame(animate);
                 sphere.rotation.y += 0.003; core.rotation.y -= 0.006;
@@ -160,70 +153,102 @@
             animate();
         }
 
-        // SISTEMA DE VOZ CONECTADO AL BACKEND
-        function initVoiceSystem() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-VE';
-            const mic = document.getElementById('mic-btn');
-            const input = document.getElementById('drivery-input');
-            const aura = document.getElementById('orb-aura');
-
-            mic.onclick = () => { 
-                recognition.start(); 
-                input.placeholder = "Escuchando Comandante...";
-                aura.style.background = "radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%)";
-            };
-
-            recognition.onresult = async (e) => {
-                const cmd = e.results[0][0].transcript;
-                input.value = cmd;
-                
-                // Feedback visual de "Procesando"
-                coreMat.color.setHex(0xffffff); 
-                
-                try {
-                    const response = await fetch(`${backendURL}/api/command`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ command: cmd })
-                    });
-                    const data = await response.json();
-
-                    if (data.coords) {
-                        map.panTo(data.coords);
-                        map.setZoom(data.zoom || 16);
-                    }
-                    input.value = "";
-                    input.placeholder = data.reply;
-                    
-                    // Respuesta por voz (TTS)
-                    const utterance = new SpeechSynthesisUtterance(data.reply);
-                    utterance.lang = 'es-VE';
-                    window.speechSynthesis.speak(utterance);
-
-                } catch (err) {
-                    console.error("Drivery Core Error:", err);
-                    input.placeholder = "Error de conexión con el núcleo.";
-                } finally {
-                    coreMat.color.setHex(0x00d2ff);
-                    aura.style.background = "radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%)";
-                }
-            };
+        function startLiveNumbers() {
+            setInterval(() => {
+                let vBlue = Math.floor(Math.random() * 11) - 5;
+                let vGreen = Math.floor(Math.random() * 11) - 5;
+                baseBlue += vBlue; baseGreen += vGreen;
+                document.getElementById('blue-count').innerText = baseBlue.toLocaleString();
+                document.getElementById('green-count').innerText = baseGreen.toLocaleString();
+                document.getElementById('total-count').innerText = (baseBlue + baseGreen).toLocaleString();
+            }, 3000);
         }
 
-        // STREAM DE FLOTA (WEBSOCKETS)
-        function initFleetStream() {
-            const ws = new WebSocket(backendURL.replace("https", "wss"));
-            ws.onmessage = (event) => {
+        // --- CORRECCIÓN DEL SISTEMA DE VOZ ---
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn("Reconocimiento de voz no soportado en este navegador.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-VE';
+            recognition.continuous = false;
+
+            const mic = document.querySelector('.mic-icon');
+            const input = document.getElementById('drivery-input');
+
+            mic.onclick = () => { 
+                console.log("Activando micrófono...");
+                recognition.start(); 
+                input.placeholder = "Escuchando..."; 
+            };
+
+            recognition.onresult = (e) => {
+                const cmd = e.results[0][0].transcript;
+                input.value = cmd;
+                console.log("Comando recibido:", cmd);
+                processAICommand(cmd);
+            };
+
+            recognition.onerror = (e) => console.error("Error Speech:", e.error);
+            recognition.onend = () => { input.placeholder = "Habla o escribe tu destino..."; };
+
+            // Soporte para enviar con la tecla Enter
+            input.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    processAICommand(input.value);
+                }
+            });
+        }
+
+        async function processAICommand(cmd) {
+            if (!cmd) return;
+            console.log("Enviando a Drivery Core...");
+            coreMat.color.setHex(0xffffff); // El orbe brilla en blanco mientras "piensa"
+
+            try {
+                const response = await fetch("https://drivery-backend.onrender.com/api/command", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ command: cmd })
+                });
+                
+                if (!response.ok) throw new Error("Error en el servidor");
+                
+                const data = await response.json();
+                console.log("Respuesta IA:", data);
+
+                if (data.coords) {
+                    map.panTo(data.coords);
+                    map.setZoom(data.zoom || 16);
+                }
+                
+                if (data.reply) {
+                    const msg = new SpeechSynthesisUtterance(data.reply);
+                    msg.lang = 'es-VE';
+                    window.speechSynthesis.speak(msg);
+                }
+
+            } catch (e) { 
+                console.error("Drivery AI Error:", e); 
+            } finally { 
+                coreMat.color.setHex(0x00d2ff); 
+            }
+        }
+
+        function initSystem() {
+            const socket = new WebSocket("wss://drivery-backend.onrender.com");
+            socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if(data.metrics) {
-                    document.getElementById('blue-count').innerText = data.metrics.blueFleet.toLocaleString();
-                    document.getElementById('green-count').innerText = data.metrics.greenFleet.toLocaleString();
-                    document.getElementById('total-count').innerText = data.metrics.totalUnits.toLocaleString();
+                if(data.metrics) { 
+                    baseBlue = data.metrics.blueFleet; 
+                    baseGreen = data.metrics.greenFleet; 
                 }
             };
-            ws.onopen = () => document.getElementById('sys-status').style.color = "#39ff14";
-            ws.onclose = () => document.getElementById('sys-status').style.color = "#ff4444";
+            socket.onopen = () => console.log("Conectado a Flota Real");
+            socket.onerror = (e) => console.log("Error WebSocket: Backend en reposo.");
         }
     </script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
