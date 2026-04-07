@@ -56,21 +56,34 @@
         .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
         .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; transition: all 0.5s ease; }
 
-        /* --- RESPONSIVE FIXES --- */
+        /* --- AJUSTE RESPONSIVO CRÍTICO --- */
         @media (max-width: 768px) {
             body, html { zoom: 1; }
-            header { padding: 20px; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
-            .logo-main { height: 50px; }
-            .header-stats { text-align: center; }
-            main { margin-top: 0; }
-            .orb-master { width: 300px; height: 300px; }
+            header { padding: 15px 20px; flex-direction: row; justify-content: space-between; align-items: center; }
+            .logo-main { height: 35px; }
+            .os-badge { font-size: 10px; margin-top: 5px; }
+            .header-stats { text-align: right; }
+            .stat-line { font-size: 9px; letter-spacing: 1px; }
+            
+            main { margin-top: 0; padding-top: 10px; justify-content: center; }
+            .orb-master { width: 65vw; height: 65vw; max-width: 300px; max-height: 300px; margin-bottom: 5px; }
             canvas { width: 100% !important; height: 100% !important; }
-            .search-title { font-size: 24px; }
-            .search-container { width: 85%; padding: 10px 20px; }
-            .search-container input { font-size: 18px; }
-            #fleet-commander { position: static; width: 90%; margin: 20px auto; display: flex; flex-direction: row; justify-content: space-around; padding: 15px; }
-            .fleet-entry { margin-bottom: 0; flex-direction: column; }
-            .orb-aura { width: 400px; height: 400px; }
+            
+            .search-title { font-size: 20px; margin-bottom: 10px; }
+            .search-container { width: 85%; padding: 8px 15px; gap: 8px; }
+            .search-container input { font-size: 16px; }
+            .mic-icon { font-size: 20px; }
+
+            #fleet-commander { 
+                position: relative; bottom: 15px; left: 0; 
+                width: 90%; margin: 10px auto; 
+                display: flex; flex-direction: row; 
+                justify-content: space-around; padding: 10px;
+                background: rgba(6, 11, 20, 0.95);
+            }
+            .fleet-entry { margin-bottom: 0; flex-direction: column; gap: 2px; }
+            .fleet-number { font-size: 16px; }
+            .orb-aura { width: 90vw; height: 90vw; }
         }
     </style>
 </head>
@@ -168,6 +181,12 @@
                 renderer.render(scene, camera);
             }
             animate();
+
+            // Ajuste dinámico de cámara en resize
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                renderer.setSize(width, width);
+            });
         }
 
         function startLiveNumbers() {
@@ -183,74 +202,42 @@
 
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                console.warn("Reconocimiento de voz no soportado en este navegador.");
-                return;
-            }
-
+            if (!SpeechRecognition) return;
             const recognition = new SpeechRecognition();
             recognition.lang = 'es-VE';
-            recognition.continuous = false;
-
             const mic = document.querySelector('.mic-icon');
             const input = document.getElementById('drivery-input');
 
-            mic.onclick = () => { 
-                console.log("Activando micrófono...");
-                recognition.start(); 
-                input.placeholder = "Escuchando..."; 
-            };
-
+            mic.onclick = () => { recognition.start(); input.placeholder = "Escuchando..."; };
             recognition.onresult = (e) => {
                 const cmd = e.results[0][0].transcript;
                 input.value = cmd;
-                console.log("Comando recibido:", cmd);
                 processAICommand(cmd);
             };
-
-            recognition.onerror = (e) => console.error("Error Speech:", e.error);
             recognition.onend = () => { input.placeholder = "Habla o escribe tu destino..."; };
-
-            input.addEventListener("keypress", (e) => {
-                if (e.key === "Enter") {
-                    processAICommand(input.value);
-                }
-            });
         }
 
         async function processAICommand(cmd) {
             if (!cmd) return;
-            console.log("Enviando a Drivery Core...");
             coreMat.color.setHex(0xffffff);
-
             try {
                 const response = await fetch("https://drivery-backend.onrender.com/api/command", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ command: cmd })
                 });
-                
-                if (!response.ok) throw new Error("Error en el servidor");
-                
                 const data = await response.json();
-                console.log("Respuesta IA:", data);
-
                 if (data.coords) {
                     map.panTo(data.coords);
                     map.setZoom(data.zoom || 16);
                 }
-                
                 if (data.reply) {
                     const msg = new SpeechSynthesisUtterance(data.reply);
                     msg.lang = 'es-VE';
                     window.speechSynthesis.speak(msg);
                 }
-
-            } catch (e) { 
-                console.error("Drivery AI Error:", e); 
-            } finally { 
-                coreMat.color.setHex(0x00d2ff); 
-            }
+            } catch (e) { console.error("Drivery AI Error:", e); }
+            finally { coreMat.color.setHex(0x00d2ff); }
         }
 
         function initSystem() {
@@ -262,8 +249,6 @@
                     baseGreen = data.metrics.greenFleet; 
                 }
             };
-            socket.onopen = () => console.log("Conectado a Flota Real");
-            socket.onerror = (e) => console.log("Error WebSocket: Backend en reposo.");
         }
     </script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
