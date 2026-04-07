@@ -3,263 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivery OS | Command Center</title>
-    
+    <title>Drivery OS | Command Center Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --drivery-blue: #00d2ff;
             --drivery-green: #39ff14;
-            --orange-flow: #ff9e00;
             --glass-bg: rgba(6, 11, 20, 0.85);
             --glass-border: rgba(0, 210, 255, 0.3);
             --font-tech: 'Orbitron', sans-serif;
             --font-main: 'Rajdhani', sans-serif;
         }
+        body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; zoom: 0.86; }
+        
+        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
 
-        /* AJUSTE DE ZOOM GLOBAL 86% */
-        body, html { 
-            margin: 0; padding: 0; height: 100%; 
-            background-color: #000; overflow: hidden; 
-            font-family: var(--font-main); color: #fff;
-            zoom: 0.86; 
+        /* CAPA DE ILUMINANCIA CIAN */
+        .orb-aura {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 850px;
+            height: 850px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%);
+            z-index: 4;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: aura-pulse 4s infinite ease-in-out;
         }
 
-        /* EL MAPA */
-        #map { 
-            position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; 
-            filter: brightness(0.8) contrast(1.3) saturate(1.2); 
+        @keyframes aura-pulse {
+            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
-        /* CAPA DE INTERFAZ */
         #ui-layer { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
         #ui-layer > * { pointer-events: auto; }
-
-        /* HEADER */
-        header { 
-            display: flex; justify-content: space-between; align-items: flex-start; 
-            padding: 40px 60px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        
+        header { display: flex; justify-content: space-between; align-items: flex-start; padding: 40px 60px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        
+        /* BRANDING CON "OS" */
+        .brand-box { display: flex; align-items: center; gap: 10px; }
+        .logo-main { height: 85px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
+        .os-badge {
+            font-family: var(--font-tech);
+            font-size: 14px;
+            color: var(--drivery-blue);
+            border: 1px solid var(--drivery-blue);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 900;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
         }
-        .brand-box { display: flex; align-items: center; gap: 20px; }
-        .logo-main { height: 75px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
         
         .header-stats { text-align: right; font-family: var(--font-tech); }
         .stat-line { font-size: 13px; letter-spacing: 2px; color: #8a8d91; margin: 4px 0; font-weight: 700; }
         .status-on { color: var(--drivery-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
         .total-highlight { color: var(--drivery-blue); font-size: 16px; font-weight: 900; }
-
-        /* CENTRO: EL ORBE REACTIVO */
-        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -60px; padding: 0 20px; }
-
-        .orb-master {
-            width: 280px; height: 280px; position: relative;
-            display: flex; justify-content: center; align-items: center;
-            perspective: 1200px; margin-bottom: 20px;
+        
+        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; padding: 0 20px; }
+        
+        .orb-master { 
+            width: 450px; height: 450px; position: relative; 
+            display: flex; justify-content: center; align-items: center; 
+            margin-bottom: 10px; z-index: 10; 
+            filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65));
         }
-
-        .orb-plasma {
-            position: absolute; width: 260px; height: 260px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.05) 0%, rgba(0, 26, 44, 0.85) 75%);
-            box-shadow: 0 0 80px rgba(0, 210, 255, 0.4), inset 0 0 60px rgba(0, 210, 255, 0.2);
-            border: 1px solid rgba(0, 210, 255, 0.15);
-            animation: plasma-pulse 3s infinite ease-in-out;
-            z-index: 1;
-        }
-
-        .orb-rings-container {
-            position: absolute; width: 230px; height: 230px;
-            transform-style: preserve-3d; z-index: 2;
-        }
-
-        .orb-ring {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            border: 1.5px solid rgba(255, 210, 0, 0.6);
-            box-shadow: 0 0 15px #ff9e00, inset 0 0 5px #ffc300;
-            pointer-events: none;
-        }
-
-        .ring-1 { animation: rotate3D-1 5s linear infinite; }
-        .ring-2 { animation: rotate3D-2 7s linear infinite; border-color: rgba(0, 210, 255, 0.6); box-shadow: 0 0 15px var(--drivery-blue); }
-        .ring-3 { width: 80%; height: 80%; top: 10%; left: 10%; animation: rotate3D-3 4s linear infinite; border-color: #fff; box-shadow: 0 0 10px #fff; }
-
-        .orb-core {
-            position: absolute; width: 50px; height: 50px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 40px #fff, 0 0 80px var(--drivery-blue);
-            z-index: 3; filter: blur(1px); animation: core-glow 2s infinite alternate;
-        }
-
-        .orbe-typing .orb-plasma { box-shadow: 0 0 180px var(--drivery-blue), inset 0 0 100px rgba(255, 255, 255, 0.4); }
-
-        @keyframes rotate3D-1 { from { transform: rotateX(45deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(45deg) rotateY(360deg) rotateZ(360deg); } }
-        @keyframes rotate3D-2 { from { transform: rotateX(-45deg) rotateY(360deg) rotateZ(0deg); } to { transform: rotateX(-45deg) rotateY(0deg) rotateZ(360deg); } }
-        @keyframes rotate3D-3 { from { transform: rotateX(90deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(90deg) rotateY(360deg) rotateZ(-360deg); } }
-        @keyframes plasma-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        @keyframes core-glow { from { transform: scale(0.9); } to { transform: scale(1.1); } }
-
-        /* BUSCADOR */
-        .search-title { font-size: 38px; font-weight: 700; letter-spacing: 3px; margin-bottom: 30px; text-shadow: 0 4px 10px rgba(0,0,0,0.8); text-align: center; }
-        .search-container {
-            width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border); border-radius: 50px; padding: 22px 45px;
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
-        }
-        .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 24px; width: 100%; font-family: var(--font-main); }
-        .mic-icon { font-size: 28px; color: var(--drivery-blue); cursor: pointer; }
-
-        .button-grid { display: flex; gap: 25px; margin-top: 40px; flex-wrap: wrap; justify-content: center; }
-        .action-btn {
-            width: 90px; height: 90px; background: var(--glass-bg); backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 25px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.4s; font-size: 36px;
-        }
-        .action-btn:hover { background: rgba(0, 210, 255, 0.2); transform: translateY(-12px); }
-
-        /* PANEL DE FLOTAS CORREGIDO */
-        #fleet-commander {
-            position: fixed; /* Asegura que no se mueva con el flujo */
-            bottom: 50px; left: 50px; width: 360px;
-            background: var(--glass-bg); backdrop-filter: blur(35px);
-            border: 1px solid var(--glass-border); border-radius: 30px; padding: 35px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            z-index: 200;
-        }
-        .fleet-tag { font-family: var(--font-tech); font-size: 13px; color: #5a5f66; letter-spacing: 4px; font-weight: 900; margin-bottom: 30px; }
-        .fleet-entry { display: flex; align-items: center; gap: 25px; margin-bottom: 25px; }
-        .status-led { width: 14px; height: 14px; border-radius: 50%; }
-        .led-blue { background: var(--drivery-blue); box-shadow: 0 0 20px var(--drivery-blue); }
-        .led-green { background: var(--drivery-green); box-shadow: 0 0 20px var(--drivery-green); }
-        .fleet-label { font-size: 20px; font-weight: 700; }
-        .fleet-number { font-family: var(--font-tech); font-size: 26px; font-weight: 900; }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            body, html { zoom: 1; }
-            header { padding: 20px; flex-direction: column; align-items: center; }
-            .header-stats { text-align: center; margin-top: 15px; }
-            .logo-main { height: 55px; }
-            main { margin-top: 0; }
-            .orb-master { transform: scale(0.8); }
-            .search-title { font-size: 24px; }
-            #fleet-commander { position: relative; bottom: 20px; left: 0; width: 90%; margin: 20px auto; }
-            #ui-layer { height: auto; min-height: 100vh; overflow-y: auto; }
-        }
+        
+        .search-title { font-size: 38px; font-weight: 700; letter-spacing: 3px; margin-bottom: 25px; text-shadow: 0 4px 15px rgba(0,0,0,1); text-align: center; }
+        .search-container { width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 20px 45px; display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+        .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 24px; width: 100%; font-family: var(--font-main); letter-spacing: 1px; }
+        
+        .button-grid { display: flex; gap: 25px; margin-top: 35px; flex-wrap: wrap; justify-content: center; }
+        .action-btn { width: 85px; height: 85px; background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 32px; }
+        
+        #fleet-commander { position: fixed; bottom: 50px; left: 50px; width: 340px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 200; }
+        .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; }
     </style>
 </head>
 <body>
-
     <div id="map"></div>
+    <div class="orb-aura"></div>
 
     <div id="ui-layer">
         <header>
             <div class="brand-box">
                 <img src="logo_app.png" alt="DRIVERY" class="logo-main" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
-                <h1 id="alt-logo" class="drivery-logo" style="display:none; font-family:var(--font-tech); font-size:40px; letter-spacing:8px;">DRIVERY</h1>
+                <div class="os-badge">OS</div>
+                <h1 id="alt-logo" style="display:none; font-family:var(--font-tech); font-size:40px; letter-spacing:8px; margin:0; color:white;">DRIVERY</h1>
             </div>
             <div class="header-stats">
                 <p class="stat-line">UN ORBE, TODO TU MUNDO LOGÍSTICO.</p>
                 <p class="stat-line">CARACAS | VENEZUELA</p>
-                <p class="stat-line">STATUS: <span class="status-on" id="os-status">OPERATIVO</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
+                <p class="stat-line">STATUS: <span class="status-on">OPERATIVO ●</span> - UNIDADES: <span class="total-highlight" id="total-count">48,170</span></p>
             </div>
         </header>
-
         <main>
-            <div id="main-orbe" class="orb-master">
-                <div class="orb-plasma"></div>
-                <div class="orb-rings-container">
-                    <div class="orb-ring ring-1"></div>
-                    <div class="orb-ring ring-2"></div>
-                    <div class="orb-ring ring-3"></div>
-                </div>
-                <div class="orb-core"></div>
-            </div>
-
+            <div id="main-orbe" class="orb-master"></div>
             <h2 class="search-title">¿A dónde vamos hoy?</h2>
             <div class="search-container">
                 <input id="drivery-input" type="text" placeholder="Habla o escribe tu destino...">
-                <div class="mic-icon">🎤</div>
             </div>
             <div class="button-grid">
-                <div class="action-btn">🚗</div>
-                <div class="action-btn">📦</div>
-                <div class="action-btn">🏥</div>
-                <div class="action-btn">💎</div>
+                <div class="action-btn">🚗</div><div class="action-btn">📦</div><div class="action-btn">🏥</div><div class="action-btn">💎</div>
             </div>
         </main>
-
         <div id="fleet-commander">
-            <div class="fleet-tag">FLOTAS BAJO COMANDO</div>
             <div class="fleet-entry">
-                <div class="status-led led-blue"></div>
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--drivery-blue);box-shadow:0 0 15px var(--drivery-blue);"></div>
                 <div>
-                    <div style="color: var(--drivery-blue); font-weight: 700; font-size: 18px;">FLOTA BLUE:</div>
+                    <div style="color:var(--drivery-blue);font-weight:700;font-size:16px;">FLOTA BLUE:</div>
                     <div class="fleet-number" id="blue-count">28,450</div>
                 </div>
             </div>
             <div class="fleet-entry">
-                <div class="status-led led-green"></div>
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--drivery-green);box-shadow:0 0 15px var(--drivery-green);"></div>
                 <div>
-                    <div style="color: var(--drivery-green); font-weight: 700; font-size: 18px;">FLOTA GREEN:</div>
+                    <div style="color:var(--drivery-green);font-weight:700;font-size:16px;">FLOTA GREEN:</div>
                     <div class="fleet-number" id="green-count">19,720</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let map;
+        let map, sphere, core, coreMat;
+        let baseBlue = 28450;
+        let baseGreen = 19720;
 
         function initMap() {
-            const cinematicStyle = [
-                { "elementType": "geometry", "stylers": [{ "color": "#000814" }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#3a4b5c" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#000814" }] },
-                { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#14213d" }] },
-                { "featureType": "landscape.natural", "elementType": "geometry", "stylers": [{ "color": "#0E1F27" }] },
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#001d3d" }] },
-                { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#ff9e00" }] }, 
-                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#ffc300" }, { "weight": 0.5 }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] }
+            const forcedStyle = [
+                { "elementType": "geometry", "stylers": [{ "color": "#000000" }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1A1A1A" }] },
+                { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#00FFFF" }] },
+                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#004D4D" }, { "weight": 2 }] },
+                { "elementType": "labels", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
             ];
 
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 10.4806, lng: -66.8983 },
-                zoom: 14,
-                styles: cinematicStyle,
+                zoom: 16,
+                styles: forcedStyle,
                 disableDefaultUI: true,
                 backgroundColor: "#000"
             });
 
+            initThreeJS();
+            startLiveNumbers();
             initSystem();
         }
 
-        function initSystem() {
-            const input = document.getElementById('drivery-input');
-            const orbe = document.getElementById('main-orbe');
+        function startLiveNumbers() {
+            setInterval(() => {
+                let vBlue = Math.floor(Math.random() * 11) - 5;
+                let vGreen = Math.floor(Math.random() * 11) - 5;
+                baseBlue += vBlue;
+                baseGreen += vGreen;
+                let total = baseBlue + baseGreen;
+                document.getElementById('blue-count').innerText = baseBlue.toLocaleString();
+                document.getElementById('green-count').innerText = baseGreen.toLocaleString();
+                document.getElementById('total-count').innerText = total.toLocaleString();
+            }, 3000);
+        }
 
-            input.addEventListener('input', () => {
-                if(input.value.length > 0) orbe.classList.add('orbe-typing');
-                else orbe.classList.remove('orbe-typing');
-            });
-
-            const BACKEND_HTTP = "https://drivery-backend.onrender.com";
-            const BACKEND_WS = "wss://drivery-backend.onrender.com";
+        function initThreeJS() {
+            const container = document.getElementById('main-orbe');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(450, 450);
+            container.appendChild(renderer.domElement);
             
-            fetch(BACKEND_HTTP, { mode: 'no-cors' });
-            const socket = new WebSocket(BACKEND_WS);
+            const geometry = new THREE.IcosahedronGeometry(1.1, 5); 
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15, wireframeLinewidth: 1 
+            });
+            sphere = new THREE.Mesh(geometry, material);
+            
+            const coreGeo = new THREE.IcosahedronGeometry(0.7, 3);
+            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.5 });
+            core = new THREE.Mesh(coreGeo, coreMat);
+            
+            sphere.add(core);
+            scene.add(sphere);
+            camera.position.z = 2.4;
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.y += 0.003; core.rotation.y -= 0.006; core.rotation.x += 0.002;
+                const pulse = 1 + Math.sin(Date.now() * 0.002) * 0.07;
+                core.scale.set(pulse, pulse, pulse);
+                coreMat.opacity = 0.5 + Math.sin(Date.now() * 0.002) * 0.2;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function initSystem() {
+            const socket = new WebSocket("wss://drivery-backend.onrender.com");
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if(data.metrics) {
-                    document.getElementById('blue-count').innerText = data.metrics.blueFleet.toLocaleString();
-                    document.getElementById('green-count').innerText = data.metrics.greenFleet.toLocaleString();
-                    document.getElementById('total-count').innerText = data.metrics.totalUnits.toLocaleString();
+                    baseBlue = data.metrics.blueFleet;
+                    baseGreen = data.metrics.greenFleet;
                 }
             };
         }
     </script>
-    
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
 </body>
 </html>
