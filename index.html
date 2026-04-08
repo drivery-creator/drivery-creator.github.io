@@ -45,16 +45,28 @@
         .total-highlight { color: var(--drivery-blue); font-size: 16px; font-weight: 900; transition: all 0.5s ease; }
         
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; padding: 0 20px; }
-        .orb-master { width: 450px; height: 450px; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; z-index: 10; filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65)); }
+        .orb-master { width: 450px; height: 450px; max-width: 90vw; max-height: 50vh; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; z-index: 10; filter: drop-shadow(0 0 65px rgba(0, 210, 255, 0.65)); }
         
         .search-title { font-size: 38px; font-weight: 700; letter-spacing: 3px; margin-bottom: 25px; text-shadow: 0 4px 15px rgba(0,0,0,1); text-align: center; }
-        .search-container { width: 100%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 20px 45px; display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
-        .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 24px; width: 100%; font-family: var(--font-main); letter-spacing: 1px; }
+        .search-container { width: 95%; max-width: 600px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 15px 35px; display: flex; align-items: center; gap: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+        .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 20px; width: 100%; font-family: var(--font-main); letter-spacing: 1px; }
         .mic-icon { font-size: 28px; color: var(--drivery-blue); cursor: pointer; text-shadow: 0 0 10px var(--drivery-blue); }
         
-        #fleet-commander { position: fixed; bottom: 50px; left: 50px; width: 340px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 200; }
-        .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .fleet-number { font-family: var(--font-tech); font-size: 24px; font-weight: 900; transition: all 0.5s ease; }
+        #fleet-commander { position: fixed; bottom: 40px; left: 40px; width: 300px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 200; }
+        .fleet-entry { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        .fleet-number { font-family: var(--font-tech); font-size: 22px; font-weight: 900; }
+
+        /* AJUSTES RESPONSIVE REGENERADOS */
+        @media (max-width: 768px) {
+            header { padding: 25px; flex-direction: column; align-items: center; }
+            .header-stats { text-align: center; margin-top: 20px; }
+            .logo-main { height: 65px; }
+            .orb-master { width: 320px; height: 320px; }
+            .search-title { font-size: 26px; }
+            #fleet-commander { position: relative; bottom: 0; left: 0; width: 85%; margin: 30px auto; }
+            main { margin-top: 0; }
+            body, html { zoom: 1; overflow-y: auto; } /* Permitir scroll en móvil si es necesario */
+        }
     </style>
 </head>
 <body>
@@ -112,6 +124,7 @@
                 { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#001a1a" }] }
             ];
 
+            // UBICACIÓN OBLIGATORIA RESTABLECIDA: CARACAS (ALTAMIRA)
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 10.4806, lng: -66.8983 },
                 zoom: 15,
@@ -120,19 +133,16 @@
                 backgroundColor: "#000"
             });
 
-            // --- LÓGICA DE GEOLOCALIZACIÓN REPARADA ---
+            // GEOLOCALIZACIÓN COMO ACTUALIZACIÓN DE FONDO
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const userPos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                        map.setCenter(userPos); // Forzamos el centro
-                        map.panTo(userPos);   // Hacemos el deslizamiento suave
+                        const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                        map.panTo(userPos);
                         map.setZoom(16);
-                        console.log("GPS: Posición de usuario sincronizada.");
+                        console.log("Drivery OS: Redirección por GPS activa.");
                     },
-                    (error) => { 
-                        console.log("GPS: Acceso denegado o error de señal."); 
-                    },
+                    () => { console.log("GPS: Usando ubicación base (Caracas)."); },
                     { enableHighAccuracy: true }
                 );
             }
@@ -148,7 +158,8 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(450, 450);
+            const size = container.clientWidth;
+            renderer.setSize(size, size);
             container.appendChild(renderer.domElement);
             const geometry = new THREE.IcosahedronGeometry(1.1, 5); 
             const material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 });
@@ -167,6 +178,13 @@
                 renderer.render(scene, camera);
             }
             animate();
+
+            window.addEventListener('resize', () => {
+                const nSize = container.clientWidth;
+                renderer.setSize(nSize, nSize);
+                camera.aspect = 1;
+                camera.updateProjectionMatrix();
+            });
         }
 
         function startLiveNumbers() {
@@ -183,20 +201,16 @@
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return;
-
             const recognition = new SpeechRecognition();
             recognition.lang = 'es-VE';
             const mic = document.querySelector('.mic-icon');
             const input = document.getElementById('drivery-input');
-
             mic.onclick = () => { recognition.start(); input.placeholder = "Escuchando..."; };
-
             recognition.onresult = (e) => {
                 const cmd = e.results[0][0].transcript;
                 input.value = cmd;
                 processAICommand(cmd);
             };
-
             recognition.onend = () => { input.placeholder = "Habla o escribe tu destino..."; };
             input.addEventListener("keypress", (e) => { if (e.key === "Enter") processAICommand(input.value); });
         }
@@ -211,16 +225,13 @@
                     body: JSON.stringify({ command: cmd })
                 });
                 const data = await response.json();
-                if (data.coords) {
-                    map.panTo(data.coords);
-                    map.setZoom(data.zoom || 16);
-                }
+                if (data.coords) { map.panTo(data.coords); map.setZoom(data.zoom || 16); }
                 if (data.reply) {
                     const msg = new SpeechSynthesisUtterance(data.reply);
                     msg.lang = 'es-VE';
                     window.speechSynthesis.speak(msg);
                 }
-            } catch (e) { console.error("Error:", e); }
+            } catch (e) { console.error("Error Core:", e); }
             finally { coreMat.color.setHex(0x00d2ff); }
         }
 
