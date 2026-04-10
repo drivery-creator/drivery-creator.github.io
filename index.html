@@ -53,16 +53,12 @@
         .mic-icon { font-size: 24px; color: var(--drivery-blue); cursor: pointer; transition: 0.3s; }
         .mic-icon:active { transform: scale(0.85); color: var(--drivery-green); }
         
-        #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
-        .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
-
-        /* TICKET UI */
         .ticket-ui {
             position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
             background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
             padding: 20px; border-radius: 20px; z-index: 1000; text-align: center; min-width: 220px;
             box-shadow: 0 0 30px rgba(0,210,255,0.3); animation: ticket-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: opacity 0.5s;
         }
         .ticket-ui h3 { font-family: var(--font-tech); font-size: 28px; margin: 0; color: #fff; }
         .ticket-ui p { color: var(--drivery-green); font-weight: 700; margin: 5px 0; font-size: 18px; }
@@ -70,12 +66,9 @@
 
         @keyframes ticket-slide { from { bottom: 50px; opacity: 0; } to { bottom: 120px; opacity: 1; } }
 
-        @media (max-width: 600px) {
-            header { padding: 15px 20px; }
-            .logo-main { height: 45px; }
-            .orb-master { width: 220px; height: 220px; }
-            .search-title { font-size: 20px; }
-        }
+        #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
+        .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -89,11 +82,12 @@
                 <div class="os-badge">OS</div>
             </div>
             <div class="header-stats">
-                <p class="stat-line">UN ORBE, TODO TU MUNDO LOGÍSTICO.</p>
+                <p class="stat-line">CORE INTELIGENTE DE SERVICIOS</p>
                 <p class="stat-line">CARACAS | VZLA</p>
                 <p class="stat-line">STATUS: <span class="status-on">●</span> - <span class="total-highlight" id="total-count">48,170</span></p>
             </div>
         </header>
+
         <main>
             <div id="main-orbe" class="orb-master"></div>
             <h2 class="search-title">¿A dónde vamos hoy?</h2>
@@ -102,6 +96,7 @@
                 <div class="mic-icon" id="mic-btn">🎤</div>
             </div>
         </main>
+
         <div id="fleet-commander">
             <div class="fleet-entry">
                 <div style="width:8px;height:8px;border-radius:50%;background:var(--drivery-blue);box-shadow:0 0 10px var(--drivery-blue);"></div>
@@ -119,9 +114,16 @@
         let map, sphere, core, coreMat;
         const API_URL = "https://drivery-backend.onrender.com";
 
-        // 1. INICIALIZACIÓN DEL MAPA TÁCTICO
         function initMap() {
-            const tacticalStyle = [{"elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#121212"}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#004d4d"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#00d2ff"},{"weight":0.5}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#000000"},{"weight":2}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#001a1a"}]}];
+            const tacticalStyle = [
+                { "elementType": "geometry", "stylers": [{ "color": "#000000" }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#121212" }] },
+                { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#004d4d" }] },
+                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.5 }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#001a1a" }] }
+            ];
 
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 10.4806, lng: -66.8983 },
@@ -130,21 +132,17 @@
                 disableDefaultUI: true
             });
 
-            // Pedir GPS inmediatamente
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     map.panTo(userPos);
-                    map.setZoom(16);
-                    new google.maps.Marker({ position: userPos, map: map, title: "Origen" });
-                }, (err) => console.log("GPS Denegado"), { enableHighAccuracy: true });
+                    new google.maps.Marker({ position: userPos, map: map, title: "Tú" });
+                });
             }
-
             initThreeJS();
             initVoice();
         }
 
-        // 2. EL ORBE 3D (THREE.JS)
         function initThreeJS() {
             const container = document.getElementById('main-orbe');
             const scene = new THREE.Scene();
@@ -168,14 +166,11 @@
                 requestAnimationFrame(animate);
                 sphere.rotation.y += 0.003;
                 core.rotation.y -= 0.006;
-                const pulse = 1 + Math.sin(Date.now() * 0.002) * 0.05;
-                core.scale.set(pulse, pulse, pulse);
                 renderer.render(scene, camera);
             }
             animate();
         }
 
-        // 3. RECONOCIMIENTO DE VOZ
         function initVoice() {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'es-VE';
@@ -190,72 +185,62 @@
                 document.getElementById('drivery-input').value = cmd;
                 ejecutarComando(cmd);
             };
-            recognition.onend = () => { document.getElementById('drivery-input').placeholder = "Destino..."; };
         }
 
-        // 4. LÓGICA DE COMANDO (CONEXIÓN A RENDER)
         async function ejecutarComando(cmd) {
-            // Feedback: Orbe brilla en blanco al procesar
             coreMat.color.setHex(0xffffff);
             coreMat.opacity = 1;
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
+                const currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                
                 try {
                     const res = await fetch(`${API_URL}/api/command`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
                             command: cmd, 
-                            userCoords: { lat: pos.coords.latitude, lng: pos.coords.longitude } 
+                            userCoords: currentCoords 
                         })
                     });
-                    
                     const data = await res.json();
                     
-                    if(data.coords) {
-                        map.panTo(data.coords);
-                        map.setZoom(16);
-                        new google.maps.Marker({ position: data.coords, map: map, animation: google.maps.Animation.DROP });
-                    }
-                    
+                    if(data.coords) { map.panTo(data.coords); map.setZoom(16); }
                     if(data.display) mostrarTicket(data.display);
                     hablar(data.reply);
-
                 } catch (e) {
-                    console.error(e);
-                    hablar("Error de conexión con el núcleo Drivery.");
+                    hablar("Error de conexión con el núcleo.");
                 } finally {
-                    // Volver a color azul original
                     coreMat.color.setHex(0x00d2ff);
                     coreMat.opacity = 0.6;
+                    document.getElementById('drivery-input').placeholder = "Destino...";
                 }
-            });
+            }, (err) => {
+                hablar("Activa el GPS para poder cotizar.");
+                coreMat.color.setHex(0x00d2ff);
+            }, { enableHighAccuracy: true });
         }
 
         function mostrarTicket(d) {
             const t = document.createElement('div');
             t.className = 'ticket-ui';
-            t.innerHTML = `
-                <small>LOGÍSTICA CONFIRMADA</small>
-                <h3>$${d.usd}</h3>
-                <p>${d.bs} Bs</p>
-                <small>LLEGADA ESTIMADA: ${d.tiempo} MIN</small>
-            `;
+            t.innerHTML = `<small>LOGÍSTICA CONFIRMADA</small><h3>$${d.usd}</h3><p>${d.bs} Bs</p><small>LLEGADA: ${d.tiempo} MIN</small>`;
             document.body.appendChild(t);
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 500); }, 8000);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                setTimeout(() => t.remove(), 500);
+            }, 8000);
         }
 
         function hablar(texto) {
             const ut = new SpeechSynthesisUtterance(texto);
             ut.lang = 'es-VE';
-            ut.pitch = 0.9;
             window.speechSynthesis.speak(ut);
         }
 
-        // Simulación de números de flota activos
         setInterval(() => {
-            const blue = 28450 + Math.floor(Math.random() * 20) - 10;
-            const green = 19720 + Math.floor(Math.random() * 20) - 10;
+            const blue = 28450 + Math.floor(Math.random() * 20);
+            const green = 19720 + Math.floor(Math.random() * 20);
             document.getElementById('blue-count').innerText = blue.toLocaleString();
             document.getElementById('green-count').innerText = green.toLocaleString();
             document.getElementById('total-count').innerText = (blue + green).toLocaleString();
