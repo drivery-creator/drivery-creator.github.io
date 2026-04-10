@@ -50,11 +50,21 @@
         .search-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; }
         .search-container { width: 100%; max-width: 450px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 12px 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 18px; width: 100%; font-family: var(--font-main); }
-        .mic-icon { font-size: 24px; color: var(--drivery-blue); cursor: pointer; }
+        .mic-icon { font-size: 24px; color: var(--drivery-blue); cursor: pointer; transition: 0.3s; }
+        .mic-icon:active { transform: scale(0.8); color: var(--drivery-green); }
         
         #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
         .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
         .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
+
+        /* TICKET DINÁMICO */
+        .ticket-ui {
+            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
+            padding: 20px; border-radius: 20px; z-index: 1000; text-align: center; min-width: 220px;
+            box-shadow: 0 0 30px rgba(0,210,255,0.3); animation: ticket-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes ticket-slide { from { bottom: 50px; opacity: 0; } to { bottom: 120px; opacity: 1; } }
 
         @media (max-width: 600px) {
             header { padding: 15px 20px; }
@@ -63,7 +73,6 @@
             .search-title { font-size: 20px; }
             .search-container { padding: 10px 20px; }
             #fleet-commander { margin: 0 auto 20px auto; width: 80%; }
-            .stat-line:first-child { display: none; } /* Ocultar eslogan largo en móvil */
         }
     </style>
 </head>
@@ -88,7 +97,7 @@
             <h2 class="search-title">¿A dónde vamos hoy?</h2>
             <div class="search-container">
                 <input id="drivery-input" type="text" placeholder="Destino...">
-                <div class="mic-icon">🎤</div>
+                <div class="mic-icon" id="mic-btn">🎤</div>
             </div>
         </main>
         <div id="fleet-commander">
@@ -101,123 +110,3 @@
                 <div><div style="color:var(--drivery-green);font-weight:700;font-size:12px;">FLOTA GREEN:</div><div class="fleet-number" id="green-count">19,720</div></div>
             </div>
         </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        let map, sphere, core, coreMat;
-        let baseBlue = 28450;
-        let baseGreen = 19720;
-
-        function initMap() {
-            const tacticalStyle = [{"elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#121212"}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#004d4d"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#00d2ff"},{"weight":0.5}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"},{"lightness":-20}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#000000"},{"weight":2}]},{"elementType":"labels.icon","stylers":[{"visibility":"on"},{"hue":"#00d2ff"},{"saturation":-20}]},{"featureType":"poi","stylers":[{"visibility":"on"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#001a1a"}]}];
-
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 10.4806, lng: -66.8983 },
-                zoom: 15,
-                styles: tacticalStyle,
-                disableDefaultUI: true
-            });
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    map.panTo(userPos);
-                    map.setZoom(16);
-                }, null, { enableHighAccuracy: true });
-            }
-
-            initThreeJS();
-            startLiveNumbers();
-            initVoiceRecognition();
-            initSystem();
-        }
-
-        function initThreeJS() {
-            const container = document.getElementById('main-orbe');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            const size = container.clientWidth;
-            renderer.setSize(size, size);
-            container.appendChild(renderer.domElement);
-            
-            const geometry = new THREE.IcosahedronGeometry(1.1, 5); 
-            const material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 });
-            sphere = new THREE.Mesh(geometry, material);
-            const coreGeo = new THREE.IcosahedronGeometry(0.7, 3);
-            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.5 });
-            core = new THREE.Mesh(coreGeo, coreMat);
-            sphere.add(core);
-            scene.add(sphere);
-            camera.position.z = 2.4;
-
-            function animate() {
-                requestAnimationFrame(animate);
-                sphere.rotation.y += 0.003; core.rotation.y -= 0.006;
-                const pulse = 1 + Math.sin(Date.now() * 0.002) * 0.07;
-                core.scale.set(pulse, pulse, pulse);
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            window.addEventListener('resize', () => {
-                const nSize = container.clientWidth;
-                renderer.setSize(nSize, nSize);
-                camera.aspect = 1;
-                camera.updateProjectionMatrix();
-            });
-        }
-
-        function startLiveNumbers() {
-            setInterval(() => {
-                baseBlue += Math.floor(Math.random() * 11) - 5;
-                baseGreen += Math.floor(Math.random() * 11) - 5;
-                document.getElementById('blue-count').innerText = baseBlue.toLocaleString();
-                document.getElementById('green-count').innerText = baseGreen.toLocaleString();
-                document.getElementById('total-count').innerText = (baseBlue + baseGreen).toLocaleString();
-            }, 3000);
-        }
-
-        function initVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-VE';
-            const mic = document.querySelector('.mic-icon');
-            const input = document.getElementById('drivery-input');
-            mic.onclick = () => { recognition.start(); input.placeholder = "Escuchando..."; };
-            recognition.onresult = (e) => {
-                const cmd = e.results[0][0].transcript;
-                input.value = cmd;
-                processAICommand(cmd);
-            };
-            recognition.onend = () => { input.placeholder = "Destino..."; };
-        }
-
-        async function processAICommand(cmd) {
-            if (!cmd) return;
-            coreMat.color.setHex(0xffffff); 
-            try {
-                const response = await fetch("https://drivery-backend.onrender.com/api/command", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ command: cmd })
-                });
-                const data = await response.json();
-                if (data.coords) { map.panTo(data.coords); map.setZoom(16); }
-            } catch (e) { console.error(e); }
-            finally { coreMat.color.setHex(0x00d2ff); }
-        }
-
-        function initSystem() {
-            const socket = new WebSocket("wss://drivery-backend.onrender.com");
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if(data.metrics) { baseBlue = data.metrics.blueFleet; baseGreen = data.metrics.greenFleet; }
-            };
-        }
-    </script>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
-</body>
-</html>
