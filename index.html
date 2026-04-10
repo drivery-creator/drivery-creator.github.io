@@ -16,7 +16,7 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
         
-        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
+        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #111; }
 
         .orb-aura {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -51,13 +51,11 @@
         .search-container { width: 100%; max-width: 450px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 12px 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 18px; width: 100%; font-family: var(--font-main); }
         .mic-icon { font-size: 24px; color: var(--drivery-blue); cursor: pointer; transition: 0.3s; }
-        .mic-icon:active { transform: scale(0.8); color: var(--drivery-green); }
         
         #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
         .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
         .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
 
-        /* TICKET DINÁMICO */
         .ticket-ui {
             position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
             background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
@@ -65,15 +63,6 @@
             box-shadow: 0 0 30px rgba(0,210,255,0.3); animation: ticket-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes ticket-slide { from { bottom: 50px; opacity: 0; } to { bottom: 120px; opacity: 1; } }
-
-        @media (max-width: 600px) {
-            header { padding: 15px 20px; }
-            .logo-main { height: 45px; }
-            .orb-master { width: 220px; height: 220px; }
-            .search-title { font-size: 20px; }
-            .search-container { padding: 10px 20px; }
-            #fleet-commander { margin: 0 auto 20px auto; width: 80%; }
-        }
     </style>
 </head>
 <body>
@@ -110,3 +99,119 @@
                 <div><div style="color:var(--drivery-green);font-weight:700;font-size:12px;">FLOTA GREEN:</div><div class="fleet-number" id="green-count">19,720</div></div>
             </div>
         </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let map, sphere, core, coreMat;
+        const API_URL = "https://drivery-backend.onrender.com";
+
+        // 1. INICIALIZAR GOOGLE MAPS
+        function initMap() {
+            const tacticalStyle = [{"elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#121212"}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#004d4d"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#00d2ff"},{"weight":0.5}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"},{"lightness":-20}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#000000"},{"weight":2}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#001a1a"}]}];
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 10.4806, lng: -66.8983 },
+                zoom: 15,
+                styles: tacticalStyle,
+                disableDefaultUI: true
+            });
+
+            // Pedir Geolocalización automáticamente
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    map.panTo(userPos);
+                    map.setZoom(16);
+                    new google.maps.Marker({ position: userPos, map: map, title: "Tu Ubicación" });
+                });
+            }
+
+            initThreeJS();
+            initVoice();
+        }
+
+        // 2. INICIALIZAR EL ORBE 3D
+        function initThreeJS() {
+            const container = document.getElementById('main-orbe');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.IcosahedronGeometry(1.1, 5);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 });
+            sphere = new THREE.Mesh(geometry, material);
+            
+            const coreGeo = new THREE.IcosahedronGeometry(0.7, 3);
+            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.5 });
+            core = new THREE.Mesh(coreGeo, coreMat);
+            
+            sphere.add(core);
+            scene.add(sphere);
+            camera.position.z = 2.4;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.y += 0.003;
+                core.rotation.y -= 0.006;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // 3. RECONOCIMIENTO DE VOZ Y MICRÓFONO
+        function initVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-VE';
+
+            document.getElementById('mic-btn').onclick = () => {
+                recognition.start();
+                document.getElementById('drivery-input').placeholder = "ESCUCHANDO...";
+            };
+
+            recognition.onresult = (e) => {
+                const cmd = e.results[0][0].transcript;
+                document.getElementById('drivery-input').value = cmd;
+                processCommand(cmd);
+            };
+        }
+
+        async function processCommand(cmd) {
+            coreMat.color.setHex(0xffffff);
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    const res = await fetch(`${API_URL}/api/command`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ command: cmd, userCoords: { lat: pos.coords.latitude, lng: pos.coords.longitude } })
+                    });
+                    const data = await res.json();
+                    if(data.coords) { map.panTo(data.coords); map.setZoom(16); }
+                    if(data.display) mostrarTicket(data.display);
+                    hablar(data.reply);
+                } catch (e) { console.error(e); }
+                finally { coreMat.color.setHex(0x00d2ff); }
+            });
+        }
+
+        function mostrarTicket(d) {
+            const t = document.createElement('div');
+            t.className = 'ticket-ui';
+            t.innerHTML = `<h3>$${d.usd}</h3><p>${d.bs} Bs</p><small>${d.tiempo} MIN</small>`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 8000);
+        }
+
+        function hablar(texto) {
+            const ut = new SpeechSynthesisUtterance(texto);
+            ut.lang = 'es-VE';
+            window.speechSynthesis.speak(ut);
+        }
+    </script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME&callback=initMap"></script>
+</body>
+</html>
