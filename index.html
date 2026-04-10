@@ -9,6 +9,7 @@
         :root {
             --drivery-blue: #00d2ff;
             --drivery-green: #39ff14;
+            --drivery-purple: #7b2cbf;
             --glass-bg: rgba(6, 11, 20, 0.85);
             --glass-border: rgba(0, 210, 255, 0.3);
             --font-tech: 'Orbitron', sans-serif;
@@ -45,14 +46,20 @@
         .total-highlight { color: var(--drivery-blue); font-size: 14px; font-weight: 900; }
         
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 20px; }
-        .orb-master { width: 300px; height: 300px; position: relative; display: flex; justify-content: center; align-items: center; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); }
+        .orb-master { width: 300px; height: 300px; position: relative; display: flex; justify-content: center; align-items: center; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
         
         .search-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; }
-        .search-container { width: 100%; max-width: 450px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 12px 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
-        .search-container input { background: transparent; border: none; outline: none; color: #fff; font-size: 18px; width: 100%; font-family: var(--font-main); }
-        .mic-icon { font-size: 24px; color: var(--drivery-blue); cursor: pointer; transition: 0.3s; }
-        .mic-icon:active { transform: scale(0.85); color: var(--drivery-green); }
         
+        /* BÓVEDA DE SINCRONIZACIÓN */
+        #auth-vault {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px);
+            border: 1px solid var(--drivery-blue); border-radius: 30px; padding: 40px; z-index: 2000;
+            text-align: center; box-shadow: 0 0 60px rgba(0, 210, 255, 0.2);
+        }
+        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-family: var(--font-main); font-size: 16px; box-sizing: border-box; outline: none; }
+        .btn-purple { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(123, 44, 191, 0.3); margin-top: 15px; }
+
         .ticket-ui {
             position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
             background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
@@ -90,11 +97,7 @@
 
         <main>
             <div id="main-orbe" class="orb-master"></div>
-            <h2 class="search-title">¿A dónde vamos hoy?</h2>
-            <div class="search-container">
-                <input id="drivery-input" type="text" placeholder="Destino...">
-                <div class="mic-icon" id="mic-btn">🎤</div>
-            </div>
+            <h2 class="search-title" id="orb-status">MANTENER PARA TRANSMITIR</h2>
         </main>
 
         <div id="fleet-commander">
@@ -109,10 +112,29 @@
         </div>
     </div>
 
+    <div id="auth-vault">
+        <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); letter-spacing:3px; margin-bottom:30px;">ACCESO AL NÚCLEO</div>
+        
+        <div onclick="loginSocial('google')" style="width:100%; padding:14px; margin-bottom:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg" style="width:18px;">
+            <span style="font-weight:600;">Continuar con Google</span>
+        </div>
+
+        <input id="y-id" class="vault-input" type="text" placeholder="Teléfono o Correo">
+        <input id="y-pass" class="vault-input" type="password" placeholder="Código de acceso">
+        <button class="btn-purple" onclick="sincronizar()">VINCULAR DISPOSITIVO</button>
+        
+        <div style="margin-top:20px; font-size:10px; color: var(--drivery-purple); opacity: 0.8;">
+            <span style="color:var(--drivery-green);">●</span> SEGURIDAD LOCAL ACTIVA<br>
+            Drivery OS no almacena sus datos en el servidor.
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let map, sphere, core, coreMat;
+        let map, sphere, core, coreMat, recognition, isRecording = false;
         const API_URL = "https://drivery-backend.onrender.com";
+        const SESSION_LIMIT = 2 * 60 * 60 * 1000; 
 
         function initMap() {
             const tacticalStyle = [
@@ -132,15 +154,13 @@
                 disableDefaultUI: true
             });
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    map.panTo(userPos);
-                    new google.maps.Marker({ position: userPos, map: map, title: "Tú" });
-                });
-            }
             initThreeJS();
             initVoice();
+            
+            // Check UUID
+            if(!localStorage.getItem('drivery_uuid')) {
+                localStorage.setItem('drivery_uuid', 'DRV-' + crypto.randomUUID().substring(0,8).toUpperCase());
+            }
         }
 
         function initThreeJS() {
@@ -148,7 +168,7 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(300, 300);
             container.appendChild(renderer.domElement);
 
             const geometry = new THREE.IcosahedronGeometry(1.1, 5);
@@ -169,56 +189,97 @@
                 renderer.render(scene, camera);
             }
             animate();
+
+            // EVENTOS TÁCTILES DEL ORBE
+            container.addEventListener('pointerdown', (e) => {
+                isRecording = true;
+                coreMat.color.setHex(0xffffff); // Blanco: Grabando
+                sphere.scale.set(1.15, 1.15, 1.15);
+                try { recognition.start(); } catch(err) {}
+            });
+
+            window.addEventListener('pointerup', () => {
+                if (isRecording) {
+                    isRecording = false;
+                    sphere.scale.set(1, 1, 1);
+                    recognition.stop();
+                }
+            });
         }
 
         function initVoice() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'es-VE';
+            recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript);
+        }
 
-            document.getElementById('mic-btn').onclick = () => {
-                recognition.start();
-                document.getElementById('drivery-input').placeholder = "ESCUCHANDO...";
-            };
+        async function solicitarBiometria() {
+            if (window.PublicKeyCredential) {
+                try {
+                    await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32), userVerification: "required" } });
+                    return true;
+                } catch (e) { return false; }
+            }
+            return true; 
+        }
 
-            recognition.onresult = (e) => {
-                const cmd = e.results[0][0].transcript;
-                document.getElementById('drivery-input').value = cmd;
-                ejecutarComando(cmd);
-            };
+        async function sincronizar() {
+            const id = document.getElementById('y-id').value;
+            const pass = document.getElementById('y-pass').value;
+            const res = await fetch(`${API_URL}/api/register-identity`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, password: pass, deviceId: localStorage.getItem('drivery_uuid') })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('drv_session', JSON.stringify({ session: data.session, timestamp: Date.now() }));
+                document.getElementById('auth-vault').style.display = 'none';
+                hablar("Sincronización exitosa.");
+            }
         }
 
         async function ejecutarComando(cmd) {
-            coreMat.color.setHex(0xffffff);
-            coreMat.opacity = 1;
+            const sessionRaw = localStorage.getItem('drv_session');
+            if (!sessionRaw) {
+                document.getElementById('auth-vault').style.display = 'block';
+                hablar("Vincule su dispositivo.");
+                return;
+            }
 
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                
-                try {
-                    const res = await fetch(`${API_URL}/api/command`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            command: cmd, 
-                            userCoords: currentCoords 
-                        })
-                    });
-                    const data = await res.json();
-                    
-                    if(data.coords) { map.panTo(data.coords); map.setZoom(16); }
-                    if(data.display) mostrarTicket(data.display);
-                    hablar(data.reply);
-                } catch (e) {
-                    hablar("Error de conexión con el núcleo.");
-                } finally {
-                    coreMat.color.setHex(0x00d2ff);
-                    coreMat.opacity = 0.6;
-                    document.getElementById('drivery-input').placeholder = "Destino...";
-                }
-            }, (err) => {
-                hablar("Activa el GPS para poder cotizar.");
-                coreMat.color.setHex(0x00d2ff);
-            }, { enableHighAccuracy: true });
+            const sessionData = JSON.parse(sessionRaw);
+            coreMat.color.setHex(0x7b2cbf); // Morado: Autenticando
+            
+            const autorizado = await solicitarBiometria();
+
+            if (autorizado) {
+                coreMat.color.setHex(0xffffff);
+                coreMat.opacity = 1;
+
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    try {
+                        const res = await fetch(`${API_URL}/api/command`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                command: cmd, 
+                                userCoords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+                                session: sessionData.session,
+                                deviceId: localStorage.getItem('drivery_uuid')
+                            })
+                        });
+                        const data = await res.json();
+                        if(data.coords) { map.panTo(data.coords); map.setZoom(16); }
+                        if(data.display) mostrarTicket(data.display);
+                        hablar(data.reply);
+                    } catch (e) {
+                        hablar("Error de conexión.");
+                    } finally {
+                        coreMat.color.setHex(0x00d2ff);
+                        coreMat.opacity = 0.6;
+                    }
+                }, null, { enableHighAccuracy: true });
+            }
         }
 
         function mostrarTicket(d) {
