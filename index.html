@@ -48,9 +48,8 @@
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 20px; }
         .orb-master { width: 300px; height: 300px; position: relative; display: flex; justify-content: center; align-items: center; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
         
-        .search-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); }
+        .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
-        /* BÓVEDA DE SINCRONIZACIÓN */
         #auth-vault {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px);
@@ -58,14 +57,12 @@
             text-align: center; box-shadow: 0 0 60px rgba(0, 210, 255, 0.2);
         }
         .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-family: var(--font-main); font-size: 16px; box-sizing: border-box; outline: none; }
-        .btn-purple { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(123, 44, 191, 0.3); margin-top: 15px; transition: 0.3s; }
+        .btn-purple { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(123, 44, 191, 0.3); margin-top: 15px; }
 
         .ticket-ui {
             position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
             background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
             padding: 20px; border-radius: 20px; z-index: 1000; text-align: center; min-width: 220px;
-            box-shadow: 0 0 30px rgba(0,210,255,0.3); animation: ticket-slide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transition: opacity 0.5s;
         }
 
         #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
@@ -115,8 +112,6 @@
             <span style="font-weight:600;">Continuar con Google</span>
         </div>
 
-        <div style="margin:20px 0; display:flex; align-items:center; gap:10px; opacity:0.2;"><hr style="flex-grow:1; border:0; border-top:1px solid #fff;"><span style="font-size:9px;">O</span><hr style="flex-grow:1; border:0; border-top:1px solid #fff;"></div>
-
         <input id="y-id" class="vault-input" type="text" placeholder="Teléfono o Correo">
         <input id="y-pass" class="vault-input" type="password" placeholder="Código de acceso">
         <button class="btn-purple" id="sync-btn" onclick="sincronizar()">VINCULAR DISPOSITIVO</button>
@@ -129,25 +124,18 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // --- APIS Y CONFIGURACIÓN CRÍTICA ---
+        // --- APIS Y CONFIGURACIÓN ---
         const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
-        
+        const SESSION_LIMIT = 2 * 60 * 60 * 1000; 
+
         let map, sphere, core, coreMat, recognition, isRecording = false;
 
         function initMap() {
-            const tacticalStyle = [
-                { "elementType": "geometry", "stylers": [{ "color": "#000000" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#121212" }] },
-                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.5 }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] }
-            ];
-
+            const tacticalStyle = [{"elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#121212"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#00d2ff"},{"weight":0.5}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"}]},{"elementType":"labels.text.stroke","stylers":[{"visibility":"off"}]}];
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 10.48, lng: -66.90 }, zoom: 15, styles: tacticalStyle, disableDefaultUI: true
             });
-
             initThreeJS();
             initVoice();
             if(!localStorage.getItem('drivery_uuid')) localStorage.setItem('drivery_uuid', 'DRV-' + crypto.randomUUID().substring(0,8).toUpperCase());
@@ -199,30 +187,34 @@
             recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript);
         }
 
-        function loginSocial(provider) {
-            if(provider === 'google') {
-                const gBtn = document.getElementById('google-btn');
-                gBtn.style.opacity = "0.5";
-                hablar("Vinculando con núcleo Google.");
-                setTimeout(() => {
-                    localStorage.setItem('drv_session', JSON.stringify({ session: { bearer: "G", token: "G", userId: "G" }, timestamp: Date.now() }));
-                    document.getElementById('auth-vault').style.display = 'none';
-                    hablar("Google verificado. Orbe activo.");
-                    gBtn.style.opacity = "1";
-                }, 1500);
+        async function solicitarBiometria() {
+            if (window.PublicKeyCredential) {
+                try {
+                    const challenge = new Uint8Array(32);
+                    window.crypto.getRandomValues(challenge);
+                    const authOptions = {
+                        publicKey: {
+                            challenge: challenge,
+                            rp: { name: "Drivery OS" },
+                            user: { id: new Uint8Array([1]), name: "user", displayName: "Pilot" },
+                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                            authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" },
+                            timeout: 60000
+                        }
+                    };
+                    await navigator.credentials.create(authOptions);
+                    return true;
+                } catch (e) { return false; }
             }
+            return true;
         }
 
         async function sincronizar() {
             const id = document.getElementById('y-id').value;
             const pass = document.getElementById('y-pass').value;
             const btn = document.getElementById('sync-btn');
-
-            if(!id || !pass) return hablar("Faltan identificadores.");
-
-            btn.innerText = "ESTABLECIENDO TÚNEL...";
-            btn.style.opacity = "0.5";
-
+            if(!id || !pass) return hablar("Faltan datos.");
+            btn.innerText = "VINCULANDO...";
             try {
                 const res = await fetch(`${API_URL}/api/register-identity`, {
                     method: "POST",
@@ -233,21 +225,28 @@
                 if (data.success) {
                     localStorage.setItem('drv_session', JSON.stringify({ session: data.session, timestamp: Date.now() }));
                     document.getElementById('auth-vault').style.display = 'none';
-                    hablar("Sincronización de flota exitosa.");
-                } else {
-                    hablar("Error en el acceso.");
+                    hablar("Sincronización exitosa.");
                 }
             } catch (e) { hablar("Servidor fuera de línea."); }
-            finally { btn.innerText = "VINCULAR DISPOSITIVO"; btn.style.opacity = "1"; }
+            finally { btn.innerText = "VINCULAR DISPOSITIVO"; }
+        }
+
+        function loginSocial(provider) {
+            if(provider === 'google') {
+                hablar("Vinculando Google.");
+                setTimeout(() => {
+                    localStorage.setItem('drv_session', JSON.stringify({ session: { bearer: "G", token: "G", userId: "G" }, timestamp: Date.now() }));
+                    document.getElementById('auth-vault').style.display = 'none';
+                    hablar("Núcleo activo.");
+                }, 1500);
+            }
         }
 
         async function ejecutarComando(cmd) {
             const sessionRaw = localStorage.getItem('drv_session');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
-
             coreMat.color.setHex(0x7b2cbf);
             const autorizado = await solicitarBiometria();
-
             if (autorizado) {
                 coreMat.color.setHex(0xffffff);
                 navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -261,43 +260,29 @@
                         if(data.coords) map.panTo(data.coords);
                         if(data.display) mostrarTicket(data.display);
                         hablar(data.reply);
-                    } catch(e) { hablar("Fallo en el enlace."); }
-                    finally { coreMat.color.setHex(0x00d2ff); }
+                    } catch(e) {} finally { coreMat.color.setHex(0x00d2ff); }
                 });
             }
-        }
-
-        async function solicitarBiometria() {
-            if (window.PublicKeyCredential) {
-                try { await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32), userVerification: "required" } }); return true; }
-                catch (e) { return false; }
-            } return true;
         }
 
         function mostrarTicket(d) {
             const t = document.createElement('div');
             t.className = 'ticket-ui';
-            t.innerHTML = `<small>CÁLCULO DE FLOTA</small><h3>$${d.usd}</h3><p>${d.bs} Bs</p><small>${d.tiempo} MINUTOS</small>`;
+            t.innerHTML = `<small>LOGÍSTICA</small><h3>$${d.usd}</h3><p>${d.bs} Bs</p><small>${d.tiempo} MIN</small>`;
             document.body.appendChild(t);
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 8000);
+            setTimeout(() => t.remove(), 8000);
         }
 
         function hablar(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
 
-        setInterval(() => {
-            const b = 28450 + Math.floor(Math.random()*20);
-            const g = 19720 + Math.floor(Math.random()*20);
-            document.getElementById('blue-count').innerText = b.toLocaleString();
-            document.getElementById('green-count').innerText = g.toLocaleString();
-            document.getElementById('total-count').innerText = (b+g).toLocaleString();
-        }, 3000);
-
         window.onload = () => {
             const s = document.createElement('script');
             s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`;
-            s.async = true; 
-            s.defer = true;
-            document.head.appendChild(s);
+            s.async = true; s.defer = true; document.head.appendChild(s);
+            setInterval(() => {
+                document.getElementById('blue-count').innerText = (28450 + Math.floor(Math.random()*20)).toLocaleString();
+                document.getElementById('green-count').innerText = (19720 + Math.floor(Math.random()*20)).toLocaleString();
+            }, 3000);
         };
     </script>
 </body>
