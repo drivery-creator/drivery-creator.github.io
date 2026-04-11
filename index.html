@@ -152,14 +152,13 @@
                             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#00d2ff", fillOpacity: 1, strokeWeight: 2, strokeColor: "#fff" }
                         });
                     },
-                    () => { hablar("GPS no detectado. Usando centro de mando base."); },
+                    () => { hablar("GPS no detectado."); },
                     { enableHighAccuracy: true, timeout: 10000 }
                 );
             }
         }
 
         function initMap() {
-            // AJUSTE DE CLARIDAD TÁCTICA
             const tacticalStyle = [
                 { "elementType": "geometry", "stylers": [{ "color": "#1a1c1e" }] },
                 { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#24282b" }] },
@@ -181,6 +180,11 @@
             if(saved) {
                 const data = JSON.parse(saved);
                 document.getElementById('orb-status').innerText = `BIENVENIDO, ${data.nombre.toUpperCase()}`;
+                const creds = JSON.parse(localStorage.getItem('drv_creds'));
+                if(creds) {
+                    document.getElementById('y-id').value = creds.id;
+                    document.getElementById('y-pass').value = creds.pass;
+                }
             }
         }
 
@@ -200,7 +204,7 @@
             const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); };
             animate();
 
-            container.addEventListener('pointerdown', (e) => {
+            container.addEventListener('pointerdown', () => {
                 isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.15, 1.15, 1.15);
                 try { recognition.start(); } catch(err) {}
             });
@@ -225,14 +229,15 @@
                 const res = await fetch(`${API_URL}/api/register-identity`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, password: pass, deviceId: localStorage.getItem('drivery_uuid') || 'DRV-MASTER' })
+                    body: JSON.stringify({ id, password: pass })
                 });
                 const data = await res.json();
                 if (data.success) {
                     localStorage.setItem('drv_session', JSON.stringify({ session: data.session, nombre: data.nombre, timestamp: Date.now() }));
+                    localStorage.setItem('drv_creds', JSON.stringify({ id, pass }));
                     document.getElementById('auth-vault').style.display = 'none';
                     document.getElementById('orb-status').innerText = `BIENVENIDO, ${data.nombre.toUpperCase()}`;
-                    hablar(`Sincronización exitosa. ¡Hola ${data.nombre}! El sistema está a tus órdenes.`);
+                    hablar(`Sincronización exitosa.`);
                 } else { hablar("Identidad no reconocida."); }
             } catch (e) { hablar("Servidor no responde."); }
             finally { btn.innerText = "VINCULAR DISPOSITIVO"; }
@@ -258,22 +263,35 @@
 
         async function ejecutarComando(cmd) {
             const sessionRaw = localStorage.getItem('drv_session');
+            const credsRaw = localStorage.getItem('drv_creds');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
             coreMat.color.setHex(0x7b2cbf);
-            const autorizado = await solicitarBiometria();
-            if (autorizado) {
+            if (await solicitarBiometria()) {
                 coreMat.color.setHex(0xffffff);
                 try {
                     const res = await fetch(`${API_URL}/api/command`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ command: cmd, userCoords: userLocation, session: JSON.parse(sessionRaw).session })
+                        body: JSON.stringify({ 
+                            command: cmd, 
+                            userCoords: userLocation, 
+                            session: JSON.parse(sessionRaw).session,
+                            credentials: credsRaw ? JSON.parse(credsRaw) : null 
+                        })
                     });
                     const data = await res.json();
+                    if(data.newSession) {
+                        const current = JSON.parse(localStorage.getItem('drv_session'));
+                        current.session = data.newSession;
+                        localStorage.setItem('drv_session', JSON.stringify(current));
+                    }
                     if(data.coords) map.panTo(data.coords);
                     if(data.display) mostrarTicket(data.display);
                     hablar(data.reply);
-                } catch(e) { hablar("Error de enlace."); }
+                } catch(e) { 
+                    hablar("Sesión expirada. Por favor, revincule."); 
+                    document.getElementById('auth-vault').style.display = 'block';
+                }
                 finally { coreMat.color.setHex(0x00d2ff); }
             }
         }
