@@ -50,7 +50,6 @@
         
         .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
-        /* BÓVEDA DE SINCRONIZACIÓN ACTUALIZADA */
         #auth-vault {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px);
@@ -59,19 +58,10 @@
         }
         .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-family: var(--font-main); font-size: 16px; box-sizing: border-box; outline: none; }
         
-        /* ESTILO BOTÓN BLOQUEADO */
-        .btn-purple { 
-            width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); 
-            color: white; border: none; font-family: var(--font-tech); font-size: 11px; 
-            font-weight: 900; cursor: not-allowed; opacity: 0.3; transition: 0.4s;
-            filter: grayscale(1);
-        }
-
-        .legal-notice {
-            margin: 15px 0; padding: 12px; background: rgba(0, 210, 255, 0.05); 
-            border-radius: 12px; border: 1px solid rgba(0, 210, 255, 0.1);
-        }
+        .legal-notice { margin: 15px 0; padding: 12px; background: rgba(0, 210, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 210, 255, 0.1); }
         .legal-notice p { font-size: 9px; color: #8a8d91; line-height: 1.4; text-align: justify; margin: 0 0 10px 0; }
+        
+        .btn-purple { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-size: 11px; font-weight: 900; cursor: not-allowed; opacity: 0.3; transition: 0.4s; filter: grayscale(1); }
 
         .ticket-ui {
             position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
@@ -140,9 +130,8 @@
         const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
         let map, sphere, core, coreMat, recognition, isRecording = false;
-        let userLocation = { lat: 10.48, lng: -66.90 }; // Caracas default
+        let userLocation = { lat: 10.48, lng: -66.90 };
 
-        // FUNCIÓN CONTROLADORA DEL BOTÓN VINCULAR
         function toggleSyncBtn() {
             const check = document.getElementById('legal-check');
             const btn = document.getElementById('sync-btn');
@@ -152,7 +141,6 @@
             btn.style.filter = check.checked ? "none" : "grayscale(1)";
         }
 
-        // --- GEOLOCALIZACIÓN TÁCTICA ---
         function obtenerUbicacionReal() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -171,7 +159,17 @@
         }
 
         function initMap() {
-            const tacticalStyle = [{"elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#121212"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#00d2ff"},{"weight":0.5}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"}]},{"elementType":"labels.text.stroke","stylers":[{"visibility":"off"}]}];
+            // AJUSTE DE CLARIDAD TÁCTICA
+            const tacticalStyle = [
+                { "elementType": "geometry", "stylers": [{ "color": "#1a1c1e" }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#24282b" }] },
+                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.6 }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0d1117" }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
+            ];
+
             map = new google.maps.Map(document.getElementById("map"), {
                 center: userLocation, zoom: 16, styles: tacticalStyle, disableDefaultUI: true
             });
@@ -280,7 +278,6 @@
             }
         }
 
-        // TICKET ACTUALIZADO CON TASA BCV
         function mostrarTicket(d) {
             const t = document.createElement('div'); t.className = 'ticket-ui';
             t.innerHTML = `
