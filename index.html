@@ -16,176 +16,101 @@
             --font-main: 'Rajdhani', sans-serif;
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
-        
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #0a0a0a; }
-
-        .orb-aura {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80vh; height: 80vh; max-width: 600px; max-height: 600px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.18) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 75%);
-            z-index: 4; pointer-events: none; border-radius: 50%;
-            animation: aura-pulse 4s infinite ease-in-out;
-        }
-
-        @keyframes aura-pulse {
-            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
 
         #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; justify-content: space-between; }
         #ui-layer > * { pointer-events: auto; }
         
         header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 30px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        .brand-box { display: flex; align-items: center; gap: 8px; }
         .logo-main { height: 60px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
         .os-badge { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); border: 1px solid var(--drivery-blue); padding: 1px 4px; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; }
-        
+
         .header-stats { text-align: right; font-family: var(--font-tech); }
         .stat-line { font-size: 10px; letter-spacing: 1px; color: #8a8d91; margin: 2px 0; font-weight: 700; }
-        .status-on { color: var(--drivery-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
         .total-highlight { color: var(--drivery-blue); font-size: 14px; font-weight: 900; }
-        
-        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 20px; }
-        .orb-master { width: 300px; height: 300px; position: relative; display: flex; justify-content: center; align-items: center; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
-        
-        .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
-        #auth-vault {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px);
-            border: 1px solid var(--drivery-blue); border-radius: 30px; padding: 30px; z-index: 2000;
-            text-align: center; box-shadow: 0 0 60px rgba(0, 210, 255, 0.2);
+        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .orb-master { width: 300px; height: 300px; position: relative; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
+        
+        /* PANEL DE PRECIOS LATERAL */
+        #fleet-selection {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            width: 190px; display: none; flex-direction: column; gap: 12px; z-index: 500;
         }
-        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-family: var(--font-main); font-size: 16px; box-sizing: border-box; outline: none; }
-        
-        .legal-notice { margin: 15px 0; padding: 12px; background: rgba(0, 210, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 210, 255, 0.1); }
-        .legal-notice p { font-size: 9px; color: #8a8d91; line-height: 1.4; text-align: justify; margin: 0 0 10px 0; }
-        
-        .btn-purple { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-size: 11px; font-weight: 900; cursor: not-allowed; opacity: 0.3; transition: 0.4s; filter: grayscale(1); }
-
-        .ticket-ui {
-            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
-            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--drivery-blue);
-            padding: 20px; border-radius: 20px; z-index: 1000; text-align: center; min-width: 220px;
+        .car-card {
+            background: var(--glass-bg); backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-radius: 15px;
+            padding: 12px; animation: slideInRight 0.5s ease-out;
         }
+        .car-name { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); margin-bottom: 5px; }
+        .car-price { font-size: 20px; font-weight: 700; color: #fff; }
+        .car-bs { font-size: 11px; color: var(--drivery-green); }
 
-        #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+        #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; }
         .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
         .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
+
+        #auth-vault { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px); border: 1px solid var(--drivery-blue); border-radius: 30px; padding: 30px; z-index: 2000; text-align: center; }
+        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <div class="orb-aura"></div>
-
     <div id="ui-layer">
         <header>
             <div class="brand-box">
                 <img src="logo_app.png" alt="DRIVERY" class="logo-main">
                 <div class="os-badge">OS</div>
             </div>
-            <div class="header-stats" id="user-header-stats">
+            <div class="header-stats">
                 <p class="stat-line">CORE INTELIGENTE DE SERVICIOS</p>
                 <p class="stat-line">CARACAS | VZLA</p>
-                <p class="stat-line">STATUS: <span class="status-on">●</span> - <span class="total-highlight" id="total-count">48,170</span></p>
+                <p class="stat-line">STATUS: ● - <span class="total-highlight">48,170</span></p>
             </div>
         </header>
 
         <main>
             <div id="main-orbe" class="orb-master"></div>
-            <h2 class="search-title" id="orb-status">MANTENER PARA TRANSMITIR</h2>
+            <h2 id="orb-status" style="font-family:var(--font-tech); font-size:16px; color:var(--drivery-blue); margin-top:20px;">MANTENER PARA TRANSMITIR</h2>
         </main>
+
+        <div id="fleet-selection"></div>
 
         <div id="fleet-commander">
             <div class="fleet-entry">
-                <div style="width:8px;height:8px;border-radius:50%;background:var(--drivery-blue);box-shadow:0 0 10px var(--drivery-blue);"></div>
-                <div><div style="color:var(--drivery-blue);font-weight:700;font-size:12px;">FLOTA BLUE:</div><div class="fleet-number" id="blue-count">28,450</div></div>
-            </div>
-            <div class="fleet-entry">
-                <div style="width:8px;height:8px;border-radius:50%;background:var(--drivery-green);box-shadow:0 0 10px var(--drivery-green);"></div>
-                <div><div style="color:var(--drivery-green);font-weight:700;font-size:12px;">FLOTA GREEN:</div><div class="fleet-number" id="green-count">19,720</div></div>
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--drivery-blue);"></div>
+                <div><div style="color:var(--drivery-blue);font-weight:700;font-size:12px;">FLOTA BLUE:</div><div class="fleet-number">28,450</div></div>
             </div>
         </div>
     </div>
 
     <div id="auth-vault">
-        <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); letter-spacing:3px; margin-bottom:25px;">ACCESO AL NÚCLEO</div>
-        <input id="y-id" class="vault-input" type="text" placeholder="Teléfono o Correo">
-        <input id="y-pass" class="vault-input" type="password" placeholder="Código de acceso">
-        
-        <div class="legal-notice">
-            <p>Drivery OS actúa como un orquestador de interfaz y asistente técnico. Al vincular, usted confirma ser titular de las credenciales y autoriza el enlace técnico bajo su propia responsabilidad.</p>
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; justify-content: center;">
-                <input type="checkbox" id="legal-check" onchange="toggleSyncBtn()" style="accent-color: var(--drivery-blue);">
-                <span style="font-size: 10px; color: var(--drivery-blue); font-family: var(--font-tech); font-weight: 700;">ACEPTO TÉRMINOS DE ENLACE</span>
-            </label>
-        </div>
-
-        <button class="btn-purple" id="sync-btn" onclick="sincronizar()" disabled>VINCULAR DISPOSITIVO</button>
-        <p style="margin-top:20px; font-size:10px; color: var(--drivery-purple); opacity: 0.8;">SEGURIDAD BIOMÉTRICA REQUERIDA</p>
+        <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); letter-spacing:3px; margin-bottom:20px;">ACCESO AL NÚCLEO</div>
+        <input id="y-id" class="vault-input" type="text" placeholder="Correo">
+        <input id="y-pass" class="vault-input" type="password" placeholder="Clave">
+        <button style="width:100%; padding:15px; background:var(--drivery-purple); color:white; border:none; border-radius:10px; cursor:pointer;" onclick="sincronizar()">VINCULAR</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
-        let map, sphere, core, coreMat, recognition, isRecording = false;
+        let map, directionsService, directionsRenderer, sphere, coreMat, recognition, isRecording = false;
+        let fleetMarkers = [], updateInterval;
         let userLocation = { lat: 10.48, lng: -66.90 };
 
-        function toggleSyncBtn() {
-            const check = document.getElementById('legal-check');
-            const btn = document.getElementById('sync-btn');
-            btn.disabled = !check.checked;
-            btn.style.opacity = check.checked ? "1" : "0.3";
-            btn.style.cursor = check.checked ? "pointer" : "not-allowed";
-            btn.style.filter = check.checked ? "none" : "grayscale(1)";
-        }
-
-        function obtenerUbicacionReal() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                        map.setCenter(userLocation);
-                        new google.maps.Marker({
-                            position: userLocation, map: map,
-                            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#00d2ff", fillOpacity: 1, strokeWeight: 2, strokeColor: "#fff" }
-                        });
-                    },
-                    () => { hablar("GPS no detectado."); },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            }
-        }
-
         function initMap() {
-            const tacticalStyle = [
-                { "elementType": "geometry", "stylers": [{ "color": "#1a1c1e" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#24282b" }] },
-                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.6 }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0d1117" }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] },
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
-            ];
+            const tacticalStyle = [{ "elementType": "geometry", "stylers": [{ "color": "#1a1c1e" }] }, { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.5 }] }, { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0d1117" }] }, { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] }];
+            map = new google.maps.Map(document.getElementById("map"), { center: userLocation, zoom: 15, styles: tacticalStyle, disableDefaultUI: true });
+            
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers: false, polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6, strokeOpacity: 0.8 } });
 
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: userLocation, zoom: 16, styles: tacticalStyle, disableDefaultUI: true
-            });
-            obtenerUbicacionReal();
             initThreeJS();
             initVoice();
-            
-            const saved = localStorage.getItem('drv_session');
-            if(saved) {
-                const data = JSON.parse(saved);
-                document.getElementById('orb-status').innerText = `BIENVENIDO, ${data.nombre.toUpperCase()}`;
-                const creds = JSON.parse(localStorage.getItem('drv_creds'));
-                if(creds) {
-                    document.getElementById('y-id').value = creds.id;
-                    document.getElementById('y-pass').value = creds.pass;
-                }
-            }
+            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; });
         }
 
         function initThreeJS() {
@@ -193,24 +118,15 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(300, 300);
-            container.appendChild(renderer.domElement);
-
+            renderer.setSize(300, 300); container.appendChild(renderer.domElement);
             sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
             coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.6 });
-            core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
+            const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
             sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
-
-            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); };
+            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; renderer.render(scene, camera); };
             animate();
-
-            container.addEventListener('pointerdown', () => {
-                isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.15, 1.15, 1.15);
-                try { recognition.start(); } catch(err) {}
-            });
-            window.addEventListener('pointerup', () => {
-                if (isRecording) { isRecording = false; sphere.scale.set(1, 1, 1); recognition.stop(); coreMat.color.setHex(0x00d2ff); }
-            });
+            container.addEventListener('pointerdown', () => { isRecording = true; coreMat.color.setHex(0xffffff); try { recognition.start(); } catch(e) {} });
+            window.addEventListener('pointerup', () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); recognition.stop(); } });
         }
 
         function initVoice() {
@@ -219,105 +135,72 @@
             recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript);
         }
 
-        async function sincronizar() {
-            const id = document.getElementById('y-id').value;
-            const pass = document.getElementById('y-pass').value;
-            const btn = document.getElementById('sync-btn');
-            if(!id || !pass) return hablar("Datos incompletos.");
-            btn.innerText = "ESTABLECIENDO ENLACE...";
-            try {
-                const res = await fetch(`${API_URL}/api/register-identity`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, password: pass })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    localStorage.setItem('drv_session', JSON.stringify({ session: data.session, nombre: data.nombre, timestamp: Date.now() }));
-                    localStorage.setItem('drv_creds', JSON.stringify({ id, pass }));
-                    document.getElementById('auth-vault').style.display = 'none';
-                    document.getElementById('orb-status').innerText = `BIENVENIDO, ${data.nombre.toUpperCase()}`;
-                    hablar(`Sincronización exitosa.`);
-                } else { hablar("Identidad no reconocida."); }
-            } catch (e) { hablar("Servidor no responde."); }
-            finally { btn.innerText = "VINCULAR DISPOSITIVO"; }
-        }
-
-        async function solicitarBiometria() {
-            if (window.PublicKeyCredential) {
-                try {
-                    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
-                    const authOptions = {
-                        publicKey: {
-                            challenge: challenge, rp: { name: "Drivery OS" },
-                            user: { id: new Uint8Array([1]), name: "user", displayName: "Pilot" },
-                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                            authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" },
-                            timeout: 60000
-                        }
-                    };
-                    await navigator.credentials.create(authOptions); return true;
-                } catch (e) { return false; }
-            } return true;
-        }
-
         async function ejecutarComando(cmd) {
             const sessionRaw = localStorage.getItem('drv_session');
             const credsRaw = localStorage.getItem('drv_creds');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
             coreMat.color.setHex(0x7b2cbf);
-            if (await solicitarBiometria()) {
-                coreMat.color.setHex(0xffffff);
-                try {
-                    const res = await fetch(`${API_URL}/api/command`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            command: cmd, 
-                            userCoords: userLocation, 
-                            session: JSON.parse(sessionRaw).session,
-                            credentials: credsRaw ? JSON.parse(credsRaw) : null 
-                        })
-                    });
-                    const data = await res.json();
-                    if(data.newSession) {
-                        const current = JSON.parse(localStorage.getItem('drv_session'));
-                        current.session = data.newSession;
-                        localStorage.setItem('drv_session', JSON.stringify(current));
-                    }
-                    if(data.coords) map.panTo(data.coords);
-                    if(data.display) mostrarTicket(data.display);
-                    hablar(data.reply);
-                } catch(e) { 
-                    hablar("Sesión expirada. Por favor, revincule."); 
-                    document.getElementById('auth-vault').style.display = 'block';
+            try {
+                const res = await fetch(`${API_URL}/api/command`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ command: cmd, userCoords: userLocation, session: JSON.parse(sessionRaw).session, credentials: credsRaw ? JSON.parse(credsRaw) : null })
+                });
+                const data = await res.json();
+                if(data.coords && data.origin) {
+                    trazarRuta(data.origin, data.coords);
+                    renderizarFlotaEnMapa(data.origin);
+                    mostrarPanelFlota(data.display.fleet);
                 }
-                finally { coreMat.color.setHex(0x00d2ff); }
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
+            } catch(e) {} finally { coreMat.color.setHex(0x00d2ff); }
+        }
+
+        function trazarRuta(orig, dest) {
+            const request = { origin: new google.maps.LatLng(orig.lat, orig.lng), destination: new google.maps.LatLng(dest.lat, dest.lng), travelMode: 'DRIVING' };
+            directionsService.route(request, (result, status) => { if (status === 'OK') directionsRenderer.setDirections(result); });
+        }
+
+        function renderizarFlotaEnMapa(centro) {
+            if (updateInterval) clearInterval(updateInterval);
+            fleetMarkers.forEach(m => m.setMap(null));
+            fleetMarkers = [];
+            for(let i=0; i<5; i++) {
+                const marker = new google.maps.Marker({
+                    position: { lat: centro.lat + (Math.random() - 0.5) * 0.006, lng: centro.lng + (Math.random() - 0.5) * 0.006 },
+                    map: map, icon: { path: "M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z", fillColor: "#00d2ff", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 1, scale: 1.5, anchor: new google.maps.Point(12, 12), rotation: Math.random() * 360 }
+                });
+                marker.metadata = { angle: Math.random() * 360, speed: 0.00005 };
+                fleetMarkers.push(marker);
             }
+            updateInterval = setInterval(() => {
+                fleetMarkers.forEach(m => {
+                    const pos = m.getPosition();
+                    const newLat = pos.lat() + Math.cos(m.metadata.angle * Math.PI / 180) * m.metadata.speed;
+                    const newLng = pos.lng() + Math.sin(m.metadata.angle * Math.PI / 180) * m.metadata.speed;
+                    m.setPosition({ lat: newLat, lng: newLng });
+                    const icon = m.getIcon(); icon.rotation = m.metadata.angle - 90; m.setIcon(icon);
+                });
+            }, 1500);
         }
 
-        function mostrarTicket(d) {
-            const t = document.createElement('div'); t.className = 'ticket-ui';
-            t.innerHTML = `
-                <small style="color:var(--drivery-green)">TASA BCV: ${d.tasa}</small>
-                <h3>$${d.usd}</h3>
-                <p style="font-size:18px; font-weight:700;">${d.bs} Bs</p>
-                <small>${d.tiempo} MINUTOS</small>
-            `;
-            document.body.appendChild(t); setTimeout(() => t.remove(), 8000);
+        function mostrarPanelFlota(fleet) {
+            const container = document.getElementById('fleet-selection');
+            container.innerHTML = ''; container.style.display = 'flex';
+            fleet.forEach(car => {
+                const card = document.createElement('div'); card.className = 'car-card';
+                card.innerHTML = `<div class="car-name">${car.name.toUpperCase()}</div><div class="car-price">$${car.usd}</div><div class="car-bs">${car.bs} Bs.</div><div style="font-size:9px; color:#8a8d91;">ETA: ${car.arrival}</div>`;
+                container.appendChild(card);
+            });
         }
 
-        function hablar(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+        async function sincronizar() {
+            const id = document.getElementById('y-id').value; const pass = document.getElementById('y-pass').value;
+            const res = await fetch(`${API_URL}/api/register-identity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, password: pass }) });
+            const data = await res.json();
+            if (data.success) { localStorage.setItem('drv_session', JSON.stringify({ session: data.session, nombre: data.nombre })); localStorage.setItem('drv_creds', JSON.stringify({ id, pass })); document.getElementById('auth-vault').style.display = 'none'; }
+        }
 
-        window.onload = () => {
-            const s = document.createElement('script');
-            s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`;
-            s.async = true; s.defer = true; document.head.appendChild(s);
-            setInterval(() => {
-                document.getElementById('blue-count').innerText = (28450 + Math.floor(Math.random()*20)).toLocaleString();
-                document.getElementById('green-count').innerText = (19720 + Math.floor(Math.random()*20)).toLocaleString();
-            }, 3000);
-        };
+        window.onload = () => { const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`; document.head.appendChild(s); };
     </script>
 </body>
 </html>
