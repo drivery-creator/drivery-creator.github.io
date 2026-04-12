@@ -46,38 +46,8 @@
         .total-highlight { color: var(--drivery-blue); font-size: 14px; font-weight: 900; }
         
         main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 20px; }
+        .orb-master { width: 300px; height: 300px; position: relative; display: flex; justify-content: center; align-items: center; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
         
-        /* --- ESTILO NÚCLEO CINEMÁTICO - RECORTE VECTORIAL --- */
-        .orb-master { 
-            width: 320px; 
-            height: 320px; 
-            position: relative; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 10; 
-            cursor: pointer; 
-            touch-action: none;
-            /* Brillo exterior puro */
-            filter: drop-shadow(0 0 30px rgba(0, 210, 255, 0.8));
-            transition: filter 0.3s ease;
-        }
-
-        #video-nexo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            
-            /* --- ELIMINACIÓN TOTAL DE BORDES NEGROS --- */
-            /* Cortamos el video físicamente en un círculo un 1% más pequeño para seguridad */
-            clip-path: circle(49% at 50% 50%);
-            -webkit-clip-path: circle(49% at 50% 50%);
-            
-            mix-blend-mode: screen; 
-            image-rendering: -webkit-optimize-contrast;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
         .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
         #auth-vault {
@@ -155,10 +125,11 @@
         <p style="margin-top:20px; font-size:10px; color: var(--drivery-purple); opacity: 0.8;">SEGURIDAD BIOMÉTRICA REQUERIDA</p>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
-        let map, recognition, isRecording = false;
+        let map, sphere, core, coreMat, recognition, isRecording = false;
         let userLocation = { lat: 10.48, lng: -66.90 };
 
         function toggleSyncBtn() {
@@ -181,7 +152,7 @@
                             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#00d2ff", fillOpacity: 1, strokeWeight: 2, strokeColor: "#fff" }
                         });
                     },
-                    null,
+                    () => { hablar("GPS no detectado."); },
                     { enableHighAccuracy: true, timeout: 10000 }
                 );
             }
@@ -202,7 +173,7 @@
                 center: userLocation, zoom: 16, styles: tacticalStyle, disableDefaultUI: true
             });
             obtenerUbicacionReal();
-            initNexoOrb();
+            initThreeJS();
             initVoice();
             
             const saved = localStorage.getItem('drv_session');
@@ -217,41 +188,28 @@
             }
         }
 
-        function initNexoOrb() {
+        function initThreeJS() {
             const container = document.getElementById('main-orbe');
-            container.innerHTML = '';
-            
-            const videoOrb = document.createElement('video');
-            videoOrb.id = "video-nexo";
-            videoOrb.src = "nucleo.mp4"; // ARCHIVO LOCAL
-            
-            videoOrb.autoplay = true;
-            videoOrb.loop = true;
-            videoOrb.muted = true;
-            videoOrb.defaultMuted = true;
-            videoOrb.playsInline = true;
-            videoOrb.setAttribute('webkit-playsinline', 'true');
-            
-            videoOrb.addEventListener('canplay', () => {
-                videoOrb.play().catch(() => console.log("Interacción requerida"));
-            });
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(300, 300);
+            container.appendChild(renderer.domElement);
 
-            container.appendChild(videoOrb);
+            sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
+            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.6 });
+            core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
+            sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
+
+            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); };
+            animate();
 
             container.addEventListener('pointerdown', () => {
-                isRecording = true;
-                videoOrb.style.transform = "scale(1.15)"; 
-                container.style.filter = "drop-shadow(0 0 50px rgba(255, 255, 255, 0.9)) brightness(1.3)";
+                isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.15, 1.15, 1.15);
                 try { recognition.start(); } catch(err) {}
             });
-
             window.addEventListener('pointerup', () => {
-                if (isRecording) {
-                    isRecording = false;
-                    videoOrb.style.transform = "scale(1)";
-                    container.style.filter = "drop-shadow(0 0 30px rgba(0, 210, 255, 0.7))";
-                    recognition.stop();
-                }
+                if (isRecording) { isRecording = false; sphere.scale.set(1, 1, 1); recognition.stop(); coreMat.color.setHex(0x00d2ff); }
             });
         }
 
@@ -265,7 +223,7 @@
             const id = document.getElementById('y-id').value;
             const pass = document.getElementById('y-pass').value;
             const btn = document.getElementById('sync-btn');
-            if(!id || !pass) return;
+            if(!id || !pass) return hablar("Datos incompletos.");
             btn.innerText = "ESTABLECIENDO ENLACE...";
             try {
                 const res = await fetch(`${API_URL}/api/register-identity`, {
@@ -279,8 +237,9 @@
                     localStorage.setItem('drv_creds', JSON.stringify({ id, pass }));
                     document.getElementById('auth-vault').style.display = 'none';
                     document.getElementById('orb-status').innerText = `BIENVENIDO, ${data.nombre.toUpperCase()}`;
-                }
-            } catch (e) {}
+                    hablar(`Sincronización exitosa.`);
+                } else { hablar("Identidad no reconocida."); }
+            } catch (e) { hablar("Servidor no responde."); }
             finally { btn.innerText = "VINCULAR DISPOSITIVO"; }
         }
 
@@ -306,11 +265,9 @@
             const sessionRaw = localStorage.getItem('drv_session');
             const credsRaw = localStorage.getItem('drv_creds');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
-            
-            const container = document.getElementById('main-orbe');
-            if(container) container.style.filter = "hue-rotate(90deg) brightness(1.5)"; 
-
+            coreMat.color.setHex(0x7b2cbf);
             if (await solicitarBiometria()) {
+                coreMat.color.setHex(0xffffff);
                 try {
                     const res = await fetch(`${API_URL}/api/command`, {
                         method: "POST",
@@ -332,9 +289,10 @@
                     if(data.display) mostrarTicket(data.display);
                     hablar(data.reply);
                 } catch(e) { 
+                    hablar("Sesión expirada. Por favor, revincule."); 
                     document.getElementById('auth-vault').style.display = 'block';
                 }
-                finally { if(container) container.style.filter = "drop-shadow(0 0 30px rgba(0, 210, 255, 0.7))"; }
+                finally { coreMat.color.setHex(0x00d2ff); }
             }
         }
 
