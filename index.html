@@ -17,7 +17,6 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
         
-        /* VISIBILIDAD DE MAPA SIN BLOQUEOS */
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #0a0a0a; }
         #map canvas, #map div { text-shadow: none !important; }
 
@@ -52,17 +51,16 @@
         
         .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
-        /* PANEL LATERAL DE FLOTA */
         #fleet-selection {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            width: 190px; display: none; flex-direction: column; gap: 12px; z-index: 500;
+            width: 195px; display: none; flex-direction: column; gap: 12px; z-index: 500;
         }
         .car-card {
             background: var(--glass-bg); backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border); border-radius: 15px;
-            padding: 12px; animation: slideInRight 0.5s ease-out;
+            padding: 12px; transition: 0.3s; animation: slideInRight 0.5s ease-out;
         }
-        .car-name { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); }
+        .car-name { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); margin-bottom: 4px; }
         .car-price { font-size: 19px; font-weight: 700; color: #fff; }
         .car-bs { font-size: 11px; color: var(--drivery-green); }
 
@@ -116,7 +114,7 @@
         <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); letter-spacing:3px; margin-bottom:25px;">ACCESO AL NÚCLEO</div>
         <input id="y-id" class="vault-input" type="text" placeholder="Teléfono o Correo">
         <input id="y-pass" class="vault-input" type="password" placeholder="Código de acceso">
-        <button onclick="sincronizar()" style="width:100%; padding:15px; border-radius:10px; background:var(--drivery-purple); color:white; border:none; cursor:pointer;">VINCULAR</button>
+        <button onclick="sincronizar()" style="width:100%; padding:15px; border-radius:10px; background:var(--drivery-purple); color:white; border:none; cursor:pointer; margin-top:20px;">VINCULAR</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -176,30 +174,43 @@
             const credsRaw = localStorage.getItem('drv_creds');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
             
-            // COLOR PÚRPURA AL INICIAR
-            coreMat.color.setHex(0x7b2cbf);
+            coreMat.color.setHex(0x7b2cbf); // PÚRPURA
             if (await solicitarBiometria()) {
-                coreMat.color.setHex(0xffffff); // BLANCO DURANTE TRANSMISIÓN
+                coreMat.color.setHex(0xffffff); // BLANCO
+                const fleetPanel = document.getElementById('fleet-selection');
+                fleetPanel.innerHTML = '<div class="car-card" style="text-align:center; opacity:0.5;">ANALIZANDO RED...</div>';
+                fleetPanel.style.display = 'flex';
+
                 try {
                     const res = await fetch(`${API_URL}/api/command`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ command: cmd, userCoords: userLocation, session: JSON.parse(sessionRaw).session, credentials: credsRaw ? JSON.parse(credsRaw) : null })
                     });
                     const data = await res.json();
+                    
                     if(data.coords && data.origin) {
                         trazarRuta(data.origin, data.coords);
                         renderizarFlotaEnMapa(data.origin);
                         mostrarPanelFlota(data.display.fleet);
                     }
-                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
-                } catch(e) { document.getElementById('auth-vault').style.display = 'block'; }
-                finally { coreMat.color.setHex(0x00d2ff); }
+                    hablar(data.reply);
+                } catch(e) { 
+                    fleetPanel.style.display = 'none';
+                    hablar("Reintente el comando.");
+                } finally { coreMat.color.setHex(0x00d2ff); }
             } else { coreMat.color.setHex(0x00d2ff); }
         }
 
         function trazarRuta(orig, dest) {
             const request = { origin: new google.maps.LatLng(orig.lat, orig.lng), destination: new google.maps.LatLng(dest.lat, dest.lng), travelMode: 'DRIVING' };
-            directionsService.route(request, (result, status) => { if (status === 'OK') directionsRenderer.setDirections(result); });
+            directionsService.route(request, (result, status) => { 
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend(request.origin); bounds.extend(request.destination);
+                    map.fitBounds(bounds, 100);
+                }
+            });
         }
 
         function renderizarFlotaEnMapa(centro) {
@@ -235,13 +246,11 @@
             });
         }
 
+        function hablar(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
         function obtenerUbicacionReal() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; map.setCenter(userLocation); }); } }
-        async function sincronizar() { /* Tu lógica de registro */ }
+        async function sincronizar() { /* Lógica de registro original */ }
 
-        window.onload = () => { 
-            const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`; 
-            document.head.appendChild(s); 
-        };
+        window.onload = () => { const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`; document.head.appendChild(s); };
     </script>
 </body>
 </html>
