@@ -17,26 +17,15 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
         
-        /* CORRECCIÓN DE VISIBILIDAD DEL MAPA */
-        #map { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            height: 100%; 
-            width: 100%; 
-            z-index: 1; 
-            background-color: #0a0a0a; 
-        }
-
-        /* LIMPIEZA DE BORDES BLANCOS EN GOOGLE MAPS */
-        #map [role="button"] img, #map canvas, #map div { text-shadow: none !important; }
+        /* VISIBILIDAD DE MAPA SIN BLOQUEOS */
+        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #0a0a0a; }
+        #map canvas, #map div { text-shadow: none !important; }
 
         .orb-aura {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 80vh; height: 80vh; max-width: 600px; max-height: 600px;
             background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 70%);
-            z-index: 2; /* Bajado para no bloquear marcadores */
-            pointer-events: none; border-radius: 50%;
+            z-index: 2; pointer-events: none; border-radius: 50%;
             animation: aura-pulse 4s infinite ease-in-out;
         }
 
@@ -45,16 +34,7 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
-        /* CORRECCIÓN DE CAPAS: pointer-events: none permite tocar el mapa */
-        #ui-layer { 
-            position: relative; 
-            z-index: 100; 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
-            pointer-events: none; 
-            justify-content: space-between; 
-        }
+        #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; justify-content: space-between; }
         #ui-layer > * { pointer-events: auto; }
         
         header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 30px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
@@ -72,6 +52,7 @@
         
         .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,1); text-align: center; color: var(--drivery-blue); font-family: var(--font-tech); }
 
+        /* PANEL LATERAL DE FLOTA */
         #fleet-selection {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
             width: 190px; display: none; flex-direction: column; gap: 12px; z-index: 500;
@@ -79,25 +60,20 @@
         .car-card {
             background: var(--glass-bg); backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border); border-radius: 15px;
-            padding: 12px; transition: 0.3s; animation: slideInRight 0.5s ease-out;
+            padding: 12px; animation: slideInRight 0.5s ease-out;
         }
-        .car-name { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); margin-bottom: 4px; }
+        .car-name { font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); }
         .car-price { font-size: 19px; font-weight: 700; color: #fff; }
         .car-bs { font-size: 11px; color: var(--drivery-green); }
 
         @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
 
-        #auth-vault {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px);
-            border: 1px solid var(--drivery-blue); border-radius: 30px; padding: 30px; z-index: 2000;
-            text-align: center; box-shadow: 0 0 60px rgba(0, 210, 255, 0.2);
-        }
-        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-family: var(--font-main); font-size: 16px; box-sizing: border-box; outline: none; }
-        
         #fleet-commander { width: fit-content; margin: 0 auto 30px 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
         .fleet-entry { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
         .fleet-number { font-family: var(--font-tech); font-size: 18px; font-weight: 900; }
+
+        #auth-vault { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 380px; background: var(--glass-bg); backdrop-filter: blur(50px); border: 1px solid var(--drivery-blue); border-radius: 30px; padding: 30px; z-index: 2000; text-align: center; }
+        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -110,7 +86,7 @@
                 <img src="logo_app.png" alt="DRIVERY" class="logo-main">
                 <div class="os-badge">OS</div>
             </div>
-            <div class="header-stats" id="user-header-stats">
+            <div class="header-stats">
                 <p class="stat-line">CORE INTELIGENTE DE SERVICIOS</p>
                 <p class="stat-line">CARACAS | VZLA</p>
                 <p class="stat-line">STATUS: <span class="status-on">●</span> - <span class="total-highlight" id="total-count">48,170</span></p>
@@ -140,7 +116,7 @@
         <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); letter-spacing:3px; margin-bottom:25px;">ACCESO AL NÚCLEO</div>
         <input id="y-id" class="vault-input" type="text" placeholder="Teléfono o Correo">
         <input id="y-pass" class="vault-input" type="password" placeholder="Código de acceso">
-        <button class="btn-purple" id="sync-btn" onclick="sincronizar()" style="opacity:1; cursor:pointer;">VINCULAR DISPOSITIVO</button>
+        <button onclick="sincronizar()" style="width:100%; padding:15px; border-radius:10px; background:var(--drivery-purple); color:white; border:none; cursor:pointer;">VINCULAR</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -152,31 +128,11 @@
         let userLocation = { lat: 10.48, lng: -66.90 };
 
         function initMap() {
-            // ESTILO REVISADO: SIN BORDES BLANCOS EN ETIQUETAS
-            const tacticalStyle = [
-                { "elementType": "geometry", "stylers": [{ "color": "#0f1113" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1a1d21" }] },
-                { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.4 }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#05070a" }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] }, // ELIMINA HALO BLANCO
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
-            ];
-
-            map = new google.maps.Map(document.getElementById("map"), { 
-                center: userLocation, 
-                zoom: 16, 
-                styles: tacticalStyle, 
-                disableDefaultUI: true,
-                gestureHandling: 'greedy' // Mejora respuesta al toque
-            });
+            const tacticalStyle = [{ "elementType": "geometry", "stylers": [{ "color": "#0f1113" }] }, { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.4 }] }, { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#05070a" }] }, { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] }, { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] }];
+            map = new google.maps.Map(document.getElementById("map"), { center: userLocation, zoom: 16, styles: tacticalStyle, disableDefaultUI: true, gestureHandling: 'greedy' });
             
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, 
-                suppressMarkers: false, 
-                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6, strokeOpacity: 0.8 } 
-            });
+            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers: false, polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6, strokeOpacity: 0.8 } });
 
             obtenerUbicacionReal();
             initThreeJS();
@@ -205,25 +161,40 @@
             recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript);
         }
 
+        async function solicitarBiometria() {
+            if (window.PublicKeyCredential) {
+                try {
+                    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
+                    const authOptions = { publicKey: { challenge, rp: { name: "Drivery OS" }, user: { id: new Uint8Array([1]), name: "user", displayName: "Pilot" }, pubKeyCredParams: [{ alg: -7, type: "public-key" }], authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" }, timeout: 60000 } };
+                    await navigator.credentials.create(authOptions); return true;
+                } catch (e) { return false; }
+            } return true;
+        }
+
         async function ejecutarComando(cmd) {
             const sessionRaw = localStorage.getItem('drv_session');
             const credsRaw = localStorage.getItem('drv_creds');
             if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
+            
+            // COLOR PÚRPURA AL INICIAR
             coreMat.color.setHex(0x7b2cbf);
-            try {
-                const res = await fetch(`${API_URL}/api/command`, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ command: cmd, userCoords: userLocation, session: JSON.parse(sessionRaw).session, credentials: credsRaw ? JSON.parse(credsRaw) : null })
-                });
-                const data = await res.json();
-                if(data.coords && data.origin) {
-                    trazarRuta(data.origin, data.coords);
-                    renderizarFlotaEnMapa(data.origin);
-                    mostrarPanelFlota(data.display.fleet);
-                }
-                hablar(data.reply);
-            } catch(e) { document.getElementById('auth-vault').style.display = 'block'; }
-            finally { coreMat.color.setHex(0x00d2ff); }
+            if (await solicitarBiometria()) {
+                coreMat.color.setHex(0xffffff); // BLANCO DURANTE TRANSMISIÓN
+                try {
+                    const res = await fetch(`${API_URL}/api/command`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ command: cmd, userCoords: userLocation, session: JSON.parse(sessionRaw).session, credentials: credsRaw ? JSON.parse(credsRaw) : null })
+                    });
+                    const data = await res.json();
+                    if(data.coords && data.origin) {
+                        trazarRuta(data.origin, data.coords);
+                        renderizarFlotaEnMapa(data.origin);
+                        mostrarPanelFlota(data.display.fleet);
+                    }
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
+                } catch(e) { document.getElementById('auth-vault').style.display = 'block'; }
+                finally { coreMat.color.setHex(0x00d2ff); }
+            } else { coreMat.color.setHex(0x00d2ff); }
         }
 
         function trazarRuta(orig, dest) {
@@ -264,8 +235,8 @@
             });
         }
 
-        function hablar(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
         function obtenerUbicacionReal() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; map.setCenter(userLocation); }); } }
+        async function sincronizar() { /* Tu lógica de registro */ }
 
         window.onload = () => { 
             const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`; 
