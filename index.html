@@ -12,6 +12,7 @@
             --font-tech: 'Orbitron', sans-serif; --font-main: 'Rajdhani', sans-serif;
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
+        
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #0a0a0a; }
         #map canvas, #map div { text-shadow: none !important; }
 
@@ -30,7 +31,7 @@
         .orb-master { width: 300px; height: 300px; position: relative; z-index: 10; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; }
         .search-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-top: 15px; text-shadow: 0 2px 10px #000; color: var(--drivery-blue); font-family: var(--font-tech); }
 
-        /* PANEL DE PLANES - Z-INDEX CRÍTICO */
+        /* PANEL DE PLANES - Z-INDEX 9999 FORZADO */
         #fleet-selection {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
             width: 195px; display: none; flex-direction: column; gap: 12px; z-index: 9999;
@@ -54,7 +55,7 @@
     <div id="ui-layer">
         <header>
             <div class="brand-box"><img src="logo_app.png" alt="DRIVERY" class="logo-main"><div class="os-badge">OS</div></div>
-            <div style="text-align:right; font-family:var(--font-tech); font-size:10px; color:#8a8d91;">STATUS: ● - <span class="total-highlight">48,170</span></div>
+            <div style="text-align:right; font-family:var(--font-tech); font-size:10px; color:#8a8d91;">CORE INTELIGENTE: ● - <span class="total-highlight">48,170</span></div>
         </header>
         <main>
             <div id="main-orbe" class="orb-master"></div>
@@ -76,8 +77,13 @@
         function initMap() {
             const style = [{ "elementType": "geometry", "stylers": [{ "color": "#0f1113" }] }, { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#00d2ff" }, { "weight": 0.4 }] }, { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#05070a" }] }, { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] }, { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] }];
             map = new google.maps.Map(document.getElementById("map"), { center: userLocation, zoom: 16, styles: style, disableDefaultUI: true, gestureHandling: 'greedy' });
+            
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers: false, polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 7, strokeOpacity: 0.9, zIndex: 999 } });
+            directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map: map, suppressMarkers: false, 
+                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 7, strokeOpacity: 0.9, zIndex: 999 } 
+            });
+
             initThreeJS(); initVoice();
             if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; map.setCenter(userLocation); });
         }
@@ -85,30 +91,46 @@
         async function ejecutarComando(cmd) {
             const session = JSON.parse(localStorage.getItem('drv_session'));
             if (!session) return;
-            coreMat.color.setHex(0x7b2cbf);
+            
+            coreMat.color.setHex(0x7b2cbf); // Feedback Púrpura
             if (await solicitarBiometria()) {
-                coreMat.color.setHex(0xffffff);
+                coreMat.color.setHex(0xffffff); // Blanco: Procesando
                 const fleetPanel = document.getElementById('fleet-selection');
                 fleetPanel.innerHTML = '<div class="car-card" style="opacity:0.6; text-align:center;">SINCRONIZANDO...</div>';
                 fleetPanel.style.display = 'flex';
+
                 try {
                     const res = await fetch(`${API_URL}/api/command`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ command: cmd, userCoords: userLocation, session: session.session })
                     });
                     const data = await res.json();
-                    if(data.coords && data.origin) {
-                        // FORZAR RUTA
-                        directionsService.route({ origin: data.origin, destination: data.coords, travelMode: 'DRIVING' }, (res, stat) => {
-                            if (stat === 'OK') directionsRenderer.setDirections(res);
+                    
+                    if(data.coords && data.origin && data.display.fleet) {
+                        // 1. FORZAR RUTA (Parseo estricto de coordenadas)
+                        const routeRequest = {
+                            origin: { lat: parseFloat(data.origin.lat), lng: parseFloat(data.origin.lng) },
+                            destination: { lat: parseFloat(data.coords.lat), lng: parseFloat(data.coords.lng) },
+                            travelMode: google.maps.TravelMode.DRIVING
+                        };
+
+                        directionsService.route(routeRequest, (response, status) => {
+                            if (status === 'OK') {
+                                directionsRenderer.setDirections(response);
+                                const bounds = new google.maps.LatLngBounds();
+                                bounds.extend(routeRequest.origin); bounds.extend(routeRequest.destination);
+                                map.fitBounds(bounds, 100);
+                            }
                         });
-                        // FORZAR PLANES
+
+                        // 2. FORZAR PLANES (Inyección directa)
                         fleetPanel.innerHTML = '';
                         data.display.fleet.forEach(car => {
                             const card = document.createElement('div'); card.className = 'car-card';
                             card.innerHTML = `<div class="car-name">${car.name.toUpperCase()}</div><div class="car-price">$${car.usd}</div><div class="car-bs">${car.bs} Bs.</div>`;
                             fleetPanel.appendChild(card);
                         });
+
                         renderizarFlotaEnMapa(data.origin);
                     }
                     window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
