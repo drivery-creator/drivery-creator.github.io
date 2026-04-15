@@ -3,98 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drivery OS | Command Center Premium</title>
+    <title>Drivery OS | Command Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --drivery-blue: #00d2ff; --drivery-purple: #7b2cbf; --glass: rgba(6, 11, 20, 0.9); }
+        :root { --drivery-blue: #00d2ff; --glass: rgba(6, 11, 20, 0.9); }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; font-family: 'Rajdhani', sans-serif; }
 
-        /* CAPA 1: EL ESPEJO DEL MAPA */
-        #map-mirror {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: none; z-index: 1;
-            filter: invert(90%) hue-rotate(180deg) brightness(0.7) contrast(1.2); /* Efecto Táctico Dark */
+        /* CONTENEDOR DE MAPA FORZADO */
+        #map { 
+            position: absolute; top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            z-index: 1; background: #0a0a0a; 
         }
 
-        /* CAPA 2: UI DE CRISTAL */
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;
+        #ui-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 100; pointer-events: none; display: flex; flex-direction: column; 
+            justify-content: space-between; 
         }
         #ui-layer > * { pointer-events: auto; }
 
-        header { padding: 25px; display: flex; justify-content: space-between; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
+        header { padding: 25px; background: linear-gradient(to bottom, rgba(0,0,0,1), transparent); }
         .logo-main { height: 55px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
 
-        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .orb-master { width: 300px; height: 300px; filter: drop-shadow(0 0 40px rgba(0,210,255,0.4)); cursor: pointer; }
-
-        /* PANEL DE PLANES */
         #fleet-selection {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
             width: 190px; display: none; flex-direction: column; gap: 12px; z-index: 1000;
         }
         .car-card {
             background: var(--glass); border: 1px solid var(--drivery-blue);
-            border-radius: 15px; padding: 15px; animation: slideIn 0.4s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px #000;
+            animation: slideIn 0.4s ease-out;
         }
-        .car-name { font-family: 'Orbitron'; font-size: 10px; color: var(--drivery-blue); }
-        .car-price { font-size: 20px; font-weight: 700; color: #fff; }
-        .car-bs { color: #39ff14; font-size: 11px; }
 
+        main { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .orb-master { width: 280px; height: 280px; z-index: 10; cursor: pointer; }
+        
         @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-
-        #fleet-commander { margin: 0 auto 30px 30px; background: var(--glass); padding: 15px 25px; border-radius: 15px; width: fit-content; border: 1px solid rgba(0,210,255,0.2); }
     </style>
 </head>
 <body>
-    <iframe id="map-mirror" src="about:blank"></iframe>
+    <div id="map"></div>
 
     <div id="ui-layer">
-        <header><img src="logo_app.png" class="logo-main"><div style="font-family:'Orbitron'; color:var(--drivery-blue); font-size:10px;">CORE: ● 48,170</div></header>
-        
-        <main>
-            <div id="main-orbe" class="orb-master"></div>
-            <h2 id="orb-status" style="font-family:'Orbitron'; font-size:14px; color:var(--drivery-blue); margin-top:15px;">PRESIONAR PARA TRANSMITIR</h2>
-        </main>
-
+        <header><img src="logo_app.png" class="logo-main"></header>
+        <main><div id="main-orbe" class="orb-master"></div></main>
         <div id="fleet-selection"></div>
-
-        <div id="fleet-commander">
-            <div style="font-family:'Orbitron'; font-size:18px; font-weight:900; color:var(--drivery-blue);">RADAR ACTIVE</div>
+        <div style="margin: 20px; padding: 15px; background: var(--glass); border-radius: 10px; width: fit-content; border: 1px solid var(--drivery-blue);">
+            <div style="font-family:'Orbitron'; font-size:14px; color:var(--drivery-blue);">RADAR ACTIVE</div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
-        let coreMat, recognition, userLocation = { lat: 10.48, lng: -66.90 };
+        let map, directionsService, directionsRenderer, coreMat, recognition, userLocation = { lat: 10.48, lng: -66.90 };
+
+        function initMap() {
+            // Estilo Táctico Ultra-Limpio
+            const style = [
+                { "elementType": "geometry", "stylers": [{ "color": "#0f1113" }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1a1d21" }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#05070a" }] }
+            ];
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: userLocation, zoom: 15, styles: style, disableDefaultUI: true, backgroundColor: '#000'
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map, suppressMarkers: false,
+                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6, zIndex: 999 }
+            });
+
+            // "Wake up" del mapa para evitar el fondo negro
+            google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+                console.log("Radar sincronizado.");
+            });
+
+            initThreeJS(); initVoice();
+            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+                userLocation = { lat: p.coords.latitude, lng: p.coords.longitude };
+                map.setCenter(userLocation);
+            });
+        }
 
         async function ejecutarComando(cmd) {
-            const sessionRaw = localStorage.getItem('drv_session');
-            if (!sessionRaw) return;
-            const session = JSON.parse(sessionRaw).session;
-            
+            const session = JSON.parse(localStorage.getItem('drv_session'));
+            if (!session) return;
             coreMat.color.setHex(0xffffff);
+
             try {
                 const res = await fetch(`${API_URL}/api/command`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ command: cmd, userCoords: userLocation, session: session })
+                    body: JSON.stringify({ command: cmd, userCoords: userLocation, session: session.session })
                 });
                 const data = await res.json();
 
-                if (data.mirrorUrl) {
-                    // Reflejar mapa con ruta
-                    document.getElementById('map-mirror').src = data.mirrorUrl;
+                if (data.coords && data.display.fleet) {
+                    // Pintar Ruta
+                    directionsService.route({
+                        origin: userLocation, destination: data.coords, travelMode: 'DRIVING'
+                    }, (res, status) => {
+                        if (status === 'OK') directionsRenderer.setDirections(res);
+                    });
 
-                    // Inyectar planes
+                    // Inyectar Planes
                     const container = document.getElementById('fleet-selection');
                     container.innerHTML = ''; container.style.display = 'flex';
                     data.display.fleet.forEach(car => {
                         const card = document.createElement('div');
                         card.className = 'car-card';
-                        card.innerHTML = `<div class="car-name">${car.name.toUpperCase()}</div><div class="car-price">$${car.usd}</div><div class="car-bs">${car.bs} Bs.</div>`;
+                        card.innerHTML = `<div style="color:var(--drivery-blue); font-family:'Orbitron'; font-size:10px;">${car.name.toUpperCase()}</div><div style="font-size:20px; font-weight:700;">$${car.usd}</div><div style="color:#39ff14; font-size:11px;">${car.bs} Bs.</div>`;
                         container.appendChild(card);
                     });
                 }
@@ -106,7 +130,7 @@
         function initThreeJS() {
             const container = document.getElementById('main-orbe');
             const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(300, 300);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(280, 280);
             container.appendChild(renderer.domElement);
             const sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
             coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true });
@@ -125,12 +149,9 @@
         }
 
         window.onload = () => {
-            initThreeJS(); initVoice();
-            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
-                userLocation = { lat: p.coords.latitude, lng: p.coords.longitude };
-                // Mapa inicial
-                document.getElementById('map-mirror').src = `https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAPS_KEY}&center=${userLocation.lat},${userLocation.lng}&zoom=15`;
-            });
+            const s = document.createElement('script');
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`;
+            document.head.appendChild(s);
         };
     </script>
 </body>
