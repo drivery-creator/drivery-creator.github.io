@@ -6,151 +6,144 @@
     <title>Drivery OS | Command Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --drivery-blue: #00d2ff; --glass: rgba(6, 11, 20, 0.9); }
+        :root { --blue: #00d2ff; --green: #39ff14; --glass: rgba(6, 11, 20, 0.95); }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; font-family: 'Rajdhani', sans-serif; }
-
-        /* CONTENEDOR DE MAPA FORZADO */
-        #map { 
-            position: absolute; top: 0; left: 0; 
-            width: 100vw; height: 100vh; 
-            z-index: 1; background: #0a0a0a; 
-        }
-
-        #ui-layer { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 100; pointer-events: none; display: flex; flex-direction: column; 
-            justify-content: space-between; 
-        }
+        
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
         #ui-layer > * { pointer-events: auto; }
 
-        header { padding: 25px; background: linear-gradient(to bottom, rgba(0,0,0,1), transparent); }
-        .logo-main { height: 55px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
+        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .profile-box { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 30px; border: 1px solid rgba(0,210,255,0.2); cursor: pointer; }
+        .u-wallet { color: var(--green); font-family: 'Orbitron'; font-size: 14px; font-weight: 900; }
 
-        #fleet-selection {
-            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            width: 190px; display: none; flex-direction: column; gap: 12px; z-index: 1000;
-        }
-        .car-card {
-            background: var(--glass); border: 1px solid var(--drivery-blue);
-            border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px #000;
-            animation: slideIn 0.4s ease-out;
-        }
-
-        main { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        .orb-master { width: 280px; height: 280px; z-index: 10; cursor: pointer; }
+        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #orbe-canvas { width: 250px; height: 250px; cursor: pointer; filter: drop-shadow(0 0 30px rgba(0,210,255,0.3)); }
         
-        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        #fleet-panel { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); width: 200px; display: none; flex-direction: column; gap: 12px; }
+        .car-card { background: var(--glass); border: 1px solid var(--blue); border-radius: 15px; padding: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px #000; }
+        
+        #payment-selector { position: absolute; bottom: 30px; left: 30px; background: var(--glass); padding: 10px; border-radius: 12px; border: 1px solid var(--blue); display: flex; gap: 10px; }
+        .pay-btn { padding: 8px 15px; border-radius: 8px; font-size: 11px; color: #fff; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .pay-btn.active { border-color: var(--blue); background: rgba(0,210,255,0.2); }
     </style>
 </head>
 <body>
     <div id="map"></div>
-
     <div id="ui-layer">
-        <header><img src="logo_app.png" class="logo-main"></header>
-        <main><div id="main-orbe" class="orb-master"></div></main>
-        <div id="fleet-selection"></div>
-        <div style="margin: 20px; padding: 15px; background: var(--glass); border-radius: 10px; width: fit-content; border: 1px solid var(--drivery-blue);">
-            <div style="font-family:'Orbitron'; font-size:14px; color:var(--drivery-blue);">RADAR ACTIVE</div>
+        <header>
+            <img src="logo_app.png" style="height: 45px;">
+            <div class="profile-box">
+                <div style="text-align:right">
+                    <div id="u-name" style="font-size:10px; color:#fff; font-family:'Orbitron';">PILOTO</div>
+                    <div class="u-wallet" id="u-balance">$45.00</div>
+                </div>
+                <div style="width:35px; height:35px; border-radius:50%; border:2px solid var(--blue); background:#111;"></div>
+            </div>
+        </header>
+
+        <main>
+            <div id="orbe-canvas"></div>
+            <div id="status" style="font-family:'Orbitron'; font-size:11px; color:var(--blue); margin-top:15px;">PRESIONAR PARA COMANDAR</div>
+        </main>
+
+        <div id="fleet-panel"></div>
+
+        <div id="payment-selector">
+            <div class="pay-btn active" id="p-cash" onclick="setPay('cash')">EFECTIVO</div>
+            <div class="pay-btn" id="p-wallet" onclick="setPay('wallet')">WALLET AI</div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const GOOGLE_MAPS_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         const API_URL = "https://drivery-backend.onrender.com";
-        let map, directionsService, directionsRenderer, coreMat, recognition, userLocation = { lat: 10.48, lng: -66.90 };
+        const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
+        let map, directionsRenderer, directionsService, recognition, coreMat;
+        let userPos, lastDest, currentPay = 'cash';
 
         function initMap() {
-            // Estilo Táctico Ultra-Limpio
-            const style = [
-                { "elementType": "geometry", "stylers": [{ "color": "#0f1113" }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "visibility": "off" }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1a1d21" }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#05070a" }] }
-            ];
-
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: userLocation, zoom: 15, styles: style, disableDefaultUI: true, backgroundColor: '#000'
-            });
-
+            const style = [{"elementType":"geometry","stylers":[{"color":"#0f1113"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#00d2ff"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#1a1d21"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#05070a"}]}];
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map, suppressMarkers: false,
-                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6, zIndex: 999 }
+            directionsRenderer = new google.maps.DirectionsRenderer({ polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 6 } });
+            
+            navigator.geolocation.getCurrentPosition(p => {
+                userPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+                map = new google.maps.Map(document.getElementById("map"), { center: userPos, zoom: 15, styles: style, disableDefaultUI: true });
+                directionsRenderer.setMap(map);
             });
-
-            // "Wake up" del mapa para evitar el fondo negro
-            google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
-                console.log("Radar sincronizado.");
-            });
-
-            initThreeJS(); initVoice();
-            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
-                userLocation = { lat: p.coords.latitude, lng: p.coords.longitude };
-                map.setCenter(userLocation);
-            });
+            initThree(); initVoice();
         }
 
-        async function ejecutarComando(cmd) {
-            const session = JSON.parse(localStorage.getItem('drv_session'));
-            if (!session) return;
+        async function runCommand(cmd) {
+            const session = JSON.parse(localStorage.getItem('drv_session')).session;
             coreMat.color.setHex(0xffffff);
-
             try {
                 const res = await fetch(`${API_URL}/api/command`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ command: cmd, userCoords: userLocation, session: session.session })
+                    body: JSON.stringify({ command: cmd, userCoords: userPos, session })
                 });
                 const data = await res.json();
+                lastDest = data.destCoords;
+                
+                // Pintar Ruta
+                directionsService.route({ origin: userPos, destination: lastDest, travelMode: 'DRIVING' }, (r, s) => {
+                    if (s === 'OK') directionsRenderer.setDirections(r);
+                });
 
-                if (data.coords && data.display.fleet) {
-                    // Pintar Ruta
-                    directionsService.route({
-                        origin: userLocation, destination: data.coords, travelMode: 'DRIVING'
-                    }, (res, status) => {
-                        if (status === 'OK') directionsRenderer.setDirections(res);
-                    });
-
-                    // Inyectar Planes
-                    const container = document.getElementById('fleet-selection');
-                    container.innerHTML = ''; container.style.display = 'flex';
-                    data.display.fleet.forEach(car => {
-                        const card = document.createElement('div');
-                        card.className = 'car-card';
-                        card.innerHTML = `<div style="color:var(--drivery-blue); font-family:'Orbitron'; font-size:10px;">${car.name.toUpperCase()}</div><div style="font-size:20px; font-weight:700;">$${car.usd}</div><div style="color:#39ff14; font-size:11px;">${car.bs} Bs.</div>`;
-                        container.appendChild(card);
-                    });
-                }
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply));
-            } catch(e) { console.error(e); }
+                // Mostrar Flota
+                const panel = document.getElementById('fleet-panel');
+                panel.innerHTML = ''; panel.style.display = 'flex';
+                data.display.fleet.forEach(car => {
+                    const div = document.createElement('div');
+                    div.className = 'car-card';
+                    div.onclick = () => bookTrip(car.id, car.usd);
+                    div.innerHTML = `<div style="font-size:9px; color:var(--blue);">${car.name}</div><div style="font-size:20px; font-weight:900; color:#fff;">$${car.usd}</div><div style="font-size:10px; color:#8a8d91;">ETA: ${car.arrival}</div>`;
+                    panel.appendChild(div);
+                });
+                speak(data.reply);
+            } catch(e) { speak("Error de conexión."); }
             finally { coreMat.color.setHex(0x00d2ff); }
         }
 
-        function initThreeJS() {
-            const container = document.getElementById('main-orbe');
-            const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(280, 280);
-            container.appendChild(renderer.domElement);
-            const sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
+        async function bookTrip(id, price) {
+            const session = JSON.parse(localStorage.getItem('drv_session')).session;
+            speak("Confirmando solicitud.");
+            const res = await fetch(`${API_URL}/api/book`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ serviceId: id, pickup: userPos, destination: lastDest, paymentMode: currentPay, session, price })
+            });
+            const data = await res.json();
+            if(data.success) {
+                speak(data.reply);
+                document.getElementById('fleet-panel').style.display = 'none';
+            }
+        }
+
+        function setPay(m) { currentPay = m; document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active')); document.getElementById(`p-${m}`).classList.add('active'); }
+        function speak(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+        
+        function initThree() {
+            const scene = new THREE.Scene(); const cam = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const ren = new THREE.WebGLRenderer({ alpha: true, antialias: true }); ren.setSize(250, 250);
+            document.getElementById('orbe-canvas').appendChild(ren.domElement);
             coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true });
-            const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
-            sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
-            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; renderer.render(scene, camera); };
-            animate();
-            container.addEventListener('pointerdown', () => { coreMat.color.setHex(0xffffff); try { recognition.start(); } catch(e) {} });
-            window.addEventListener('pointerup', () => { recognition.stop(); coreMat.color.setHex(0x00d2ff); });
+            const sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 4), coreMat);
+            scene.add(sphere); cam.position.z = 2;
+            const anim = () => { requestAnimationFrame(anim); sphere.rotation.y += 0.01; ren.render(scene, cam); }; anim();
+            document.getElementById('orbe-canvas').onmousedown = () => { recognition.start(); coreMat.color.setHex(0xffffff); };
+            window.onmouseup = () => { recognition.stop(); coreMat.color.setHex(0x00d2ff); };
         }
 
         function initVoice() {
             recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'es-VE';
-            recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript);
+            recognition.onresult = (e) => runCommand(e.results[0][0].transcript);
         }
 
         window.onload = () => {
             const s = document.createElement('script');
-            s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap`;
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&callback=initMap`;
             document.head.appendChild(s);
         };
     </script>
