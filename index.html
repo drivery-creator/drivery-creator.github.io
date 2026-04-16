@@ -12,30 +12,20 @@
             --font-tech: 'Orbitron', sans-serif; --font-main: 'Rajdhani', sans-serif;
         }
         body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
-        
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #1a1f26; }
-        .gm-style div, .gm-style span, .gm-style label, .gm-style a { text-shadow: none !important; outline: none !important; }
-
         #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; align-items: center; justify-content: space-between; }
         #ui-layer > * { pointer-events: auto; }
-
-        header { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 25px 30px; box-sizing: border-box; transition: 0.5s ease; }
+        header { width: 100%; display: flex; justify-content: space-between; padding: 25px 30px; box-sizing: border-box; }
         .logo-main { height: 45px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
-
         #fleet-selection { position: absolute; top: 20px; width: 90%; display: none; justify-content: center; flex-wrap: wrap; gap: 15px; z-index: 1000; }
-        .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 18px; padding: 12px 20px; text-align: center; min-width: 110px; transition: 0.3s; }
-        .car-card:hover { border-color: var(--drivery-blue); transform: translateY(-3px); }
-
-        main { flex-grow: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); position: relative; }
-        .orb-master { width: 280px; height: 280px; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; user-select: none; }
-
+        .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 18px; padding: 12px 20px; text-align: center; min-width: 110px; }
+        main { flex-grow: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .orb-master { width: 280px; height: 280px; filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; transition: all 0.8s ease; }
         .route-active main { justify-content: flex-end; padding-bottom: 25px; }
-        .route-active .orb-master { width: 85px; height: 85px; filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6)); }
+        .route-active .orb-master { width: 85px; height: 85px; }
         .route-active header { opacity: 0; pointer-events: none; }
-
         #auth-vault { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 380px; background: var(--glass-bg); border: 1px solid var(--drivery-blue); border-radius: 25px; padding: 35px; z-index: 2000; text-align: center; }
-        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; box-sizing: border-box; }
-        .legal-box { display: flex; gap: 10px; text-align: left; font-size: 11px; color: #8a8d91; margin: 15px 0; }
+        .vault-input { width: 100%; padding: 14px; margin: 8px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; box-sizing: border-box; outline: none; }
         .btn-sync { width: 100%; padding: 16px; border-radius: 12px; background: var(--drivery-purple); color: white; border: none; font-family: var(--font-tech); font-weight: 900; cursor: pointer; }
     </style>
 </head>
@@ -49,17 +39,17 @@
         <div id="fleet-selection"></div>
         <main>
             <div id="main-orbe" class="orb-master"></div>
-            <h2 id="orb-status" style="font-family:var(--font-tech); font-size:12px; color:var(--drivery-blue); margin-top:15px; text-align:center; letter-spacing:2px; opacity:0.8;">MANTENER PARA TRANSMITIR</h2>
+            <h2 id="orb-status" style="font-family:var(--font-tech); font-size:12px; color:var(--drivery-blue); margin-top:15px; letter-spacing:2px; opacity:0.8;">MANTENER PARA TRANSMITIR</h2>
         </main>
     </div>
 
     <div id="auth-vault">
-        <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); margin-bottom:20px; letter-spacing:2px;">SINCRONIZACIÓN MAAS</div>
+        <div style="font-family:var(--font-tech); font-size:11px; color:var(--drivery-blue); margin-bottom:20px;">SINCRONIZACIÓN MAAS</div>
         <input id="y-id" class="vault-input" placeholder="Usuario / Teléfono">
-        <input id="y-pass" type="password" class="vault-input" placeholder="Clave de Acceso">
-        <div class="legal-box">
-            <input type="checkbox" id="legal-confirm" style="accent-color: var(--drivery-blue);">
-            <label for="legal-confirm">Drivery OS orquesta mis aplicaciones. Confirmo ser titular de estas credenciales y autorizo su gestión automatizada desde este hardware.</label>
+        <input id="y-pass" type="password" class="vault-input" placeholder="Clave">
+        <div style="display:flex; gap:10px; font-size:11px; color:#8a8d91; margin:15px 0; text-align:left;">
+            <input type="checkbox" id="legal-confirm">
+            <label for="legal-confirm">Drivery OS orquesta mis aplicaciones. Confirmo ser titular de estas credenciales y autorizo el uso desde mi hardware.</label>
         </div>
         <button class="btn-sync" onclick="iniciarVinculacion()">ESTABLECER ENLACE</button>
     </div>
@@ -80,7 +70,6 @@
         }
 
         function initMap() {
-            // MAPA ACLARADO: GRIS TÁCTICO CON CALLES VISIBLES
             const style = [
                 { "elementType": "geometry", "stylers": [{ "color": "#1a1f26" }] },
                 { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
@@ -100,31 +89,23 @@
             const id = document.getElementById('y-id').value;
             const pass = document.getElementById('y-pass').value;
             const legal = document.getElementById('legal-confirm').checked;
-            const deviceId = navigator.userAgent;
-
             if(!legal || !id || !pass) { speak("Complete los datos de titularidad."); return; }
-
             try {
                 const res = await fetch(`${API_URL}/api/register-identity`, { 
                     method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, password: pass, userAgent: deviceId }) 
+                    body: JSON.stringify({ id, password: pass, userAgent: navigator.userAgent }) 
                 });
                 const data = await res.json();
                 if(data.success) {
                     localStorage.setItem('drv_session', JSON.stringify({ session: data.session, nombre: data.nombre }));
                     location.reload();
-                } else { speak("Error de acceso."); }
+                } else { speak(data.message); }
             } catch(e) { speak("Fallo de red."); }
         }
 
         async function ejecutarComando(cmd) {
             const sessionRaw = localStorage.getItem('drv_session');
-            if (!sessionRaw) {
-                coreMat.color.setHex(0x7b2cbf);
-                speak("Vincule su dispositivo.");
-                document.getElementById('auth-vault').style.display = 'block';
-                return;
-            }
+            if (!sessionRaw) { document.getElementById('auth-vault').style.display = 'block'; return; }
             const session = JSON.parse(sessionRaw);
             document.getElementById('body-context').classList.add('route-active');
             coreMat.color.setHex(0xffffff);
@@ -146,7 +127,7 @@
         function mostrarFlota(fleet) {
             const panel = document.getElementById('fleet-selection');
             panel.innerHTML = ''; panel.style.display = 'flex';
-            fleet.forEach((car, index) => {
+            fleet.forEach(car => {
                 const card = document.createElement('div');
                 card.className = 'car-card';
                 card.innerHTML = `<div style="font-size:8px; color:var(--drivery-blue);">${car.name.toUpperCase()}</div><div style="font-size:18px; font-weight:900;">$${car.usd}</div><div style="font-size:10px; color:var(--drivery-green);">${car.bs} bolívares</div>`;
@@ -164,13 +145,10 @@
             const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
             sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
             const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); }; animate();
-            
             const obs = new ResizeObserver(() => { const w = container.clientWidth; renderer.setSize(w, w); camera.aspect = 1; camera.updateProjectionMatrix(); });
             obs.observe(container);
-
-            const startTalk = (e) => { e.preventDefault(); isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.1, 1.1, 1.1); document.getElementById('orb-status').innerText = "TRANSMITIENDO..."; try { recognition.start(); } catch(err) {} };
-            const stopTalk = () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); sphere.scale.set(1, 1, 1); document.getElementById('orb-status').innerText = "PROCESANDO..."; recognition.stop(); } };
-
+            const startTalk = (e) => { e.preventDefault(); isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.1, 1.1, 1.1); try { recognition.start(); } catch(err) {} };
+            const stopTalk = () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); sphere.scale.set(1, 1, 1); recognition.stop(); } };
             container.addEventListener('mousedown', startTalk); window.addEventListener('mouseup', stopTalk);
             container.addEventListener('touchstart', startTalk); container.addEventListener('touchend', stopTalk);
         }
