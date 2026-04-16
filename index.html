@@ -16,24 +16,50 @@
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #0a0a0a; }
         .gm-style div, .gm-style span, .gm-style label, .gm-style a { text-shadow: none !important; outline: none !important; }
 
-        #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; justify-content: space-between; align-items: center; }
+        #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; align-items: center; }
         #ui-layer > * { pointer-events: auto; }
 
         header { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 25px 30px; box-sizing: border-box; transition: 0.5s ease; }
         .logo-main { height: 45px; filter: drop-shadow(0 0 15px var(--drivery-blue)); }
 
+        /* NUEVO CONTENEDOR DE FLOTA: PARTE SUPERIOR CENTRAL */
+        #fleet-selection { 
+            position: absolute; 
+            top: 20px; 
+            width: 90%; 
+            display: none; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            z-index: 1000; 
+            padding-top: 10px;
+        }
+
+        .car-card { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 18px; 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            animation: slideDown 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
+            transition: 0.3s;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .car-card:hover { border-color: var(--drivery-blue); background: rgba(0,210,255,0.15); transform: translateY(-3px); }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MANDO INFERIOR */
         main { flex-grow: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); position: relative; }
         .orb-master { width: 280px; height: 280px; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); filter: drop-shadow(0 0 45px rgba(0, 210, 255, 0.5)); cursor: pointer; touch-action: none; user-select: none; }
 
-        /* MODO RUTA: ORBE PULGAR CENTRADO ABAJO */
+        /* MODO RUTA ACTIVA: ORBE ABAJO */
         .route-active main { justify-content: flex-end; padding-bottom: 25px; }
-        .route-active .orb-master { width: 90px; height: 90px; filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6)); }
-        .route-active header { transform: translateY(-120%); opacity: 0; }
-
-        #fleet-selection { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 210px; display: none; flex-direction: column; gap: 12px; }
-        .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 18px; padding: 15px; cursor: pointer; animation: slideIn 0.5s ease; transition: 0.3s; }
-        .car-card:hover { border-color: var(--drivery-blue); background: rgba(0,210,255,0.1); }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        .route-active .orb-master { width: 85px; height: 85px; filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6)); }
+        .route-active header { opacity: 0; pointer-events: none; }
 
         #auth-vault { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 380px; background: var(--glass-bg); border: 1px solid var(--drivery-blue); border-radius: 25px; padding: 35px; z-index: 2000; text-align: center; }
     </style>
@@ -45,20 +71,16 @@
             <img src="logo_app.png" class="logo-main">
             <div id="u-balance" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; background:rgba(0,0,0,0.4); padding:8px 15px; border-radius:20px; border:1px solid var(--glass-border);">$0.00</div>
         </header>
+
+        <div id="fleet-selection"></div>
+
         <main>
             <div id="main-orbe" class="orb-master"></div>
             <h2 id="orb-status" style="font-family:var(--font-tech); font-size:12px; color:var(--drivery-blue); margin-top:15px; text-align:center; letter-spacing:2px; opacity:0.8;">MANTENER PARA TRANSMITIR</h2>
         </main>
-        <div id="fleet-selection"></div>
     </div>
 
-    <div id="auth-vault">
-        <div style="font-family:var(--font-tech); color:var(--drivery-blue); margin-bottom:20px; letter-spacing:2px;">VINCULACIÓN MAAS</div>
-        <input id="y-id" style="width:100%; padding:12px; margin:5px 0; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white;" placeholder="Usuario">
-        <input id="y-pass" type="password" style="width:100%; padding:12px; margin:5px 0; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white;" placeholder="Clave">
-        <div style="font-size:10px; color:#888; margin:15px 0; text-align:left;"><input type="checkbox" id="legal"> Acepto que Drivery orquesta mis credenciales.</div>
-        <button onclick="iniciarVinculacion()" style="width:100%; padding:15px; background:var(--drivery-purple); border:none; color:white; font-family:var(--font-tech); font-weight:900; border-radius:10px;">ENLAZAR</button>
-    </div>
+    <div id="auth-vault">...</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
@@ -94,36 +116,37 @@
 
         async function ejecutarComando(cmd) {
             const session = JSON.parse(localStorage.getItem('drv_session'));
-            if (!session) { document.getElementById('auth-vault').style.display = 'block'; return; }
+            if (!session) return;
             coreMat.color.setHex(0x7b2cbf);
-            if (!await validarBiometria()) { coreMat.color.setHex(0x00d2ff); return; }
-            document.getElementById('body-context').classList.add('route-active');
-            coreMat.color.setHex(0xffffff);
-            try {
-                const res = await fetch(`${API_URL}/api/command`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ command: cmd, userCoords: userPos, session: session.session }) });
-                const data = await res.json();
-                if(data.destCoords) {
-                    directionsService.route({ origin: userPos, destination: data.destCoords, travelMode: 'DRIVING' }, (r, s) => { if (s === 'OK') directionsRenderer.setDirections(r); });
-                    mostrarFlota(data.display.fleet);
-                    speak(data.reply);
-                }
-            } catch(e) { speak("Error de enlace."); }
-            finally { coreMat.color.setHex(0x00d2ff); }
+            if (await validarBiometria()) {
+                document.getElementById('body-context').classList.add('route-active');
+                coreMat.color.setHex(0xffffff);
+                try {
+                    const res = await fetch(`${API_URL}/api/command`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ command: cmd, userCoords: userPos, session: session.session }) });
+                    const data = await res.json();
+                    if(data.destCoords) {
+                        directionsService.route({ origin: userPos, destination: data.destCoords, travelMode: 'DRIVING' }, (r, s) => { if (s === 'OK') directionsRenderer.setDirections(r); });
+                        mostrarFlota(data.display.fleet);
+                        speak(data.reply);
+                    }
+                } catch(e) { speak("Error táctico."); }
+            }
+            coreMat.color.setHex(0x00d2ff);
         }
 
         function mostrarFlota(fleet) {
             const panel = document.getElementById('fleet-selection');
-            panel.innerHTML = ''; panel.style.display = 'flex';
-            // BUCLE CORREGIDO: Extrae datos ÚNICOS de cada objeto en el array
+            panel.innerHTML = ''; 
+            panel.style.display = 'flex'; // Cambiado de block a flex
+            
             fleet.forEach((car, index) => {
                 const card = document.createElement('div');
                 card.className = 'car-card';
                 card.style.animationDelay = `${index * 0.1}s`;
                 card.innerHTML = `
-                    <div style="font-size:9px; color:var(--drivery-blue); font-family:var(--font-tech);">${car.name.toUpperCase()}</div>
-                    <div style="font-size:20px; font-weight:900; color:#fff;">$${car.usd}</div>
-                    <div style="font-size:11px; color:var(--drivery-green);">${car.bs} bolívares</div>
-                    <div style="font-size:9px; color:#888; margin-top:5px;">LLEGADA: ${car.arrival}</div>
+                    <div style="font-size:8px; color:var(--drivery-blue); font-family:var(--font-tech); margin-bottom:3px;">${car.name.toUpperCase()}</div>
+                    <div style="font-size:18px; font-weight:900;">$${car.usd}</div>
+                    <div style="font-size:10px; color:var(--drivery-green); font-weight:700;">${car.bs} Bs.</div>
                 `;
                 panel.appendChild(card);
             });
@@ -138,20 +161,18 @@
             coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.6 });
             const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
             sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
-            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); }; animate();
-            
+            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); }; 
+            animate();
             const obs = new ResizeObserver(() => { const w = container.clientWidth; renderer.setSize(w, w); camera.aspect = 1; camera.updateProjectionMatrix(); });
             obs.observe(container);
 
             const startTalk = (e) => { e.preventDefault(); isRecording = true; coreMat.color.setHex(0xffffff); sphere.scale.set(1.1, 1.1, 1.1); document.getElementById('orb-status').innerText = "TRANSMITIENDO..."; try { recognition.start(); } catch(err) {} };
             const stopTalk = () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); sphere.scale.set(1, 1, 1); document.getElementById('orb-status').innerText = "PROCESANDO..."; recognition.stop(); } };
-
             container.addEventListener('mousedown', startTalk); window.addEventListener('mouseup', stopTalk);
             container.addEventListener('touchstart', startTalk); container.addEventListener('touchend', stopTalk);
         }
 
         function initVoice() { recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); recognition.lang = 'es-VE'; recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript); }
-
         window.onload = () => { const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&callback=initMap`; document.head.appendChild(s); };
     </script>
 </body>
