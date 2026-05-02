@@ -2,106 +2,135 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivery OS - Mejorando para ti</title>
+    <!-- Esta línea es CRÍTICA para que sea responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drivery OS - Mantenimiento</title>
     <style>
-        /* Estilos Base - Identidad Drivery OS */
+        /* Reset y Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000000; /* Fondo negro puro */
-            color: #ffffff; /* Texto blanco */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            height: 100vh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             overflow: hidden;
-        }
-
-        /* Contenedor Principal Centrado */
-        .maintenance-container {
             text-align: center;
-            padding: 40px;
-            max-width: 600px;
+        }
+
+        /* Contenedor Adaptativo */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            animation: fadeIn 1.5s ease-out;
         }
 
-        /* Estilo del Logo y Animación del Orbe */
+        /* Logo con animación de Orbe */
+        .logo-container {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
         .logo {
-            width: 150px; /* Ajusta según el tamaño de tu logo */
+            width: 180px; /* Tamaño base para desktop */
+            max-width: 60vw; /* Asegura que no se salga en móviles pequeños */
             height: auto;
-            margin-bottom: 30px;
-            /* Efecto sutil de respiración (pulso) */
-            animation: pulseOrbe 3s infinite ease-in-out;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)); /* Resplandor suave */
+            z-index: 2;
+            position: relative;
+            animation: orbFloat 4s infinite ease-in-out;
         }
 
-        /* Título Principal */
+        /* Brillo de fondo para simular el Orbe */
+        .orb-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: 1;
+            border-radius: 50%;
+            animation: glowPulse 4s infinite ease-in-out;
+        }
+
+        /* Tipografía Responsive */
         h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             font-weight: 700;
-            margin-bottom: 15px;
-            background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            background: linear-gradient(180deg, #FFFFFF 0%, #999999 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
         }
 
-        /* Mensaje Secundario */
         p {
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            color: #A0A0A0;
             line-height: 1.6;
-            color: #cccccc; /* Gris suave para el texto */
-            margin-bottom: 25px;
-            font-weight: 300;
+            margin-bottom: 30px;
+            font-weight: 400;
         }
 
-        /* Subtexto de Agradecimiento */
-        .thanks-msg {
-            font-size: 1rem;
-            color: #888888; /* Gris más oscuro */
-            font-style: italic;
+        .thanks {
+            font-size: 0.9rem;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        /* Definición de la animación de pulso */
-        @keyframes pulseOrbe {
-            0% {
-                transform: scale(1);
-                opacity: 0.9;
-                filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-            }
-            50% {
-                transform: scale(1.03); /* Crece ligeramente */
-                opacity: 1;
-                filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); /* Brilla más */
-            }
-            100% {
-                transform: scale(1);
-                opacity: 0.9;
-                filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-            }
+        /* Animaciones */
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* Ajustes para pantallas pequeñas */
-        @media (max-width: 600px) {
-            h1 { font-size: 2rem; }
-            p { font-size: 1rem; }
-            .logo { width: 120px; }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Media Queries para ajustes finos */
+        @media (max-height: 500px) {
+            .logo { width: 100px; }
+            h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <div class="maintenance-container">
-        <img src="logo_app.png" alt="Drivery OS Logo" class="logo">
-        
+
+    <div class="main-container">
+        <div class="logo-container">
+            <div class="orb-glow"></div>
+            <img src="logo_app.png" alt="Drivery OS" class="logo">
+        </div>
+
         <h1>Estamos expandiendo<br>nuestros servicios</h1>
         
         <p>Estamos trabajando en el Orbe para ofrecerte una experiencia de movilidad más inteligente y rápida.</p>
         
-        <p class="thanks-msg">Gracias por confiar en nosotros.</p>
+        <div class="thanks">Gracias por confiar en nosotros</div>
     </div>
+
 </body>
 </html>
-
-http://googleusercontent.com/immersive_entry_chip/0
-
