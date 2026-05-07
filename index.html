@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Drivery OS | Command Center</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -55,6 +61,13 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // REGISTRO DE SERVICE WORKER PARA INSTALACIÓN
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
+            });
+        }
+
         const API_URL = "https://drivery-backend.onrender.com";
         const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
@@ -107,15 +120,18 @@
                     directionsService.route({ origin: userPos, destination: data.destCoords, travelMode: 'DRIVING' }, (r, s) => { 
                         if (s === 'OK') {
                             directionsRenderer.setDirections(r);
-                            // AJUSTE DE CÁMARA GLOBAL (Sincroniza Caracas y USA)
                             const bounds = new google.maps.LatLngBounds();
                             bounds.extend(userPos);
                             bounds.extend(data.destCoords);
-                            map.fitBounds(bounds, 80);
+                            map.fitBounds(bounds, 50);
                         } 
                     });
-                    mostrarFlota(data.display.fleet);
-                    speak(data.reply);
+                    
+                    // Retraso de seguridad para estabilidad
+                    setTimeout(() => {
+                        mostrarFlota(data.display.fleet);
+                        speak(data.reply);
+                    }, 500);
                 }
             } catch(e) { speak("Reintentando conexión."); } 
             finally { coreMat.color.setHex(0x00d2ff); document.getElementById('orb-status').innerText = "NÚCLEO ACTIVO"; }
