@@ -40,14 +40,42 @@
         #confirm-panel { position: fixed; bottom: 120px; display: none; width: 100%; justify-content: center; z-index: 200; }
         .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; }
 
-        #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
         .loader { width: 45px; height: 45px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--drivery-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Panel Táctico del Conductor */
+        .driver-card { background: rgba(10, 16, 26, 0.95); border: 1px solid var(--drivery-blue); border-radius: 20px; padding: 25px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(0,210,255,0.15); display: none; }
+        .driver-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--drivery-green); margin: 0 auto 15px; background: #111; display: flex; align-items: center; justify-content: center; }
+        .driver-meta { font-family: var(--font-tech); font-size: 11px; color: var(--drivery-blue); letter-spacing: 1px; margin-bottom: 5px; }
+        .driver-data { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 15px; }
+        .badge-placa { background: #fff; color: #000; font-family: var(--font-tech); font-weight: 900; padding: 4px 12px; border-radius: 6px; display: inline-block; letter-spacing: 1px; font-size: 14px; margin-top: 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .btn-request { background: var(--drivery-green); color: #000; width: 100%; border: none; padding: 14px; border-radius: 12px; font-family: var(--font-tech); font-weight: 900; font-size: 13px; letter-spacing: 1px; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <div id="search-modal"><div class="loader"></div><h3 style="font-family:var(--font-tech); color:var(--drivery-blue); margin-top:20px; font-size:12px; letter-spacing:2px;">LOCALIZANDO UNIDAD</h3><p id="search-timer" style="font-size:14px; opacity:0.6;">00:00</p></div>
+    
+    <div id="search-modal">
+        <div id="searching-state" style="text-align: center;">
+            <div class="loader"></div>
+            <h3 style="font-family:var(--font-tech); color:var(--drivery-blue); margin-top:20px; font-size:12px; letter-spacing:2px;">LOCALIZANDO UNIDAD AUTOMÁTICA</h3>
+            <p id="search-timer" style="font-size:14px; opacity:0.6;">00:00</p>
+        </div>
+
+        <div id="driver-profile" class="driver-card">
+            <div class="driver-avatar" id="driver-img">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="driver-meta">OPERADOR ASIGNADO</div>
+            <div class="driver-data" id="driver-name">---</div>
+            <div class="driver-meta">UNIDAD ORQUESTADA</div>
+            <div id="driver-model" style="font-size:15px; font-weight:700; color:#fff;">---</div>
+            <div id="driver-plate" class="badge-placa">---</div>
+            
+            <button class="btn-request" onclick="dispararViajeFinal()">SOLICITAR VIAJE REAL</button>
+        </div>
+    </div>
 
     <div id="ui-layer">
         <header><img src="logo_app.png" class="logo-main"><div id="price-display" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:18px;">$0.00</div></header>
@@ -61,7 +89,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // REGISTRO DE SERVICE WORKER PARA INSTALACIÓN
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
@@ -72,6 +99,7 @@
         const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
         let userPos = { lat: 10.48, lng: -66.90 };
+        let pollingInterval = null;
 
         function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'es-VE'; window.speechSynthesis.speak(m); }
 
@@ -83,13 +111,11 @@
                 { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1f252d" }] },
                 { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2e3743" }] },
                 { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#06090c" }] },
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
-                { "featureType": "transit", "stylers": [{ "visibility": "off" }] }
+                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
             ];
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: null, 
-                suppressMarkers: true, 
+                map: null, suppressMarkers: true, 
                 polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 5, strokeOpacity: 0.8 } 
             });
             map = new google.maps.Map(document.getElementById("map"), { center: userPos, zoom: 16, styles: style, disableDefaultUI: true });
@@ -121,16 +147,14 @@
                         if (s === 'OK') {
                             directionsRenderer.setDirections(r);
                             const bounds = new google.maps.LatLngBounds();
-                            bounds.extend(userPos);
-                            bounds.extend(data.destCoords);
+                            bounds.extend(userPos); bounds.extend(data.destCoords);
                             map.fitBounds(bounds, 50);
                         } 
                     });
                     
-                    // Retraso de seguridad para estabilidad
                     setTimeout(() => {
                         mostrarFlota(data.display.fleet);
-                        speak(data.reply);
+                        speak(data.reply || "Ruta procesada.");
                     }, 500);
                 }
             } catch(e) { speak("Reintentando conexión."); } 
@@ -143,7 +167,7 @@
             f.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'car-card';
-                card.innerHTML = `<div style="font-size:7px; color:var(--drivery-blue);">${c.name.toUpperCase()}</div><div style="font-size:16px; font-weight:900;">$${c.usd}</div><div style="font-size:9px; color:var(--drivery-green);">${c.bs} Bs.</div>`;
+                card.innerHTML = `<div style="font-size:7px; color:var(--drivery-blue);">${c.name.toUpperCase()}</div><div style="font-size:16px; font-weight:900;">$${c.usd}</div>`;
                 card.onclick = () => {
                     document.querySelectorAll('.car-card').forEach(x => x.classList.remove('selected'));
                     card.classList.add('selected');
@@ -154,10 +178,60 @@
             });
         }
 
+        // ==========================================
+        // SISTEMA DE POLLING DE DATOS DEL VEHÍCULO
+        // ==========================================
         function confirmarViaje() {
             document.getElementById('search-modal').style.display = 'flex';
-            let s = 0; setInterval(() => { s++; document.getElementById('search-timer').innerText = `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }, 1000);
-            speak("Buscando unidad disponible.");
+            document.getElementById('searching-state').style.display = 'block';
+            document.getElementById('driver-profile').style.display = 'none';
+
+            let s = 0;
+            const timerInterval = setInterval(() => { 
+                s++; 
+                document.getElementById('search-timer').innerText = `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; 
+                if (pollingInterval === null) clearInterval(timerInterval);
+            }, 1000);
+
+            speak("Buscando unidad disponible mediante el canal de raspado autónomo.");
+
+            // Iniciamos ciclo de consulta activa cada 2.5 segundos
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_URL}/api/trip/status`);
+                    const data = await res.json();
+
+                    if (data.status === "ASIGNADO" && data.conductor) {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        clearInterval(timerInterval);
+                        
+                        // Inyectar datos dinámicos en el perfil visual del conductor
+                        document.getElementById('driver-name').innerText = data.conductor.nombre.toUpperCase();
+                        document.getElementById('driver-model').innerText = data.conductor.modelo.toUpperCase();
+                        document.getElementById('driver-plate').innerText = data.conductor.placa.toUpperCase();
+                        if(data.conductor.foto) {
+                            document.getElementById('driver-img').innerHTML = `<img src="${data.conductor.foto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                        }
+
+                        // Cambio de estado de la interfaz
+                        document.getElementById('searching-state').style.display = 'none';
+                        document.getElementById('driver-profile').style.display = 'block';
+                        speak("Unidad localizada de forma exitosa. Datos de ruta reflejados.");
+                    }
+                } catch(e) { console.error("Error en sincronía de unidad:", e); }
+            }, 2500);
+        }
+
+        async function dispararViajeFinal() {
+            try {
+                const res = await fetch(`${API_URL}/api/trip/request`, { method: "POST" });
+                const data = await res.json();
+                if(data.success) {
+                    speak("Orden enviada. Buen viaje.");
+                    document.getElementById('search-modal').style.display = 'none';
+                }
+            } catch(e) { speak("Error al despachar orden."); }
         }
 
         function initThreeJS() {
