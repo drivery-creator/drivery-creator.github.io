@@ -41,12 +41,10 @@
         .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; box-shadow: 0 0 15px rgba(123, 44, 191, 0.4); transition: 0.3s; }
         .btn-action:hover { box-shadow: 0 0 25px var(--drivery-blue); }
 
-        /* MODAL MULTIESTADO: LOCALIZACIÓN / CONDUCTOR ASIGNADO */
         #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
         .loader { width: 45px; height: 45px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--drivery-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* DISEÑO HOLLYWOOD DEL CONDUCTOR VINCULADO */
         .driver-hud { display: none; width: 85%; max-width: 380px; background: rgba(10, 16, 26, 0.85); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 20px; padding: 25px; text-align: left; box-shadow: 0 0 35px rgba(0, 210, 255, 0.15); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .driver-meta { display: flex; align-items: center; gap: 18px; margin-bottom: 15px; }
@@ -57,11 +55,30 @@
         
         .btn-close-hud { width: 100%; margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px; border-radius: 12px; cursor: pointer; font-family: var(--font-tech); font-size: 10px; letter-spacing: 1px; transition: 0.3s; }
         .btn-close-hud:hover { border-color: var(--drivery-green); color: var(--drivery-green); }
+
+        /* MODAL DE AUTENTICACIÓN FLOTA MORADA */
+        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
+        .auth-container { background: var(--glass-bg); border: 1px solid var(--drivery-purple); padding: 30px; border-radius: 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(123, 44, 191, 0.25); }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: var(--font-tech); font-size: 14px; text-align: center; outline: none; box-sizing: border-box; }
+        .auth-input:focus { border-color: var(--drivery-purple); }
     </style>
 </head>
 <body>
     <div id="map"></div>
     
+    <div id="auth-modal">
+        <div class="auth-container">
+            <h3 style="font-family: var(--font-tech); color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 5px;">VINCULAR CUENTA</h3>
+            <p style="font-size: 12px; color: var(--drivery-blue); margin-bottom: 20px; letter-spacing: 1px;">Flota Morada Gateway</p>
+            
+            <input type="tel" id="auth-phone" placeholder="Número Telefónico" class="auth-input">
+            <input type="password" id="auth-pass" placeholder="Contraseña o PIN" class="auth-input">
+            
+            <button class="btn-action" style="width: 100%; padding: 12px; background: var(--drivery-purple);" onclick="enviarAutenticacion()">INICIAR ENLACE</button>
+            <p id="auth-status" style="font-size: 12px; margin-top: 15px; color: var(--drivery-green); display: none; font-family: var(--font-tech);"></p>
+        </div>
+    </div>
+
     <div id="search-modal">
         <div id="searching-state" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
             <div class="loader"></div>
@@ -107,7 +124,6 @@
             });
         }
 
-        // CONTROL DE ENDPOINTS UNIFICADO
         const API_URL = "https://drivery-backend.onrender.com";
         const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
@@ -208,13 +224,11 @@
             });
         }
 
-        // DISPARO DE ORDEN Y CONTROL DE POLLING DE API INVERSA
         async function confirmarViaje() {
             document.getElementById('search-modal').style.display = 'flex';
             document.getElementById('searching-state').style.display = 'flex';
             document.getElementById('driver-hud').style.display = 'none';
             
-            // Inicializar cronómetro visual
             segundosCronometro = 0;
             intervaloCronometro = setInterval(() => {
                 segundosCronometro++;
@@ -224,34 +238,48 @@
             speak("Inyectando solicitud en la plataforma remota.");
 
             try {
-                // Notificamos al endpoint final la confirmación táctica
-                await fetch(`${API_URL}/api/trip/request`, {
+                const res = await fetch(`${API_URL}/api/trip/request`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+                const data = await res.json();
+                
+                // Si el backend avisa que falta login o falló el token previo
+                if (data.status === "AUTH_REQUIRED" || data.success === false) {
+                    forzarLoginModulo();
+                    return;
+                }
             } catch(e) { console.log("Error al despachar orden."); }
 
-            // Arranca el bucle de escucha cada 2.5 segundos preguntando a la API Inversa
             pollingInterval = setInterval(consultarEstatusAPIInversa, 2500);
         }
 
         async function consultarEstatusAPIInversa() {
             try {
                 const res = await fetch(`${API_URL}/api/trip/status`);
+                
+                // Si el servidor backend responde con no autorizado, detenemos polling y abrimos login
+                if (res.status === 401) {
+                    forzarLoginModulo();
+                    return;
+                }
+
                 const viaje = await res.json();
 
+                if (viaje.status === "AUTH_REQUIRED") {
+                    forzarLoginModulo();
+                    return;
+                }
+
                 if (viaje.status === "ASIGNADO" && viaje.conductor) {
-                    // Frenamos procesos de escucha y timers
                     clearInterval(pollingInterval);
                     clearInterval(intervaloCronometro);
                     
                     speak("Unidad en camino. Datos sincronizados.");
 
-                    // Mutación de interfaz: Ocultar cargador, mostrar tarjeta holográfica
                     document.getElementById('searching-state').style.display = 'none';
                     document.getElementById('driver-hud').style.display = 'block';
 
-                    // Inyección de datos raspados reales
                     document.getElementById('hud-name').innerText = viaje.conductor.nombre.toUpperCase();
                     document.getElementById('hud-vehicle').innerText = viaje.conductor.modelo;
                     document.getElementById('hud-plate').innerText = viaje.conductor.placa;
@@ -266,10 +294,54 @@
             }
         }
 
+        // LÓGICA DE CONTROL PARA EL MODAL DE AUTENTICACIÓN
+        function forzarLoginModulo() {
+            clearInterval(pollingInterval);
+            clearInterval(intervaloCronometro);
+            document.getElementById('search-modal').style.display = 'none';
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        async function enviarAutenticacion() {
+            const phone = document.getElementById('auth-phone').value;
+            const password = document.getElementById('auth-pass').value;
+            const statusLabel = document.getElementById('auth-status');
+
+            statusLabel.style.display = 'block';
+            statusLabel.style.color = 'var(--drivery-blue)';
+            statusLabel.innerText = "PROCESANDO HANDSHAKE...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/yummy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusLabel.style.color = 'var(--drivery-green)';
+                    statusLabel.innerText = "CONEXIÓN ESTABLECIDA";
+                    speak("Flota vinculada con éxito.");
+                    setTimeout(() => {
+                        document.getElementById('auth-modal').style.display = 'none';
+                        // Reanudamos la confirmación automática del viaje colgado
+                        confirmarViaje();
+                    }, 1500);
+                } else {
+                    statusLabel.style.color = 'red';
+                    statusLabel.innerText = data.message || "FALLA DE CREDENCIALES";
+                }
+            } catch (e) {
+                statusLabel.style.color = 'red';
+                statusLabel.innerText = "FALLA DE CONEXIÓN DE RED";
+            }
+        }
+
         function cerrarModalViaje() {
             document.getElementById('search-modal').style.display = 'none';
             document.getElementById('orb-status').innerText = "UNIDAD EN CAMINO";
-            coreMat.color.setHex(0x39ff14); // Cambiamos el Orbe a verde fosforescente de viaje activo
+            coreMat.color.setHex(0x39ff14); 
         }
 
         function initThreeJS() {
