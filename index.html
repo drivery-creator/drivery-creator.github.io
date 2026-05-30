@@ -2,262 +2,412 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drivery OS | Command Center</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivery OS - Command Center</title>
     <style>
         :root {
-            --drivery-blue: #00d2ff; --drivery-green: #39ff14; --drivery-purple: #7b2cbf;
-            --glass-bg: rgba(6, 11, 20, 0.96); --glass-border: rgba(0, 210, 255, 0.2);
-            --font-tech: 'Orbitron', sans-serif; --font-main: 'Rajdhani', sans-serif;
+            --bg-dark: #0a0c10;
+            --cyan-glow: #00f3ff;
+            --gray-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(15, 22, 32, 0.65);
         }
-        body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
-        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
-        
-        #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; align-items: center; justify-content: space-between; }
-        #ui-layer > * { pointer-events: auto; }
 
-        header { width: 100%; display: flex; justify-content: space-between; padding: 25px 30px; box-sizing: border-box; }
-        .logo-main { height: 42px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-        #fleet-selection { position: absolute; top: 20px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
-        .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 12px; min-width: 90px; text-align: center; cursor: pointer; outline: none; transition: 0.3s; }
-        .car-card.selected { border-color: var(--drivery-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #111a2e 0%, #0a0c10 100%);
+        }
 
-        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        .orb-container { position: relative; width: 280px; height: 280px; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 500; }
-        .orb-master { width: 100%; height: 100%; cursor: pointer; touch-action: none; outline: none; }
+        /* Contenedor Principal Estilo Hollywood/Glassmorphism */
+        .command-container {
+            width: 420px;
+            padding: 30px;
+            background: var(--glass-bg);
+            border: 1px solid var(--gray-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+        }
 
-        .route-active .orb-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 75px; height: 75px; }
-        .route-active header { opacity: 0; pointer-events: none; }
+        /* Encabezado e Indicador del Sistema */
+        .brand {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 25px;
+        }
 
-        #confirm-panel { position: fixed; bottom: 120px; display: none; width: 100%; justify-content: center; z-index: 200; }
-        .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; }
+        /* --- PIEZA CENTRAL: EL ORBE --- */
+        .orbe-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 30px auto;
+            cursor: pointer;
+        }
 
-        #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
-        .loader { width: 45px; height: 45px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--drivery-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .orbe {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #001f3f 0%, #000b18 70%);
+            border: 2px solid rgba(0, 243, 255, 0.2);
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+            transition: all 0.5s ease;
+        }
 
-        /* Panel Táctico del Conductor */
-        .driver-card { background: rgba(10, 16, 26, 0.95); border: 1px solid var(--drivery-blue); border-radius: 20px; padding: 25px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(0,210,255,0.15); display: none; }
-        .driver-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--drivery-green); margin: 0 auto 15px; background: #111; display: flex; align-items: center; justify-content: center; }
-        .driver-meta { font-family: var(--font-tech); font-size: 11px; color: var(--drivery-blue); letter-spacing: 1px; margin-bottom: 5px; }
-        .driver-data { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 15px; }
-        .badge-placa { background: #fff; color: #000; font-family: var(--font-tech); font-weight: 900; padding: 4px 12px; border-radius: 6px; display: inline-block; letter-spacing: 1px; font-size: 14px; margin-top: 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
-        .btn-request { background: var(--drivery-green); color: #000; width: 100%; border: none; padding: 14px; border-radius: 12px; font-family: var(--font-tech); font-weight: 900; font-size: 13px; letter-spacing: 1px; cursor: pointer; margin-top: 20px; }
+        .orbe-core {
+            position: absolute;
+            top: 25%;
+            left: 25%;
+            width: 50%;
+            height: 50%;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, rgba(0, 150, 255, 0.6) 60%, transparent 100%);
+            box-shadow: 0 0 30px var(--cyan-glow);
+            transition: all 0.3s ease;
+        }
+
+        /* Animación del Orbe en Escucha Pasiva (Glow) */
+        @keyframes pulseGlow {
+            0% { transform: scale(1); box-shadow: 0 0 30px var(--cyan-glow); }
+            50% { transform: scale(1.15); box-shadow: 0 0 50px var(--cyan-glow), 0 0 70px rgba(0, 243, 255, 0.4); }
+            100% { transform: scale(1); box-shadow: 0 0 30px var(--cyan-glow); }
+        }
+
+        .orbe-wrapper.listening .orbe-core {
+            animation: pulseGlow 1.2s infinite ease-in-out;
+        }
+
+        .orbe-wrapper.listening .orbe {
+            border-color: var(--cyan-glow);
+        }
+
+        /* Consola de Texto Informativa */
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin-bottom: 15px;
+            min-height: 28px;
+            color: #e0e6ed;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 25px;
+        }
+
+        /* --- FLOTA Y TARJETAS CINEMATOGRÁFICAS --- */
+        .fleet-container {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .fleet-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--gray-border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .fleet-card:hover, .fleet-card.selected {
+            background: rgba(0, 243, 255, 0.05);
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .fleet-info h4 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .fleet-info p {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+
+        .fleet-price {
+            text-align: right;
+        }
+
+        .price-usd {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--cyan-glow);
+        }
+
+        .price-bs {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- BOTÓN DE EJECUCIÓN INVISIBLE/MÍNIMO --- */
+        .action-btn {
+            display: none;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #0088cc, #00f3ff);
+            border: none;
+            border-radius: 14px;
+            color: #000;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.3);
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* --- TARJETA DE CONDUCTOR ENGANCHADO --- */
+        .driver-card {
+            display: none;
+            background: rgba(0, 243, 255, 0.03);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .driver-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .driver-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--cyan-glow);
+        }
+
+        .driver-details h5 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .driver-details p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .plate-badge {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    
-    <div id="search-modal">
-        <div id="searching-state" style="text-align: center;">
-            <div class="loader"></div>
-            <h3 style="font-family:var(--font-tech); color:var(--drivery-blue); margin-top:20px; font-size:12px; letter-spacing:2px;">LOCALIZANDO UNIDAD AUTOMÁTICA</h3>
-            <p id="search-timer" style="font-size:14px; opacity:0.6;">00:00</p>
-        </div>
 
-        <div id="driver-profile" class="driver-card">
-            <div class="driver-avatar" id="driver-img">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <div class="command-container">
+        <div class="brand">Drivery OS Core</div>
+        
+        <div class="orbe-wrapper" id="orbeBtn">
+            <div class="orbe">
+                <div class="orbe-core"></div>
             </div>
-            <div class="driver-meta">OPERADOR ASIGNADO</div>
-            <div class="driver-data" id="driver-name">---</div>
-            <div class="driver-meta">UNIDAD ORQUESTADA</div>
-            <div id="driver-model" style="font-size:15px; font-weight:700; color:#fff;">---</div>
-            <div id="driver-plate" class="badge-placa">---</div>
-            
-            <button class="btn-request" onclick="dispararViajeFinal()">SOLICITAR VIAJE REAL</button>
         </div>
+
+        <div class="status-text" id="statusMessage">Presione el Orbe para hablar</div>
+        <div class="subtitle" id="subMessage">Orquestador de Movilidad Inteligente</div>
+
+        <div class="fleet-container" id="fleetBox"></div>
+
+        <div class="driver-card" id="driverBox">
+            <div class="driver-header">
+                <div class="driver-avatar" id="driverPhoto"></div>
+                <div class="driver-details">
+                    <h5 id="driverName">Buscando Conductor...</h5>
+                    <p id="driverCar">Modelo del Vehículo</p>
+                    <span class="plate-badge" id="driverPlate">------</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="action-btn" id="confirmBtn">CONFIRMAR SOLICITUD</button>
     </div>
 
-    <div id="ui-layer">
-        <header><img src="logo_app.png" class="logo-main"><div id="price-display" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:18px;">$0.00</div></header>
-        <div id="fleet-selection"></div>
-        <div id="confirm-panel"><button class="btn-action" onclick="confirmarViaje()">CONFIRMAR</button></div>
-        <main>
-            <div class="orb-container" id="orb-wrapper"><div id="main-orbe" class="orb-master"></div></div>
-            <h2 id="orb-status" style="font-family:var(--font-tech); font-size:9px; color:var(--drivery-blue); margin-top:12px; letter-spacing:3px; opacity:0.8;">SISTEMA LISTO</h2>
-        </main>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
-            });
-        }
+        // CONFIGURACIÓN DE RUTAS DEL BACKEND (RENDER O LOCAL)
+        const API_BASE = "http://localhost:10000/api"; 
 
-        const API_URL = "https://drivery-backend.onrender.com";
-        const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
-        let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
-        let userPos = { lat: 10.48, lng: -66.90 };
+        const orbeBtn = document.getElementById('orbeBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const fleetBox = document.getElementById('fleetBox');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const driverBox = document.getElementById('driverBox');
+
+        let userCoords = { lat: 10.4806, lng: -66.9036 }; // Ubicación Central Base (Modificable)
         let pollingInterval = null;
 
-        function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'es-VE'; window.speechSynthesis.speak(m); }
+        // Inicialización del motor de voz nativo
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-VE';
+            recognition.interimResults = false;
 
-        function initMap() {
-            const style = [
-                { "elementType": "geometry", "stylers": [{ "color": "#0d1014" }] },
-                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
-                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#0d1014" }, { "weight": 1 }] },
-                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1f252d" }] },
-                { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2e3743" }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#06090c" }] },
-                { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
-            ];
-            directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: null, suppressMarkers: true, 
-                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 5, strokeOpacity: 0.8 } 
+            orbeBtn.addEventListener('click', () => {
+                orbeBtn.classList.add('listening');
+                statusMessage.innerText = "Escuchando instrucción...";
+                recognition.start();
             });
-            map = new google.maps.Map(document.getElementById("map"), { center: userPos, zoom: 16, styles: style, disableDefaultUI: true });
-            directionsRenderer.setMap(map);
-            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { 
-                userPos = { lat: p.coords.latitude, lng: p.coords.longitude }; 
-                map.setCenter(userPos); 
-            });
-            initThreeJS(); initVoice();
+
+            recognition.onresult = async (event) => {
+                orbeBtn.classList.remove('listening');
+                const commandText = event.results[0][0].transcript;
+                statusMessage.innerText = `"${commandText}"`;
+                
+                // Enviamos el comando de voz capturado al Servidor Core (Groq Agent)
+                await enviarComando(commandText);
+            };
+
+            recognition.onerror = () => {
+                orbeBtn.classList.remove('listening');
+                statusMessage.innerText = "Error de captura de audio.";
+            };
+        } else {
+            statusMessage.innerText = "Soporte de voz no disponible.";
         }
 
-        async function ejecutarComando(cmd) {
-            document.body.classList.add('route-active');
-            coreMat.color.setHex(0xffffff);
-            document.getElementById('orb-status').innerText = "SINCRONIZANDO...";
-            
+        // COMUNICACIÓN CON EL BACKEND AGENT
+        async function enviarComando(texto) {
             try {
-                const res = await fetch(`${API_URL}/api/command`, { 
-                    method: "POST", headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ command: cmd, userCoords: userPos }) 
+                const res = await fetch(`${API_BASE}/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: texto, userCoords })
                 });
+
                 const data = await res.json();
-                if(data.destCoords) {
-                    const icon = (color) => ({ path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: '#000', strokeWeight: 1, scale: 8 });
-                    new google.maps.Marker({ position: userPos, map: map, icon: icon('#39ff14') });
-                    new google.maps.Marker({ position: data.destCoords, map: map, icon: icon('#00d2ff') });
-                    
-                    directionsService.route({ origin: userPos, destination: data.destCoords, travelMode: 'DRIVING' }, (r, s) => { 
-                        if (s === 'OK') {
-                            directionsRenderer.setDirections(r);
-                            const bounds = new google.maps.LatLngBounds();
-                            bounds.extend(userPos); bounds.extend(data.destCoords);
-                            map.fitBounds(bounds, 50);
-                        } 
-                    });
-                    
-                    setTimeout(() => {
-                        mostrarFlota(data.display.fleet);
-                        speak(data.reply || "Ruta procesada.");
-                    }, 500);
+                
+                if (data.display && data.display.fleet) {
+                    renderFleet(data.display.fleet);
+                } else if (data.reply) {
+                    statusMessage.innerText = data.reply;
                 }
-            } catch(e) { speak("Reintentando conexión."); } 
-            finally { coreMat.color.setHex(0x00d2ff); document.getElementById('orb-status').innerText = "NÚCLEO ACTIVO"; }
+            } catch (err) {
+                console.error(err);
+                statusMessage.innerText = "Falla de enlace con el Core.";
+            }
         }
 
-        function mostrarFlota(f) {
-            const p = document.getElementById('fleet-selection');
-            p.innerHTML = ''; p.style.display = 'flex';
-            f.forEach(c => {
+        // RENDERIZADO CINEMATOGRÁFICO DE LAS FLOTAS DISPONIBLES
+        function renderFleet(fleet) {
+            fleetBox.innerHTML = '';
+            fleetBox.style.display = 'flex';
+            confirmBtn.style.display = 'block';
+            driverBox.style.display = 'none';
+
+            fleet.forEach((car, index) => {
                 const card = document.createElement('div');
-                card.className = 'car-card';
-                card.innerHTML = `<div style="font-size:7px; color:var(--drivery-blue);">${c.name.toUpperCase()}</div><div style="font-size:16px; font-weight:900;">$${c.usd}</div>`;
+                card.className = `fleet-card ${index === 0 ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <div class="fleet-info">
+                        <h4>${car.name}</h4>
+                        <p>Llegada estimada: ${car.eta}</p>
+                    </div>
+                    <div class="fleet-price">
+                        <div class="price-usd">$${car.usd}</div>
+                        <div class="price-bs">${car.bs} Bs</div>
+                    </div>
+                `;
                 card.onclick = () => {
-                    document.querySelectorAll('.car-card').forEach(x => x.classList.remove('selected'));
+                    document.querySelectorAll('.fleet-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
-                    document.getElementById('price-display').innerText = `$${c.usd}`;
-                    document.getElementById('confirm-panel').style.display = 'flex';
                 };
-                p.appendChild(card);
+                fleetBox.appendChild(card);
             });
         }
 
-        // ==========================================
-        // SISTEMA DE POLLING DE DATOS DEL VEHÍCULO
-        // ==========================================
-        function confirmarViaje() {
-            document.getElementById('search-modal').style.display = 'flex';
-            document.getElementById('searching-state').style.display = 'block';
-            document.getElementById('driver-profile').style.display = 'none';
+        // TRIGGER AL PRESIONAR EL BOTÓN FINAL (INICIA EL POLLING DE LA API INVERSA)
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.style.display = 'none';
+            fleetBox.style.display = 'none';
+            driverBox.style.display = 'block';
+            statusMessage.innerText = "Localizando unidad en canales remotos...";
 
-            let s = 0;
-            const timerInterval = setInterval(() => { 
-                s++; 
-                document.getElementById('search-timer').innerText = `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; 
-                if (pollingInterval === null) clearInterval(timerInterval);
-            }, 1000);
+            // Disparamos la orden inicial
+            await fetch(`${API_BASE}/trip/request`, { method: 'POST' });
 
-            speak("Buscando unidad disponible mediante el canal de raspado autónomo.");
+            // Activamos la escucha atómica (Polling) cada 2.5 segundos
+            pollingInterval = setInterval(verificarEstatusViaje, 2500);
+        });
 
-            // Iniciamos ciclo de consulta activa cada 2.5 segundos
-            pollingInterval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_URL}/api/trip/status`);
-                    const data = await res.json();
-
-                    if (data.status === "ASIGNADO" && data.conductor) {
-                        clearInterval(pollingInterval);
-                        pollingInterval = null;
-                        clearInterval(timerInterval);
-                        
-                        // Inyectar datos dinámicos en el perfil visual del conductor
-                        document.getElementById('driver-name').innerText = data.conductor.nombre.toUpperCase();
-                        document.getElementById('driver-model').innerText = data.conductor.modelo.toUpperCase();
-                        document.getElementById('driver-plate').innerText = data.conductor.placa.toUpperCase();
-                        if(data.conductor.foto) {
-                            document.getElementById('driver-img').innerHTML = `<img src="${data.conductor.foto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-                        }
-
-                        // Cambio de estado de la interfaz
-                        document.getElementById('searching-state').style.display = 'none';
-                        document.getElementById('driver-profile').style.display = 'block';
-                        speak("Unidad localizada de forma exitosa. Datos de ruta reflejados.");
-                    }
-                } catch(e) { console.error("Error en sincronía de unidad:", e); }
-            }, 2500);
-        }
-
-        async function dispararViajeFinal() {
+        // POLLING AUTOMÁTICO AL SERVIDOR DE DRI VERY OS
+        async function verificarEstatusViaje() {
             try {
-                const res = await fetch(`${API_URL}/api/trip/request`, { method: "POST" });
-                const data = await res.json();
-                if(data.success) {
-                    speak("Orden enviada. Buen viaje.");
-                    document.getElementById('search-modal').style.display = 'none';
+                const res = await fetch(`${API_BASE}/trip/status`);
+                const viaje = await res.json();
+
+                if (viaje.status === "ASIGNADO" && viaje.conductor) {
+                    // Detener el polling
+                    clearInterval(pollingInterval);
+                    
+                    // Renderizar datos del conductor capturados por la API Inversa
+                    statusMessage.innerText = "¡Unidad Confirmada y en Ruta!";
+                    document.getElementById('driverName').innerText = viaje.conductor.nombre;
+                    document.getElementById('driverCar').innerText = viaje.conductor.modelo;
+                    document.getElementById('driverPlate').innerText = viaje.conductor.plate || viaje.conductor.placa;
+                    
+                    if (viaje.conductor.foto) {
+                        document.getElementById('driverPhoto').style.backgroundImage = `url('${viaje.conductor.foto}')`;
+                        document.getElementById('driverPhoto').style.backgroundSize = 'cover';
+                    }
                 }
-            } catch(e) { speak("Error al despachar orden."); }
+            } catch (err) {
+                console.error("Error en ciclo de polling:", err);
+            }
         }
-
-        function initThreeJS() {
-            const container = document.getElementById('main-orbe');
-            const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(280, 280);
-            container.appendChild(renderer.domElement);
-            sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
-            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.6 });
-            const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
-            sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
-            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); }; animate();
-            
-            const startTalk = (e) => { e.preventDefault(); isRecording = true; coreMat.color.setHex(0xffffff); try { recognition.start(); } catch(err) {} };
-            const stopTalk = () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); recognition.stop(); } };
-            container.addEventListener('mousedown', startTalk); window.addEventListener('mouseup', stopTalk);
-            container.addEventListener('touchstart', startTalk); container.addEventListener('touchend', stopTalk);
-
-            new ResizeObserver(() => {
-                const w = container.clientWidth; renderer.setSize(w, w);
-                camera.aspect = 1; camera.updateProjectionMatrix();
-            }).observe(container);
-        }
-
-        function initVoice() { recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); recognition.lang = 'es-VE'; recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript); }
-        window.onload = () => { const s = document.createElement('script'); s.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&callback=initMap`; document.head.appendChild(s); };
     </script>
 </body>
 </html>
