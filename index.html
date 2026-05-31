@@ -57,7 +57,7 @@
         .btn-close-hud:hover { border-color: var(--drivery-green); color: var(--drivery-green); }
 
         /* MODAL DE AUTENTICACIÓN FLOTA MORADA */
-        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
+        #auth-modal { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
         .auth-container { background: var(--glass-bg); border: 1px solid var(--drivery-purple); padding: 30px; border-radius: 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(123, 44, 191, 0.25); }
         .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: var(--font-tech); font-size: 14px; text-align: center; outline: none; box-sizing: border-box; }
         .auth-input:focus { border-color: var(--drivery-purple); }
@@ -124,6 +124,7 @@
             });
         }
 
+        // URL del API apuntando directamente a tu backend en producción
         const API_URL = "https://drivery-backend.onrender.com";
         const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
         let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
@@ -244,7 +245,6 @@
                 });
                 const data = await res.json();
                 
-                // Si el backend avisa que falta login o falló el token previo
                 if (data.status === "AUTH_REQUIRED" || data.success === false) {
                     forzarLoginModulo();
                     return;
@@ -258,7 +258,6 @@
             try {
                 const res = await fetch(`${API_URL}/api/trip/status`);
                 
-                // Si el servidor backend responde con no autorizado, detenemos polling y abrimos login
                 if (res.status === 401) {
                     forzarLoginModulo();
                     return;
@@ -294,7 +293,6 @@
             }
         }
 
-        // LÓGICA DE CONTROL PARA EL MODAL DE AUTENTICACIÓN
         function forzarLoginModulo() {
             clearInterval(pollingInterval);
             clearInterval(intervaloCronometro);
@@ -302,10 +300,18 @@
             document.getElementById('auth-modal').style.display = 'flex';
         }
 
+        // LÓGICA DE CONTROL DE SESIÓN ACTUALIZADA PARA LA BASE DE DATOS
         async function enviarAutenticacion() {
             const phone = document.getElementById('auth-phone').value;
             const password = document.getElementById('auth-pass').value;
             const statusLabel = document.getElementById('auth-status');
+
+            if(!phone || !password) {
+                statusLabel.style.display = 'block';
+                statusLabel.style.color = 'red';
+                statusLabel.innerText = "INGRESA LOS DATOS REQUERIDOS";
+                return;
+            }
 
             statusLabel.style.display = 'block';
             statusLabel.style.color = 'var(--drivery-blue)';
@@ -325,8 +331,8 @@
                     speak("Flota vinculada con éxito.");
                     setTimeout(() => {
                         document.getElementById('auth-modal').style.display = 'none';
-                        // Reanudamos la confirmación automática del viaje colgado
-                        confirmarViaje();
+                        // El sistema queda desbloqueado y listo para recibir comandos de voz
+                        document.getElementById('orb-status').innerText = "SISTEMA LISTO";
                     }, 1500);
                 } else {
                     statusLabel.style.color = 'red';
