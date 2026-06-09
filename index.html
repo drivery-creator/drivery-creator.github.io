@@ -17,16 +17,19 @@
             --glass-bg: rgba(6, 11, 20, 0.96); --glass-border: rgba(0, 210, 255, 0.2);
             --font-tech: 'Orbitron', sans-serif; --font-main: 'Rajdhani', sans-serif;
         }
-        body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
+        body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; user-select: none; }
         #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
         
         #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; align-items: center; justify-content: space-between; }
         #ui-layer > * { pointer-events: auto; }
 
-        header { width: 100%; display: flex; justify-content: space-between; padding: 25px 30px; box-sizing: border-box; }
+        header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 25px 30px; box-sizing: border-box; }
         .logo-main { height: 42px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
 
-        #fleet-selection { position: absolute; top: 20px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
+        #price-display { cursor: pointer; text-align: right; transition: transform 0.2s; }
+        #price-display:active { transform: scale(0.95); }
+
+        #fleet-selection { position: absolute; top: 90px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
         .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 12px; min-width: 90px; text-align: center; cursor: pointer; outline: none; transition: 0.3s; }
         .car-card.selected { border-color: var(--drivery-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
 
@@ -41,11 +44,12 @@
         .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; box-shadow: 0 0 15px rgba(123, 44, 191, 0.4); transition: 0.3s; }
         .btn-action:hover { box-shadow: 0 0 25px var(--drivery-blue); }
 
-        #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        #search-modal, #wallet-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
         .loader { width: 45px; height: 45px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--drivery-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .driver-hud { display: none; width: 85%; max-width: 380px; background: rgba(10, 16, 26, 0.85); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 20px; padding: 25px; text-align: left; box-shadow: 0 0 35px rgba(0, 210, 255, 0.15); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .driver-hud, .wallet-container { width: 85%; max-width: 380px; background: rgba(10, 16, 26, 0.95); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 20px; padding: 25px; text-align: left; box-shadow: 0 0 35px rgba(0, 210, 255, 0.15); }
+        .driver-hud { display: none; animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .driver-meta { display: flex; align-items: center; gap: 18px; margin-bottom: 15px; }
         .driver-avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--drivery-blue); background-color: #111a2e; background-size: cover; background-position: center; }
@@ -53,11 +57,10 @@
         .driver-info p { font-size: 13px; color: rgba(255,255,255,0.6); margin: 4px 0 0 0; }
         .plate-badge { display: inline-block; background: var(--drivery-green); color: #000; font-family: var(--font-tech); font-weight: 900; font-size: 12px; padding: 3px 10px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
         
-        .btn-close-hud { width: 100%; margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px; border-radius: 12px; cursor: pointer; font-family: var(--font-tech); font-size: 10px; letter-spacing: 1px; transition: 0.3s; }
-        .btn-close-hud:hover { border-color: var(--drivery-green); color: var(--drivery-green); }
+        .btn-close-hud, .btn-secondary { width: 100%; margin-top: 15px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 12px; cursor: pointer; font-family: var(--font-tech); font-size: 11px; letter-spacing: 1px; transition: 0.3s; }
+        .btn-close-hud:hover, .btn-secondary:hover { border-color: var(--drivery-green); color: var(--drivery-green); }
 
-        /* MODAL DE AUTENTICACIÓN FLOTA MORADA */
-        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
+        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
         .auth-container { background: var(--glass-bg); border: 1px solid var(--drivery-purple); padding: 30px; border-radius: 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(123, 44, 191, 0.25); }
         .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: var(--font-tech); font-size: 14px; text-align: center; outline: none; box-sizing: border-box; }
         .auth-input:focus { border-color: var(--drivery-purple); }
@@ -76,6 +79,20 @@
             
             <button class="btn-action" style="width: 100%; padding: 12px; background: var(--drivery-purple);" onclick="enviarAutenticacion()">INICIAR ENLACE</button>
             <p id="auth-status" style="font-size: 12px; margin-top: 15px; color: var(--drivery-green); display: none; font-family: var(--font-tech);"></p>
+        </div>
+    </div>
+
+    <div id="wallet-modal">
+        <div class="wallet-container">
+            <div style="font-family: var(--font-tech); font-size: 10px; color: var(--drivery-blue); letter-spacing: 2px; margin-bottom: 15px;">BILLETERA OPERATIVA</div>
+            <p style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:15px;">Transfiere por Pago Móvil a tu cuenta y registra los datos de verificación:</p>
+            
+            <input type="number" id="wallet-amount" placeholder="Monto en Bolívares (Bs)" class="auth-input">
+            <input type="text" id="wallet-ref" placeholder="Número de Referencia" class="auth-input">
+            
+            <button class="btn-action" style="width: 100%; padding: 12px;" onclick="enviarRecargaManual()">REGISTRAR DEPÓSITO</button>
+            <button class="btn-secondary" onclick="document.getElementById('wallet-modal').style.display='none'">CANCELAR</button>
+            <p id="wallet-status" style="font-size: 12px; margin-top: 15px; text-align:center; font-family: var(--font-tech); display:none;"></p>
         </div>
     </div>
 
@@ -106,7 +123,10 @@
     <div id="ui-layer">
         <header>
             <img src="logo_app.png" class="logo-main" onerror="this.style.display='none'">
-            <div id="price-display" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:18px;">$0.00</div>
+            <div id="price-display" onclick="abrirModuloBilletera()">
+                <div id="usd-balance" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:20px;">$0.00</div>
+                <div id="bs-balance" style="color:rgba(255,255,255,0.4); font-size:11px; font-family:var(--font-tech);">0.00 Bs</div>
+            </div>
         </header>
         <div id="fleet-selection"></div>
         <div id="confirm-panel"><button class="btn-action" onclick="confirmarViaje()">CONFIRMAR VIAJE</button></div>
@@ -132,8 +152,24 @@
         let segundosCronometro = 0;
         let intervaloCronometro = null;
         let flotaSeleccionada = "eco";
+        let viajeActivoId = null;
+        let datosCotizadosActuales = null;
 
         function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'es-VE'; window.speechSynthesis.speak(m); }
+
+        // Sincronizar balances reales en el Front
+        async function actualizarBalancesUI() {
+            const phone = localStorage.getItem('user_phone');
+            if(!phone) return;
+            try {
+                const res = await fetch(`${API_URL}/api/wallet/balance?phone=${phone}`);
+                const data = await res.json();
+                if(!data.error) {
+                    document.getElementById('usd-balance').innerText = `$${data.balanceUsd.toFixed(2)}`;
+                    document.getElementById('bs-balance').innerText = `${data.balanceBs.toFixed(2)} Bs`;
+                }
+            } catch(e) { console.log("Error de enlace de fondos contables."); }
+        }
 
         function initMap() {
             const style = [
@@ -159,6 +195,13 @@
                 map.setCenter(userPos); 
             });
             initThreeJS(); initVoice();
+            
+            // Verificación de Handshake de Seguridad Obligatorio
+            if(!localStorage.getItem('user_phone')) {
+                document.getElementById('auth-modal').style.display = 'flex';
+            } else {
+                actualizarBalancesUI();
+            }
         }
 
         async function ejecutarComando(cmd) {
@@ -174,6 +217,7 @@
                 const data = await res.json();
                 
                 if(data.destCoords) {
+                    datosCotizadosActuales = data; // Cacheamos lat, lng y flota para la inyección final
                     const icon = (color) => ({ path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: '#000', strokeWeight: 1, scale: 8 });
                     new google.maps.Marker({ position: userPos, map: map, icon: icon('#39ff14') });
                     new google.maps.Marker({ position: data.destCoords, map: map, icon: icon('#00d2ff') });
@@ -209,7 +253,7 @@
                 if(index === 0) {
                     card.classList.add('selected');
                     flotaSeleccionada = c.id;
-                    document.getElementById('price-display').innerText = `$${c.usd}`;
+                    document.getElementById('usd-balance').innerText = `$${c.usd}`;
                     document.getElementById('confirm-panel').style.display = 'flex';
                 }
                 card.innerHTML = `<div style="font-size:7px; color:var(--drivery-blue);">${c.name.toUpperCase()}</div><div style="font-size:16px; font-weight:900;">$${c.usd}</div><div style="font-size:9px; color:var(--drivery-green);">${c.bs} Bs.</div>`;
@@ -217,7 +261,6 @@
                     document.querySelectorAll('.car-card').forEach(x => x.classList.remove('selected'));
                     card.classList.add('selected');
                     flotaSeleccionada = c.id;
-                    document.getElementById('price-display').innerText = `$${c.usd}`;
                     document.getElementById('confirm-panel').style.display = 'flex';
                 };
                 p.appendChild(card);
@@ -225,6 +268,12 @@
         }
 
         async function confirmarViaje() {
+            const phone = localStorage.getItem('user_phone');
+            if(!phone || !datosCotizadosActuales) return;
+
+            // Extraemos los precios de la flota que el usuario dejó seleccionada
+            const flotaElegida = datosCotizadosActuales.display.fleet.find(x => x.id === flotaSeleccionada);
+
             document.getElementById('search-modal').style.display = 'flex';
             document.getElementById('searching-state').style.display = 'flex';
             document.getElementById('driver-hud').style.display = 'none';
@@ -235,41 +284,38 @@
                 document.getElementById('search-timer').innerText = `${Math.floor(segundosCronometro/60).toString().padStart(2,'0')}:${(segundosCronometro%60).toString().padStart(2,'0')}`;
             }, 1000);
 
-            speak("Inyectando solicitud en la plataforma remota.");
+            speak("Inyectando solicitud en el clúster de asignación.");
 
             try {
                 const res = await fetch(`${API_URL}/api/trip/request`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telefonoUsuario: phone,
+                        destinoNombre: datosCotizadosActuales.reply.split("hacia ")[1] || "Destino",
+                        lat: datosCotizadosActuales.destCoords.lat,
+                        lng: datosCotizadosActuales.destCoords.lng,
+                        precioUsd: parseFloat(flotaElegida.usd),
+                        precioBs: parseFloat(flotaElegida.bs),
+                        tipoFlota: flotaSeleccionada
+                    })
                 });
                 const data = await res.json();
                 
-                // Si el backend avisa que falta login o falló el token previo
-                if (data.status === "AUTH_REQUIRED" || data.success === false) {
+                if (data.success) {
+                    viajeActivoId = data.yummyTripId; // Captura ID dinámico único de Mongo Atlas
+                    pollingInterval = setInterval(consultarEstatusAPIInversa, 3000); // Polling dinámico activo
+                } else {
                     forzarLoginModulo();
-                    return;
                 }
             } catch(e) { console.log("Error al despachar orden."); }
-
-            pollingInterval = setInterval(consultarEstatusAPIInversa, 2500);
         }
 
         async function consultarEstatusAPIInversa() {
+            if(!viajeActivoId) return;
             try {
-                const res = await fetch(`${API_URL}/api/trip/status`);
-                
-                // Si el servidor backend responde con no autorizado, detenemos polling y abrimos login
-                if (res.status === 401) {
-                    forzarLoginModulo();
-                    return;
-                }
-
+                const res = await fetch(`${API_URL}/api/trip/status?yummyTripId=${viajeActivoId}`);
                 const viaje = await res.json();
-
-                if (viaje.status === "AUTH_REQUIRED") {
-                    forzarLoginModulo();
-                    return;
-                }
 
                 if (viaje.status === "ASIGNADO" && viaje.conductor) {
                     clearInterval(pollingInterval);
@@ -285,16 +331,56 @@
                     document.getElementById('hud-plate').innerText = viaje.conductor.placa;
                     
                     if (viaje.conductor.foto) {
-                        const avatar = document.getElementById('hud-avatar');
-                        avatar.style.backgroundImage = `url('${viaje.conductor.foto}')`;
+                        document.getElementById('hud-avatar').style.backgroundImage = `url('${viaje.conductor.foto}')`;
                     }
+                    actualizarBalancesUI(); // Descuenta saldo si el backend procesó el cobro
                 }
-            } catch (err) {
-                console.error("Error leyendo flujo de API Inversa:", err);
+            } catch (err) { console.error("Fallo leyendo telemetría remota:", err); }
+        }
+
+        function abrirModuloBilletera() {
+            document.getElementById('wallet-status').style.display = 'none';
+            document.getElementById('wallet-modal').style.display = 'flex';
+        }
+
+        async function enviarRecargaManual() {
+            const phone = localStorage.getItem('user_phone');
+            const amount = document.getElementById('wallet-amount').value;
+            const ref = document.getElementById('wallet-ref').value;
+            const statusLabel = document.getElementById('wallet-status');
+
+            if(!amount || !ref) return;
+
+            statusLabel.style.display = 'block';
+            statusLabel.style.color = 'var(--drivery-blue)';
+            statusLabel.innerText = "ENVIANDO A MESA DE CONTROL...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/wallet/verify-recharge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, ref, amount: parseFloat(amount) })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    statusLabel.style.color = 'var(--drivery-green)';
+                    statusLabel.innerText = data.message;
+                    speak("Registro completado.");
+                    setTimeout(() => {
+                        document.getElementById('wallet-modal').style.display = 'none';
+                        actualizarBalancesUI();
+                    }, 2500);
+                } else {
+                    statusLabel.style.color = 'red';
+                    statusLabel.innerText = data.message;
+                }
+            } catch(e) {
+                statusLabel.style.color = 'red';
+                statusLabel.innerText = "FALLO DE INTERCONEXIÓN DE RED";
             }
         }
 
-        // LÓGICA DE CONTROL PARA EL MODAL DE AUTENTICACIÓN
         function forzarLoginModulo() {
             clearInterval(pollingInterval);
             clearInterval(intervaloCronometro);
@@ -320,13 +406,13 @@
                 const data = await res.json();
 
                 if (data.success) {
+                    localStorage.setItem('user_phone', data.user.telefono);
                     statusLabel.style.color = 'var(--drivery-green)';
                     statusLabel.innerText = "CONEXIÓN ESTABLECIDA";
                     speak("Flota vinculada con éxito.");
                     setTimeout(() => {
                         document.getElementById('auth-modal').style.display = 'none';
-                        // Reanudamos la confirmación automática del viaje colgado
-                        confirmarViaje();
+                        actualizarBalancesUI();
                     }, 1500);
                 } else {
                     statusLabel.style.color = 'red';
