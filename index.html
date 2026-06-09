@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght=500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --drivery-blue: #00d2ff; --drivery-green: #39ff14; --drivery-purple: #7b2cbf;
@@ -24,12 +24,12 @@
         #ui-layer > * { pointer-events: auto; }
 
         header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 25px 30px; box-sizing: border-box; }
-        .logo-main { height: 42px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
+        .logo-main { height: 42px; filter: drop-shadow(0 0 10px var(--drivery-blue)); transition: opacity 0.4s; }
 
-        #price-display { cursor: pointer; text-align: right; transition: transform 0.2s; }
+        #price-display { cursor: pointer; text-align: right; transition: transform 0.2s; z-index: 1001; }
         #price-display:active { transform: scale(0.95); }
 
-        #fleet-selection { position: absolute; top: 90px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
+        #fleet-selection { position: absolute; top: 120px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
         .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 12px; min-width: 90px; text-align: center; cursor: pointer; outline: none; transition: 0.3s; }
         .car-card.selected { border-color: var(--drivery-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
 
@@ -37,8 +37,41 @@
         .orb-container { position: relative; width: 280px; height: 280px; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 500; }
         .orb-master { width: 100%; height: 100%; cursor: pointer; touch-action: none; outline: none; }
 
+        /* --- COMPONENTE RUTA SUPERIOR (ORIGEN Y DESTINO) --- */
+        #routing-header {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translate(-50%, -30px);
+            width: 85%;
+            max-width: 360px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+        .route-row { display: flex; align-items: center; gap: 12px; }
+        .route-indicator { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .origin-dot { background-color: var(--drivery-green); box-shadow: 0 0 8px var(--drivery-green); }
+        .dest-dot { background-color: var(--drivery-blue); box-shadow: 0 0 8px var(--drivery-blue); }
+        .route-node-info { flex-grow: 1; overflow: hidden; }
+        .route-node-info label { font-family: var(--font-tech); font-size: 8px; color: rgba(255,255,255,0.4); letter-spacing: 1px; display: block; margin: 0; }
+        .route-node-info p { font-size: 13px; font-weight: 600; color: #fff; margin: 1px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+        .route-divider { width: 1px; height: 10px; background: rgba(0, 210, 255, 0.2); margin-left: 2.5px; }
+
+        /* Comportamientos del HUD en estado de Ruta Activa */
         .route-active .orb-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 75px; height: 75px; }
-        .route-active header { opacity: 0; pointer-events: none; }
+        .route-active .logo-main { opacity: 0; pointer-events: none; }
+        .route-active #routing-header { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
 
         #confirm-panel { position: fixed; bottom: 120px; display: none; width: 100%; justify-content: center; z-index: 200; }
         .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; box-shadow: 0 0 15px rgba(123, 44, 191, 0.4); transition: 0.3s; }
@@ -123,6 +156,25 @@
     <div id="ui-layer">
         <header>
             <img src="logo_app.png" class="logo-main" onerror="this.style.display='none'">
+            
+            <div id="routing-header">
+                <div class="route-row">
+                    <span class="route-indicator origin-dot"></span>
+                    <div class="route-node-info">
+                        <label>ORIGEN</label>
+                        <p id="txt-origen">Ubicación Actual</p>
+                    </div>
+                </div>
+                <div class="route-divider"></div>
+                <div class="route-row">
+                    <span class="route-indicator dest-dot"></span>
+                    <div class="route-node-info">
+                        <label>DESTINO TARGET</label>
+                        <p id="txt-destino">Telemetría de voz...</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="price-display" onclick="abrirModuloBilletera()">
                 <div id="usd-balance" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:20px;">$0.00</div>
                 <div id="bs-balance" style="color:rgba(255,255,255,0.4); font-size:11px; font-family:var(--font-tech);">0.00 Bs</div>
@@ -157,7 +209,6 @@
 
         function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'es-VE'; window.speechSynthesis.speak(m); }
 
-        // Sincronizar balances reales en el Front
         async function actualizarBalancesUI() {
             const phone = localStorage.getItem('user_phone');
             if(!phone) return;
@@ -193,15 +244,29 @@
             if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { 
                 userPos = { lat: p.coords.latitude, lng: p.coords.longitude }; 
                 map.setCenter(userPos); 
+                obtenerDireccionInversaGeocoding(userPos);
             });
             initThreeJS(); initVoice();
             
-            // Verificación de Handshake de Seguridad Obligatorio
             if(!localStorage.getItem('user_phone')) {
                 document.getElementById('auth-modal').style.display = 'flex';
             } else {
                 actualizarBalancesUI();
             }
+        }
+
+        // Traduce coordenadas a un nombre de calle real legible para el Origen superior
+        function obtenerDireccionInversaGeocoding(coords) {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: coords }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    // Tomamos un fragmento corto legible (ej: Las Mercedes, Caracas)
+                    const componentes = results[0].address_components;
+                    const calle = componentes[1] ? componentes[1].long_name : "";
+                    const zona = componentes[2] ? componentes[2].long_name : "";
+                    document.getElementById('txt-origen').innerText = calle || zona || "Ubicación Detectada";
+                }
+            });
         }
 
         async function ejecutarComando(cmd) {
@@ -217,7 +282,16 @@
                 const data = await res.json();
                 
                 if(data.destCoords) {
-                    datosCotizadosActuales = data; // Cacheamos lat, lng y flota para la inyección final
+                    datosCotizadosActuales = data;
+                    
+                    // Extraer de la respuesta por voz el string del destino de forma limpia
+                    let stringDestino = "Destino Seleccionado";
+                    if (data.reply && data.reply.includes("hacia ")) {
+                        stringDestino = data.reply.split("hacia ")[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim();
+                    }
+                    // Inyectar el texto en la UI central superior
+                    document.getElementById('txt-destino').innerText = stringDestino.toUpperCase();
+
                     const icon = (color) => ({ path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: '#000', strokeWeight: 1, scale: 8 });
                     new google.maps.Marker({ position: userPos, map: map, icon: icon('#39ff14') });
                     new google.maps.Marker({ position: data.destCoords, map: map, icon: icon('#00d2ff') });
@@ -271,7 +345,6 @@
             const phone = localStorage.getItem('user_phone');
             if(!phone || !datosCotizadosActuales) return;
 
-            // Extraemos los precios de la flota que el usuario dejó seleccionada
             const flotaElegida = datosCotizadosActuales.display.fleet.find(x => x.id === flotaSeleccionada);
 
             document.getElementById('search-modal').style.display = 'flex';
@@ -292,7 +365,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         telefonoUsuario: phone,
-                        destinoNombre: datosCotizadosActuales.reply.split("hacia ")[1] || "Destino",
+                        destinoNombre: document.getElementById('txt-destino').innerText,
                         lat: datosCotizadosActuales.destCoords.lat,
                         lng: datosCotizadosActuales.destCoords.lng,
                         precioUsd: parseFloat(flotaElegida.usd),
@@ -303,8 +376,8 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    viajeActivoId = data.yummyTripId; // Captura ID dinámico único de Mongo Atlas
-                    pollingInterval = setInterval(consultarEstatusAPIInversa, 3000); // Polling dinámico activo
+                    viajeActivoId = data.yummyTripId; 
+                    pollingInterval = setInterval(consultarEstatusAPIInversa, 3000); 
                 } else {
                     forzarLoginModulo();
                 }
@@ -333,7 +406,7 @@
                     if (viaje.conductor.foto) {
                         document.getElementById('hud-avatar').style.backgroundImage = `url('${viaje.conductor.foto}')`;
                     }
-                    actualizarBalancesUI(); // Descuenta saldo si el backend procesó el cobro
+                    actualizarBalancesUI(); 
                 }
             } catch (err) { console.error("Fallo leyendo telemetría remota:", err); }
         }
