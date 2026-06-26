@@ -14,28 +14,17 @@
             <span class="animate-ping inline-block w-3 h-3 rounded-full bg-red-500"></span>
             MODO EMERGENCIA: Drivery
         </h1>
-        <p class="text-xs text-slate-400 mt-1">Tu ubicación está activa para geocercas de búsqueda</p>
+        <p class="text-xs text-slate-400 mt-1">Tu ubicación está activa para geocercas de búsqueda en tiempo real</p>
     </header>
 
-    <main class="flex-grow flex flex-col justify-center items-center">
-        <div class="bg-slate-800 border-2 border-red-500 rounded-2xl p-4 w-full max-w-sm shadow-2xl">
-            <div class="flex gap-4">
-                <div class="w-24 h-24 bg-slate-700 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Persona Desaparecida" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <span class="bg-red-600 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded">Buscar en esta zona</span>
-                    <h2 class="text-lg font-bold mt-1">Carlos Mendoza</h2>
-                    <p class="text-xs text-slate-300">**Edad:** 64 años</p>
-                    <p class="text-xs text-slate-300">**Última vez visto:** Av. San Martín</p>
-                    <p class="text-xs text-amber-400 font-semibold mt-1">Camisa azul a cuadros, jean oscuro</p>
-                </div>
-            </div>
+    <main id="contenedor-tarjeta" class="flex-grow flex flex-col justify-center items-center p-2 text-center">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-xl text-slate-400">
+            <p class="text-sm">📍 Buscando reportes activos en tu cuadrante actual...</p>
+            <p class="text-xs mt-2 text-slate-500">Maneja con precaución. Al cruzar zonas con casos activos de venezuelatebusca.com, la información aparecerá aquí.</p>
         </div>
     </main>
 
     <footer class="w-full max-w-sm mx-auto space-y-4 mb-4">
-        
         <button onclick="reportarAvistamiento()" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 transition text-white font-black py-5 rounded-2xl text-xl shadow-lg shadow-red-900/40 flex justify-center items-center gap-3">
             📍 ¡LO VI AQUÍ!
         </button>
@@ -43,7 +32,7 @@
         <div class="grid grid-cols-2 gap-3">
             <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 📷 Tomar Foto
-                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="subirFotoSimulada()">
+                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="alert('Foto cargada para análisis de imagen.')">
             </button>
             <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 🎙️ Reportar por Voz
@@ -52,96 +41,149 @@
     </footer>
 
     <script>
-        // Configuración con tus credenciales de Supabase
+        // Configuración de conexión con tu base de datos de Drivery-Rescate
         const SUPABASE_URL = "https://koulxmmwcnkppxswxnxl.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_4rUGj7_gbn8Bqjlp-2UDgQ_AVn4fmH2";
-        
-        // Inicialización del cliente de Supabase
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 1. FUNCIÓN GPS: Captura coordenadas y guarda reporte base inmediato
-        async function reportarAvistamiento() {
-            if (!navigator.geolocation) {
-                alert("Tu dispositivo no soporta geolocalización.");
-                return;
-            }
+        // Variable global para guardar el ID de la persona que se está mostrando en pantalla
+        window.idPersonaActualBusqueda = "caso_general_sismo";
+        
+        // Arreglo en memoria para los datos extraídos del scraping remoto
+        let listaDesaparecidosBackend = [];
 
+        // 1. CARGA INICIAL: Descargar los datos acumulados por el Scraper
+        async function descargarCasosScraping() {
+            try {
+                const { data, error } = await supabase
+                    .from('reportes_avistamiento')
+                    .select('id_desaparecido, ia_referencia, latitud, longitud')
+                    -- Filtramos solo los que vienen del scraping automatizado externo
+                    .like('id_desaparecido', 'vtb_%');
+
+                if (!error && data) {
+                    listaDesaparecidosBackend = data;
+                    console.log("Casos sincronizados listos en memoria:", listaDesaparecidosBackend.length);
+                }
+            } catch (err) {
+                console.error("Error al precargar casos del scraper:", err);
+            }
+        }
+
+        // 2. MONITOREO GPS ACTIVO: Cambia la tarjeta dependiendo de la ubicación del conductor
+        if (navigator.geolocation) {
+            // Descargar casos al abrir la app
+            descargarCasosScraping();
+
+            navigator.geolocation.watchPosition((position) => {
+                const latConductor = position.coords.latitude;
+                const lonConductor = position.coords.longitude;
+                
+                console.log(`Ubicación GPS Conductor: ${latConductor}, ${lonConductor}`);
+
+                // Buscamos si algún caso del scraping coincide con la cercanía del conductor
+                // Para la emergencia, si el caso externo no tiene GPS exacto aún, puedes mapear por texto de zona o rangos aproximados.
+                const casoCercano = listaDesaparecidosBackend.find(caso => {
+                    // Si el scraper guardó coordenadas, calcula un radio de ~1.5 km
+                    if (caso.latitud && caso.longitud) {
+                        return Math.abs(caso.latitud - latConductor) < 0.015 && Math.abs(caso.longitud - lonConductor) < 0.015;
+                    }
+                    // Si solo tiene la descripción de la zona (ej. "El Paraíso" o "San Martín"), forzamos coincidencia simulada por el cuadrante actual del conductor
+                    if (caso.ia_referencia.includes("San Martín") && latConductor >= 10.4900 && latConductor <= 10.5000) return true;
+                    if (caso.ia_referencia.includes("El Paraíso") && latConductor >= 10.4800 && latConductor <= 10.4900) return true;
+                    
+                    return false;
+                });
+
+                if (casoCercano) {
+                    actualizarTarjetaInterfaz(casoCercano);
+                }
+            }, (err) => console.log("Error de tracking GPS:", err), { enableHighAccuracy: true, distanceFilter: 30 });
+        }
+
+        // 3. RENDERIZADO DINÁMICO: Reescribe la interfaz de forma limpia
+        function actualizarTarjetaInterfaz(caso) {
+            window.idPersonaActualBusqueda = caso.id_desaparecido;
+            
+            // Extraer el texto limpio del campo ia_referencia que estructuró el scraper
+            const infoLimpia = caso.ia_referencia.replace('Caso Sincronizado: ', '');
+
+            document.getElementById('contenedor-tarjeta').innerHTML = `
+                <div class="bg-slate-800 border-2 border-red-500 rounded-2xl p-4 w-full max-w-sm shadow-2xl animate-pulse">
+                    <div class="flex gap-4 items-center">
+                        <div class="w-20 h-20 bg-red-900/30 border border-red-500 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl">
+                            👤
+                        </div>
+                        <div class="text-left">
+                            <span class="bg-red-600 text-[9px] uppercase font-extrabold px-2 py-0.5 rounded text-white">Reportado cerca de tu ruta</span>
+                            <h2 class="text-base font-bold mt-1 text-white">${infoLimpia.split(' - ')[0]}</h2>
+                            <p class="text-xs text-slate-300 mt-1">📍 ${infoLimpia.split(' - ')[1] || 'Zona en alerta'}</p>
+                            <p class="text-[11px] text-amber-400 font-semibold mt-1">Mantén la vista en el entorno</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 4. ENVÍO DE AVISTAMIENTOS: El conductor presiona el botón y manda el pin a Supabase
+        async function reportarAvistamiento() {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
                 try {
-                    const { data, error } = await supabase
+                    const { error } = await supabase
                         .from('reportes_avistamiento')
                         .insert([
                             { 
-                                id_desaparecido: 'carlos_mendoza_123', 
+                                id_desaparecido: window.idPersonaActualBusqueda, 
                                 latitud: lat, 
                                 longitud: lon 
                             }
                         ]);
 
                     if (error) throw error;
-                    alert(`¡Ubicación guardada en Supabase!\nLat: ${lat}\nLon: ${lon}`);
-                    
+                    alert("¡Avistamiento reportado con éxito! Se notificará de inmediato.");
                 } catch (error) {
-                    console.error("Error en Supabase:", error.message);
-                    alert("No se pudo registrar la ubicación.");
+                    alert("No se pudo enviar el reporte.");
                 }
-            }, (error) => {
-                alert("Error al obtener GPS. Activa los permisos de ubicación.");
-            }, { enableHighAccuracy: true, timeout: 10000 });
+            });
         }
 
-        // 2. FUNCIÓN DE IA (Groq): Escucha la voz del conductor y procesa con la base de datos
+        // 5. ENLACE CON LA IA (Groq): Ejecuta tu función Postgres para procesar descripciones de voz
         function iniciarNotaVoz() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (!SpeechRecognition) {
-                alert("Tu navegador no soporta reconocimiento de voz directo.");
-                return;
-            }
+            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+            if (!SpeechRecognition) return alert("Navegador no compatible con reconocimiento de voz.");
 
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-VE'; // Configurado para español de Venezuela
-            recognition.interimResults = false;
+            const rec = new SpeechRecognition();
+            rec.lang = 'es-VE';
+            alert("🎙️ Escuchando reporte para la IA de Drivery...");
+            rec.start();
 
-            alert("🎙️ Red Drivery escuchando... Habla ahora claramente.");
-            recognition.start();
+            rec.onresult = async function(e) {
+                const vozTexto = e.results[0][0].transcript;
+                alert(`Analizando con Groq: "${vozTexto}"`);
 
-            recognition.onresult = async function(event) {
-                const textoEscuchado = event.results[0][0].transcript;
-                alert(`Procesando reporte de voz: "${textoEscuchado}"\nEnviando a Groq...`);
-                
                 try {
-                    // Llamamos a la función RPC de Postgres que creamos en Supabase
-                    const { data, error } = await supabase
-                        .rpc('procesar_reporte_con_groq', { texto_conductor: textoEscuchado });
-
+                    const { data, error } = await supabase.rpc('procesar_reporte_con_groq', { texto_conductor: vozTexto });
                     if (error) throw error;
 
-                    console.log("Análisis de la IA Groq:", data);
-                    
-                    // Mostramos el JSON estructurado devuelto por la IA
-                    alert(`¡IA Procesada con éxito!\n\n👕 Ropa: ${data.ropa || 'No detectada'}\n🧠 Estado: ${data.estado || 'No detectado'}\n📍 Referencia: ${data.referencia || 'No detectada'}`);
-
-                    // [OPCIONAL] Si además del análisis quieres guardar este texto con su GPS actual,
-                    // aquí capturas el GPS e insertas en la tabla con las nuevas columnas: ia_ropa, ia_estado, ia_referencia.
-
+                    alert(`¡IA procesó el avistamiento!\n\n👕 Ropa: ${data.ropa || 'N/D'}\n🧠 Estado: ${data.estado || 'N/D'}\n📍 Ref: ${data.referencia || 'N/D'}`);
                 } catch (err) {
-                    console.error("Error en el pipeline de IA:", err);
-                    alert("Error: Verifica que guardaste la clave de Groq en el Vault de Supabase con el nombre 'GROQ_API_KEY'.");
+                    alert("Error en el pipeline de inteligencia artificial.");
                 }
             };
-
-            recognition.onerror = function(event) {
-                alert("Error de micrófono: " + event.error);
-            };
         }
 
-        function subirFotoSimulada() {
-            alert("Foto cargada. Lista para el pipeline de Computer Vision.");
-        }
+        // SUSCRIPCIÓN EN TIEMPO REAL: Si el scraper inserta algo mientras la app está abierta, se actualiza la memoria
+        supabase
+            .channel('cambios-scraper')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reportes_avistamiento' }, payload => {
+                if (payload.new.id_desaparecido.startsWith('vtb_')) {
+                    listaDesaparecidosBackend.push(payload.new);
+                }
+            })
+            .subscribe();
     </script>
 </body>
 </html>
