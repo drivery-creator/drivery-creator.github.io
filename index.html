@@ -14,13 +14,13 @@
             <span class="animate-ping inline-block w-3 h-3 rounded-full bg-red-500"></span>
             MODO EMERGENCIA: Drivery
         </h1>
-        <p class="text-xs text-slate-400 mt-1">Tu ubicación está activa para geocercas de búsqueda en tiempo real</p>
+        <p class="text-xs text-slate-400 mt-1">Ubicación activa para geocercas en tiempo real</p>
     </header>
 
     <main id="contenedor-tarjeta" class="flex-grow flex flex-col justify-center items-center p-2 text-center">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-xl text-slate-400">
-            <p class="text-sm">📍 Buscando reportes activos en tu cuadrante actual...</p>
-            <p class="text-xs mt-2 text-slate-500">Maneja con precaución. Al cruzar zonas con casos activos de venezuelatebusca.com, la información aparecerá aquí.</p>
+            <p class="text-sm">📍 Sincronizando coordenadas y cuadrantes de búsqueda...</p>
+            <p class="text-xs mt-2 text-slate-500">Al transitar por zonas con casos activos extraídos de venezuelatebusca.com, la información de la persona aparecerá automáticamente aquí.</p>
         </div>
     </main>
 
@@ -32,7 +32,7 @@
         <div class="grid grid-cols-2 gap-3">
             <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 📷 Tomar Foto
-                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="alert('Foto cargada para análisis de imagen.')">
+                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="subirFotoConductor(this)">
             </button>
             <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 🎙️ Reportar por Voz
@@ -41,72 +41,63 @@
     </footer>
 
     <script>
-        // Configuración de conexión con tu base de datos de Drivery-Rescate
+        // Credenciales de tu proyecto Supabase
         const SUPABASE_URL = "https://koulxmmwcnkppxswxnxl.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_4rUGj7_gbn8Bqjlp-2UDgQ_AVn4fmH2";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Variable global para guardar el ID de la persona que se está mostrando en pantalla
-        window.idPersonaActualBusqueda = "caso_general_sismo";
-        
-        // Arreglo en memoria para los datos extraídos del scraping remoto
+        // Variables de control de estado en memoria
+        window.idPersonaActualBusqueda = "caso_general_contingencia";
         let listaDesaparecidosBackend = [];
 
-        // 1. CARGA INICIAL: Descargar los datos acumulados por el Scraper
+        // 1. CARGA INICIAL: Descarga la base de datos acumulada por tu Scraper automático
         async function descargarCasosScraping() {
             try {
                 const { data, error } = await supabase
                     .from('reportes_avistamiento')
                     .select('id_desaparecido, ia_referencia, latitud, longitud')
-                    -- Filtramos solo los que vienen del scraping automatizado externo
-                    .like('id_desaparecido', 'vtb_%');
+                    .like('id_desaparecido', 'vtb_%'); // Filtra registros del scraper externo
 
                 if (!error && data) {
                     listaDesaparecidosBackend = data;
-                    console.log("Casos sincronizados listos en memoria:", listaDesaparecidosBackend.length);
+                    console.log("Casos sincronizados cargados en frontend:", listaDesaparecidosBackend.length);
                 }
             } catch (err) {
-                console.error("Error al precargar casos del scraper:", err);
+                console.error("Error al sincronizar datos iniciales:", err);
             }
         }
 
-        // 2. MONITOREO GPS ACTIVO: Cambia la tarjeta dependiendo de la ubicación del conductor
+        // 2. GEOLOCALIZACIÓN DINÁMICA: Cambia la tarjeta en vivo según la ruta del vehículo
         if (navigator.geolocation) {
-            // Descargar casos al abrir la app
             descargarCasosScraping();
 
             navigator.geolocation.watchPosition((position) => {
                 const latConductor = position.coords.latitude;
                 const lonConductor = position.coords.longitude;
                 
-                console.log(`Ubicación GPS Conductor: ${latConductor}, ${lonConductor}`);
+                console.log(`Posición GPS actual: Lat ${latConductor}, Lon ${lonConductor}`);
 
-                // Buscamos si algún caso del scraping coincide con la cercanía del conductor
-                // Para la emergencia, si el caso externo no tiene GPS exacto aún, puedes mapear por texto de zona o rangos aproximados.
+                // Match de cercanía espacial por rango numérico o detección de texto de zonas (San Martín / El Paraíso)
                 const casoCercano = listaDesaparecidosBackend.find(caso => {
-                    // Si el scraper guardó coordenadas, calcula un radio de ~1.5 km
                     if (caso.latitud && caso.longitud) {
                         return Math.abs(caso.latitud - latConductor) < 0.015 && Math.abs(caso.longitud - lonConductor) < 0.015;
                     }
-                    // Si solo tiene la descripción de la zona (ej. "El Paraíso" o "San Martín"), forzamos coincidencia simulada por el cuadrante actual del conductor
                     if (caso.ia_referencia.includes("San Martín") && latConductor >= 10.4900 && latConductor <= 10.5000) return true;
                     if (caso.ia_referencia.includes("El Paraíso") && latConductor >= 10.4800 && latConductor <= 10.4900) return true;
-                    
                     return false;
                 });
 
                 if (casoCercano) {
                     actualizarTarjetaInterfaz(casoCercano);
                 }
-            }, (err) => console.log("Error de tracking GPS:", err), { enableHighAccuracy: true, distanceFilter: 30 });
+            }, (err) => console.log("Error de tracking satelital:", err), { enableHighAccuracy: true, distanceFilter: 30 });
         }
 
-        // 3. RENDERIZADO DINÁMICO: Reescribe la interfaz de forma limpia
+        // 3. RENDERIZACIÓN DE INTERFAZ: Dibuja la tarjeta del desaparecido correspondiente
         function actualizarTarjetaInterfaz(caso) {
             window.idPersonaActualBusqueda = caso.id_desaparecido;
-            
-            // Extraer el texto limpio del campo ia_referencia que estructuró el scraper
             const infoLimpia = caso.ia_referencia.replace('Caso Sincronizado: ', '');
+            const partes = infoLimpia.split(' - ');
 
             document.getElementById('contenedor-tarjeta').innerHTML = `
                 <div class="bg-slate-800 border-2 border-red-500 rounded-2xl p-4 w-full max-w-sm shadow-2xl animate-pulse">
@@ -115,17 +106,17 @@
                             👤
                         </div>
                         <div class="text-left">
-                            <span class="bg-red-600 text-[9px] uppercase font-extrabold px-2 py-0.5 rounded text-white">Reportado cerca de tu ruta</span>
-                            <h2 class="text-base font-bold mt-1 text-white">${infoLimpia.split(' - ')[0]}</h2>
-                            <p class="text-xs text-slate-300 mt-1">📍 ${infoLimpia.split(' - ')[1] || 'Zona en alerta'}</p>
-                            <p class="text-[11px] text-amber-400 font-semibold mt-1">Mantén la vista en el entorno</p>
+                            <span class="bg-red-600 text-[9px] uppercase font-extrabold px-2 py-0.5 rounded text-white">Alerta en tu cuadrante</span>
+                            <h2 class="text-base font-bold mt-1 text-white">${partes[0]}</h2>
+                            <p class="text-xs text-slate-300 mt-1">📍 ${partes[1] || 'Zona de riesgo'}</p>
+                            <p class="text-[11px] text-amber-400 font-semibold mt-1">Monitorea visualmente el entorno</p>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // 4. ENVÍO DE AVISTAMIENTOS: El conductor presiona el botón y manda el pin a Supabase
+        // 4. ENVÍO DE AVISTAMIENTOS: Presionar botón "LO VI AQUÍ" e insertar pin GPS
         async function reportarAvistamiento() {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const lat = position.coords.latitude;
@@ -143,44 +134,91 @@
                         ]);
 
                     if (error) throw error;
-                    alert("¡Avistamiento reportado con éxito! Se notificará de inmediato.");
+                    alert("¡Ubicación de avistamiento enviada y compartida con la red!");
                 } catch (error) {
-                    alert("No se pudo enviar el reporte.");
+                    alert("Error al registrar el pin de emergencia.");
                 }
             });
         }
 
-        // 5. ENLACE CON LA IA (Groq): Ejecuta tu función Postgres para procesar descripciones de voz
+        // 5. CONEXIÓN CON IA DE GROQ: Escucha el reporte de voz y ejecuta la función remota
         function iniciarNotaVoz() {
             const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-            if (!SpeechRecognition) return alert("Navegador no compatible con reconocimiento de voz.");
+            if (!SpeechRecognition) return alert("Tu dispositivo no soporta análisis de voz nativo.");
 
-            const rec = new SpeechRecognition();
-            rec.lang = 'es-VE';
-            alert("🎙️ Escuchando reporte para la IA de Drivery...");
-            rec.start();
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-VE';
+            alert("🎙️ Sistema Drivery escuchando... Describe lo que ves en las calles.");
+            recognition.start();
 
-            rec.onresult = async function(e) {
-                const vozTexto = e.results[0][0].transcript;
-                alert(`Analizando con Groq: "${vozTexto}"`);
+            recognition.onresult = async function(event) {
+                const textoVoz = event.results[0][0].transcript;
+                alert(`Texto capturado: "${textoVoz}"\nProcesando extracción con Groq...`);
 
                 try {
-                    const { data, error } = await supabase.rpc('procesar_reporte_con_groq', { texto_conductor: vozTexto });
+                    // Invoca la función SQL-RPC que conecta con la API de Groq de forma segura
+                    const { data, error } = await supabase.rpc('procesar_reporte_con_groq', { texto_conductor: textoVoz });
                     if (error) throw error;
 
-                    alert(`¡IA procesó el avistamiento!\n\n👕 Ropa: ${data.ropa || 'N/D'}\n🧠 Estado: ${data.estado || 'N/D'}\n📍 Ref: ${data.referencia || 'N/D'}`);
+                    alert(`¡IA Extraída con éxito!\n\n👕 Ropa: ${data.ropa || 'N/D'}\n🧠 Estado: ${data.estado || 'N/D'}\n📍 Ref: ${data.referencia || 'N/D'}`);
                 } catch (err) {
-                    alert("Error en el pipeline de inteligencia artificial.");
+                    console.error(err);
+                    alert("Error en el pipeline interno de Groq. Verifica la API key en el Vault.");
                 }
             };
         }
 
-        // SUSCRIPCIÓN EN TIEMPO REAL: Si el scraper inserta algo mientras la app está abierta, se actualiza la memoria
+        // 6. PIPELINE MULTIMEDIA (FOTOS): Sube la imagen capturada al Storage de Supabase
+        async function subirFotoConductor(input) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const nombreArchivo = `foto_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+
+            alert("Subiendo captura de evidencia al servidor de Storage...");
+
+            try {
+                // Sube el archivo binario al Bucket público de Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from('fotos_avistamiento')
+                    .upload(nombreArchivo, file);
+
+                if (error) throw error;
+
+                // Genera la URL pública de la imagen alojada
+                const { data: urlData } = supabase.storage
+                    .from('fotos_avistamiento')
+                    .getPublicUrl(nombreArchivo);
+
+                const publicUrl = urlData.publicUrl;
+                console.log("Evidencia multimedia enlazada:", publicUrl);
+
+                // Obtener coordenadas actuales para enlazar la foto con un punto geográfico
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    await supabase.from('reportes_avistamiento').insert([
+                        {
+                            id_desaparecido: window.idPersonaActualBusqueda,
+                            latitud: pos.coords.latitude,
+                            longitud: pos.coords.longitude,
+                            foto_url: publicUrl,
+                            ia_referencia: "Avistamiento con evidencia fotográfica de conductor"
+                        }
+                    ]);
+                    alert("¡Foto y coordenadas GPS vinculadas exitosamente en el panel central!");
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert("Error al subir el archivo multimedia al Storage de Supabase.");
+            }
+        }
+
+        // 7. REALTIME COMPONENT: Si el scraper inyecta data nueva en segundo plano, se añade al frontend
         supabase
             .channel('cambios-scraper')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reportes_avistamiento' }, payload => {
                 if (payload.new.id_desaparecido.startsWith('vtb_')) {
                     listaDesaparecidosBackend.push(payload.new);
+                    console.log("Nuevo caso inyectado en vivo por el bot de scraping:", payload.new.id_desaparecido);
                 }
             })
             .subscribe();
