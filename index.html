@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drivery - Red de Rescate</title>
+    <!-- Tailwind CSS para diseño rápido y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SDK Oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-900 text-white font-sans flex flex-col justify-between min-h-screen p-4">
 
+    <!-- Encabezado de la App -->
     <header class="text-center my-2">
         <h1 class="text-xl font-bold text-red-500 flex justify-center items-center gap-2">
             <span class="animate-ping inline-block w-3 h-3 rounded-full bg-red-500"></span>
@@ -16,69 +20,116 @@
         <p class="text-xs text-slate-400 mt-1">Tu ubicación está activa para geocercas de búsqueda</p>
     </header>
 
+    <!-- Tarjeta del Desaparecido en la Zona Actual -->
     <main class="flex-grow flex flex-col justify-center items-center">
         <div class="bg-slate-800 border-2 border-red-500 rounded-2xl p-4 w-full max-w-sm shadow-2xl">
             <div class="flex gap-4">
                 <div class="w-24 h-24 bg-slate-700 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src="https://via.placeholder.com/150" alt="Desaparecido" class="w-full h-full object-cover">
+                    <!-- Foto de simulación (puedes cambiar la URL por una real luego) -->
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Persona Desaparecida" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <span class="bg-red-600 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded">Buscar en esta zona</span>
                     <h2 class="text-lg font-bold mt-1">Carlos Mendoza</h2>
                     <p class="text-xs text-slate-300">**Edad:** 64 años</p>
-                    <p class="text-xs text-slate-300">**Visto por última vez:** Av. San Martín</p>
-                    <p class="text-xs text-amber-400 font-semibold mt-1">Camisa azul a cuadros, jean</p>
+                    <p class="text-xs text-slate-300">**Última vez visto:** Av. San Martín</p>
+                    <p class="text-xs text-amber-400 font-semibold mt-1">Camisa azul a cuadros, jean oscuro</p>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Botonera de Acción Rápida para el Conductor -->
     <footer class="w-full max-w-sm mx-auto space-y-4 mb-4">
         
+        <!-- Botón Principal de Avistamiento -->
         <button onclick="reportarAvistamiento()" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 transition text-white font-black py-5 rounded-2xl text-xl shadow-lg shadow-red-900/40 flex justify-center items-center gap-3">
             📍 ¡LO VI AQUÍ!
         </button>
 
+        <!-- Botones Secundarios Multimedia -->
         <div class="grid grid-cols-2 gap-3">
-            <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700">
+            <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 📷 Tomar Foto
-                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden">
+                <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="subirFotoSimulada()">
             </button>
-            <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700">
+            <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
                 🎙️ Reportar por Voz
             </button>
         </div>
     </footer>
 
+    <!-- Lógica de Conexión e Inserción de Datos -->
     <script>
-        // Función principal: Captura coordenadas exactas al tocar el botón
-        function reportarAvistamiento() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const timestamp = new Date().toISOString();
+        // Configuración con tus credenciales de Supabase
+        const SUPABASE_URL = "https://koulxmmwcnkppxswxnxl.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_4rUGj7_gbn8Bqjlp-2UDgQ_AVn4fmH2";
+        
+        // Inicialización del cliente
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                    const reporte = {
-                        coordenadas: { lat, lon },
-                        hora: timestamp,
-                        id_desaparecido: "carlos_mendoza_123"
-                    };
-
-                    console.log("Reporte listo para enviar al backend/IA:", reporte);
-                    alert(`¡Reporte enviado con éxito!\nCoordenadas capturadas: ${lat}, ${lon}`);
-                    
-                    // Aquí harías el fetch() a tu API de backend
-                }, (error) => {
-                    alert("Error al obtener la ubicación. Por favor, activa el GPS.");
-                });
-            } else {
-                alert("Tu navegador no soporta geolocalización.");
+        // Función para capturar GPS y guardar reporte inmediato
+        async function reportarAvistamiento() {
+            if (!navigator.geolocation) {
+                alert("Tu navegador o dispositivo no soporta geolocalización.");
+                return;
             }
+
+            // Mostrar estado de carga en consola o UI si fuera necesario
+            console.log("Obteniendo ubicación del GPS...");
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    // Inserción directa en la tabla de Supabase
+                    const { data, error } = await supabase
+                        .from('reportes_avistamiento')
+                        .insert([
+                            { 
+                                id_desaparecido: 'carlos_mendoza_123', 
+                                latitud: lat, 
+                                longitud: lon 
+                            }
+                        ]);
+
+                    if (error) throw error;
+
+                    alert(`¡Reporte enviado exitosamente!\nCoordenadas registradas:\nLat: ${lat}\nLon: ${lon}`);
+                    
+                } catch (error) {
+                    console.error("Error al guardar en Supabase:", error.message);
+                    alert("Error de conexión: No se pudo registrar el avistamiento.");
+                }
+
+            }, (error) => {
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        alert("Error: Debes permitir el acceso al GPS para enviar reportes.");
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        alert("Error: La información de ubicación no está disponible.");
+                        break;
+                    case error.TIMEOUT:
+                        alert("Error: Excedió el tiempo de espera para obtener ubicación.");
+                        break;
+                    default:
+                        alert("Error desconocido al obtener la ubicación.");
+                }
+            }, {
+                enableHighAccuracy: true, // Forzar GPS de alta precisión
+                timeout: 10000
+            });
+        }
+
+        // Funciones temporales para control de flujo multimedia
+        function subirFotoSimulada() {
+            alert("Foto capturada. El archivo está listo para ser procesado por los módulos de visión por IA.");
         }
 
         function iniciarNotaVoz() {
-            alert("Grabando nota de voz de 5 segundos para procesar con IA...");
+            alert("Escuchando... Grabación de audio lista para procesar mediante Whisper / API de Inteligencia Artificial.");
         }
     </script>
 </body>
