@@ -9,6 +9,7 @@
 </head>
 <body class="bg-slate-900 text-white font-sans flex flex-col justify-between min-h-screen p-4">
 
+    <!-- Encabezado de la App -->
     <header class="text-center my-2">
         <h1 class="text-xl font-bold text-red-500 flex justify-center items-center gap-2">
             <span class="animate-ping inline-block w-3 h-3 rounded-full bg-red-500"></span>
@@ -17,67 +18,69 @@
         <p class="text-xs text-slate-400 mt-1">Ubicación activa para geocercas en tiempo real</p>
     </header>
 
-    <main id="contenedor-tarjeta" class="flex-grow flex flex-col justify-center items-center p-2 text-center">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-xl text-slate-400">
+    <!-- Espacio Dinámico principal / Modal Formulario -->
+    <main id="contenedor-pantalla" class="flex-grow flex flex-col justify-center items-center p-2 text-center">
+        <!-- Tarjeta de Desaparecido por defecto -->
+        <div id="contenedor-tarjeta" class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl text-slate-400">
             <p class="text-sm">📍 Sincronizando coordenadas y cuadrantes de búsqueda...</p>
-            <p class="text-xs mt-2 text-slate-500">Al transitar por zonas con casos activos extraídos de venezuelatebusca.com, la información de la persona aparecerá automáticamente aquí.</p>
+            <p class="text-xs mt-2 text-slate-500">Al transitar por zonas con casos activos de venezuelatebusca.com, la información aparecerá automáticamente aquí.</p>
         </div>
     </main>
 
-    <footer class="w-full max-w-sm mx-auto space-y-4 mb-4">
-        <button onclick="reportarAvistamiento()" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 transition text-white font-black py-5 rounded-2xl text-xl shadow-lg shadow-red-900/40 flex justify-center items-center gap-3">
+    <!-- Botonera de Acción Rápida para el Conductor -->
+    <footer class="w-full max-w-sm mx-auto space-y-3 mb-4">
+        <!-- BOTÓN NUEVO: Encontré a Alguien (Verde Alerta) -->
+        <button onclick="mostrarFormularioHallazgo()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition text-white font-black py-4 rounded-2xl text-lg shadow-lg shadow-emerald-900/40 flex justify-center items-center gap-2">
+            🤝 ENCONTRÉ A ALGUIEN
+        </button>
+
+        <!-- Botón de Envío de Ubicación Pasiva -->
+        <button onclick="reportarAvistamiento()" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 transition text-white font-bold py-4 rounded-2xl text-base shadow-md flex justify-center items-center gap-2">
             📍 ¡LO VI AQUÍ!
         </button>
 
+        <!-- Botones Multimedia e IA -->
         <div class="grid grid-cols-2 gap-3">
-            <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
+            <button onclick="document.getElementById('fotoInput').click()" class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border border-slate-700 transition">
                 📷 Tomar Foto
                 <input type="file" id="fotoInput" accept="image/*" capture="environment" class="hidden" onchange="subirFotoConductor(this)">
             </button>
-            <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-4 rounded-xl text-xs font-bold flex flex-col items-center gap-2 border border-slate-700 active:scale-95 transition">
+            <button onclick="iniciarNotaVoz()" class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border border-slate-700 transition">
                 🎙️ Reportar por Voz
             </button>
         </div>
     </footer>
 
     <script>
-        // Credenciales de tu proyecto Supabase
         const SUPABASE_URL = "https://koulxmmwcnkppxswxnxl.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_4rUGj7_gbn8Bqjlp-2UDgQ_AVn4fmH2";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Variables de control de estado en memoria
         window.idPersonaActualBusqueda = "caso_general_contingencia";
         let listaDesaparecidosBackend = [];
+        let htmlTarjetaOriginal = "";
 
-        // 1. CARGA INICIAL: Descarga la base de datos acumulada por tu Scraper automático
+        // 1. CARGA INICIAL: Sincroniza datos del scraper
         async function descargarCasosScraping() {
             try {
                 const { data, error } = await supabase
                     .from('reportes_avistamiento')
                     .select('id_desaparecido, ia_referencia, latitud, longitud')
-                    .like('id_desaparecido', 'vtb_%'); // Filtra registros del scraper externo
+                    .like('id_desaparecido', 'vtb_%');
 
                 if (!error && data) {
                     listaDesaparecidosBackend = data;
-                    console.log("Casos sincronizados cargados en frontend:", listaDesaparecidosBackend.length);
                 }
-            } catch (err) {
-                console.error("Error al sincronizar datos iniciales:", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // 2. GEOLOCALIZACIÓN DINÁMICA: Cambia la tarjeta en vivo según la ruta del vehículo
+        // 2. GEOLOCALIZACIÓN DINÁMICA DE CASOS
         if (navigator.geolocation) {
             descargarCasosScraping();
-
             navigator.geolocation.watchPosition((position) => {
                 const latConductor = position.coords.latitude;
                 const lonConductor = position.coords.longitude;
                 
-                console.log(`Posición GPS actual: Lat ${latConductor}, Lon ${lonConductor}`);
-
-                // Match de cercanía espacial por rango numérico o detección de texto de zonas (San Martín / El Paraíso)
                 const casoCercano = listaDesaparecidosBackend.find(caso => {
                     if (caso.latitud && caso.longitud) {
                         return Math.abs(caso.latitud - latConductor) < 0.015 && Math.abs(caso.longitud - lonConductor) < 0.015;
@@ -87,141 +90,162 @@
                     return false;
                 });
 
-                if (casoCercano) {
+                if (casoCercano && !document.getElementById('form-hallazgo')) {
                     actualizarTarjetaInterfaz(casoCercano);
                 }
-            }, (err) => console.log("Error de tracking satelital:", err), { enableHighAccuracy: true, distanceFilter: 30 });
+            }, (err) => console.log(err), { enableHighAccuracy: true, distanceFilter: 30 });
         }
 
-        // 3. RENDERIZACIÓN DE INTERFAZ: Dibuja la tarjeta del desaparecido correspondiente
         function actualizarTarjetaInterfaz(caso) {
             window.idPersonaActualBusqueda = caso.id_desaparecido;
             const infoLimpia = caso.ia_referencia.replace('Caso Sincronizado: ', '');
             const partes = infoLimpia.split(' - ');
 
-            document.getElementById('contenedor-tarjeta').innerHTML = `
+            htmlTarjetaOriginal = `
                 <div class="bg-slate-800 border-2 border-red-500 rounded-2xl p-4 w-full max-w-sm shadow-2xl animate-pulse">
                     <div class="flex gap-4 items-center">
-                        <div class="w-20 h-20 bg-red-900/30 border border-red-500 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl">
-                            👤
-                        </div>
+                        <div class="w-20 h-20 bg-red-900/30 border border-red-500 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl">👤</div>
                         <div class="text-left">
                             <span class="bg-red-600 text-[9px] uppercase font-extrabold px-2 py-0.5 rounded text-white">Alerta en tu cuadrante</span>
                             <h2 class="text-base font-bold mt-1 text-white">${partes[0]}</h2>
                             <p class="text-xs text-slate-300 mt-1">📍 ${partes[1] || 'Zona de riesgo'}</p>
-                            <p class="text-[11px] text-amber-400 font-semibold mt-1">Monitorea visualmente el entorno</p>
                         </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('contenedor-pantalla').innerHTML = htmlTarjetaOriginal;
+        }
+
+        // 3. NUEVA FUNCIÓN: Mostrar formulario interactivo en la pantalla
+        function mostrarFormularioHallazgo() {
+            document.getElementById('contenedor-pantalla').innerHTML = `
+                <div id="form-hallazgo" class="w-full max-w-sm bg-slate-800 border-2 border-emerald-500 rounded-2xl p-5 shadow-2xl text-left animate-fade-in text-sm">
+                    <h3 class="text-base font-black text-emerald-400 mb-3 text-center">Formulario de Rescate Coincidente</h3>
+                    
+                    <label class="block text-xs text-slate-400 mb-1 font-bold">NOMBRE DE LA PERSONA (O TEXTO DE VOZ)</label>
+                    <input type="text" id="inputNombreEncontrado" placeholder="Ej: Carlos Mendoza o 'señor de camisa azul'" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 mb-3 text-white focus:outline-none focus:border-emerald-500">
+                    
+                    <label class="block text-xs text-slate-400 mb-1 font-bold">CÉDULA / IDENTIFICACIÓN (OPCIONAL)</label>
+                    <input type="text" id="inputCedulaEncontrado" placeholder="V-12345678" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 mb-4 text-white focus:outline-none focus:border-emerald-500">
+                    
+                    <div class="flex gap-2">
+                        <button onclick="cancelarFormulario()" class="w-1/3 bg-slate-700 hover:bg-slate-600 py-2.5 rounded-xl font-bold text-xs transition">Cancelar</button>
+                        <button onclick="procesarBusquedaConIA()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-black text-xs text-white transition flex justify-center items-center gap-1">🔍 Verificar con Groq</button>
                     </div>
                 </div>
             `;
         }
 
-        // 4. ENVÍO DE AVISTAMIENTOS: Presionar botón "LO VI AQUÍ" e insertar pin GPS
+        function cancelarFormulario() {
+            document.getElementById('contenedor-pantalla').innerHTML = htmlTarjetaOriginal || `
+                <div id="contenedor-tarjeta" class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl text-slate-400">
+                    <p class="text-sm">📍 Buscando reportes en tu ruta...</p>
+                </div>`;
+        }
+
+        // 4. NUEVA FUNCIÓN: Ejecutar el pipeline de búsqueda cruzada de Groq
+        async function procesarBusquedaConIA() {
+            const nombre = document.getElementById('inputNombreEncontrado').value.trim();
+            const cedula = document.getElementById('inputCedulaEncontrado').value.trim();
+
+            if (!nombre) return alert("Por favor, ingresa al menos un nombre o descripción física.");
+
+            alert("Cruzando datos en tiempo real... La IA de Groq está analizando el Scrapping.");
+
+            try {
+                // Invocamos la función de búsqueda inteligente en Supabase
+                const { data, error } = await supabase.rpc('buscar_desaparecido_con_groq', { nombre_buscado: nombre });
+                if (error) throw error;
+
+                console.log("Respuesta del buscador de Groq:", data);
+
+                if (data.enfound || data.encontrado) {
+                    alert(`🚨 ¡COINCIDENCIA ENCONTRADA!\n\nLa IA confirmó un match en venezuelatebusca.com:\n\n${data.mensaje}\n\nPresiona Aceptar para fijar el reporte en este caso.`);
+                    window.idPersonaActualBusqueda = data.id_desaparecido;
+                    
+                    // Reportar inmediatamente la ubicación del hallazgo
+                    reportarAvistamiento();
+                    cancelarFormulario();
+                } else {
+                    alert(`ℹ️ No se encontraron coincidencias exactas en el mapa de búsqueda para: "${nombre}".\n\nDe igual manera registraremos el reporte de forma general en la base de datos.`);
+                    
+                    // Registro general por prevención
+                    navigator.geolocation.getCurrentPosition(async (pos) => {
+                        await supabase.from('reportes_avistamiento').insert([{
+                            id_desaparecido: 'hallazgo_nuevo_no_mapeado',
+                            latitud: pos.coords.latitude,
+                            longitud: pos.coords.longitude,
+                            ia_referencia: `Persona hallada: ${nombre} - CI: ${cedula || 'N/D'} (No estaba en el scraping)`
+                        }]);
+                    });
+                    cancelarFormulario();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión al procesar el pipeline de IA.");
+            }
+        }
+
+        // 5. REPORTAR AVISTAMIENTOS DE UN SOLO TOQUE
         async function reportarAvistamiento() {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-
                 try {
-                    const { error } = await supabase
-                        .from('reportes_avistamiento')
-                        .insert([
-                            { 
-                                id_desaparecido: window.idPersonaActualBusqueda, 
-                                latitud: lat, 
-                                longitud: lon 
-                            }
-                        ]);
-
-                    if (error) throw error;
-                    alert("¡Ubicación de avistamiento enviada y compartida con la red!");
-                } catch (error) {
-                    alert("Error al registrar el pin de emergencia.");
-                }
+                    await supabase.from('reportes_avistamiento').insert([{ 
+                        id_desaparecido: window.idPersonaActualBusqueda, 
+                        latitud: lat, 
+                        longitud: lon 
+                    }]);
+                    alert("¡Ubicación de avistamiento guardada con éxito!");
+                } catch (error) { alert("Error al registrar pin."); }
             });
         }
 
-        // 5. CONEXIÓN CON IA DE GROQ: Escucha el reporte de voz y ejecuta la función remota
+        // 6. PIPELINES COMPLEMENTARIOS (AUDIO/FOTO)
         function iniciarNotaVoz() {
             const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-            if (!SpeechRecognition) return alert("Tu dispositivo no soporta análisis de voz nativo.");
-
+            if (!SpeechRecognition) return alert("Navegador no compatible.");
             const recognition = new SpeechRecognition();
             recognition.lang = 'es-VE';
-            alert("🎙️ Sistema Drivery escuchando... Describe lo que ves en las calles.");
+            alert("🎙️ Escuchando reporte de voz...");
             recognition.start();
-
             recognition.onresult = async function(event) {
                 const textoVoz = event.results[0][0].transcript;
-                alert(`Texto capturado: "${textoVoz}"\nProcesando extracción con Groq...`);
-
                 try {
-                    // Invoca la función SQL-RPC que conecta con la API de Groq de forma segura
-                    const { data, error } = await supabase.rpc('procesar_reporte_con_groq', { texto_conductor: textoVoz });
-                    if (error) throw error;
-
-                    alert(`¡IA Extraída con éxito!\n\n👕 Ropa: ${data.ropa || 'N/D'}\n🧠 Estado: ${data.estado || 'N/D'}\n📍 Ref: ${data.referencia || 'N/D'}`);
-                } catch (err) {
-                    console.error(err);
-                    alert("Error en el pipeline interno de Groq. Verifica la API key en el Vault.");
-                }
+                    const { data } = await supabase.rpc('procesar_reporte_con_groq', { texto_conductor: textoVoz });
+                    alert(`¡IA Procesó Voz!\n👕 Ropa: ${data.ropa || 'N/D'}\n🧠 Estado: ${data.estado || 'N/D'}`);
+                } catch (err) { alert("Error en IA."); }
             };
         }
 
-        // 6. PIPELINE MULTIMEDIA (FOTOS): Sube la imagen capturada al Storage de Supabase
         async function subirFotoConductor(input) {
             if (!input.files || input.files.length === 0) return;
             const file = input.files[0];
-            const nombreArchivo = `foto_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-
-            alert("Subiendo captura de evidencia al servidor de Storage...");
-
+            const nombreArchivo = `foto_${Date.now()}.jpg`;
+            alert("Subiendo evidencia multimedia...");
             try {
-                // Sube el archivo binario al Bucket público de Supabase Storage
-                const { data, error } = await supabase.storage
-                    .from('fotos_avistamiento')
-                    .upload(nombreArchivo, file);
-
-                if (error) throw error;
-
-                // Genera la URL pública de la imagen alojada
-                const { data: urlData } = supabase.storage
-                    .from('fotos_avistamiento')
-                    .getPublicUrl(nombreArchivo);
-
-                const publicUrl = urlData.publicUrl;
-                console.log("Evidencia multimedia enlazada:", publicUrl);
-
-                // Obtener coordenadas actuales para enlazar la foto con un punto geográfico
+                await supabase.storage.from('fotos_avistamiento').upload(nombreArchivo, file);
+                const { data: urlData } = supabase.storage.from('fotos_avistamiento').getPublicUrl(nombreArchivo);
                 navigator.geolocation.getCurrentPosition(async (pos) => {
-                    await supabase.from('reportes_avistamiento').insert([
-                        {
-                            id_desaparecido: window.idPersonaActualBusqueda,
-                            latitud: pos.coords.latitude,
-                            longitud: pos.coords.longitude,
-                            foto_url: publicUrl,
-                            ia_referencia: "Avistamiento con evidencia fotográfica de conductor"
-                        }
-                    ]);
-                    alert("¡Foto y coordenadas GPS vinculadas exitosamente en el panel central!");
+                    await supabase.from('reportes_avistamiento').insert([{
+                        id_desaparecido: window.idPersonaActualBusqueda,
+                        latitud: pos.coords.latitude,
+                        longitud: pos.coords.longitude,
+                        foto_url: urlData.publicUrl,
+                        ia_referencia: "Evidencia fotográfica adjuntada por conductor"
+                    }]);
+                    alert("¡Foto y coordenadas enlazadas con éxito!");
                 });
-
-            } catch (err) {
-                console.error(err);
-                alert("Error al subir el archivo multimedia al Storage de Supabase.");
-            }
+            } catch (err) { alert("Error en Storage."); }
         }
 
-        // 7. REALTIME COMPONENT: Si el scraper inyecta data nueva en segundo plano, se añade al frontend
-        supabase
-            .channel('cambios-scraper')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reportes_avistamiento' }, payload => {
-                if (payload.new.id_desaparecido.startsWith('vtb_')) {
-                    listaDesaparecidosBackend.push(payload.new);
-                    console.log("Nuevo caso inyectado en vivo por el bot de scraping:", payload.new.id_desaparecido);
-                }
-            })
-            .subscribe();
+        // 7. REALTIME SUBSCRIPTION
+        supabase.channel('cambios-scraper').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reportes_avistamiento' }, payload => {
+            if (payload.new.id_desaparecido.startsWith('vtb_')) {
+                listaDesaparecidosBackend.push(payload.new);
+            }
+        }).subscribe();
     </script>
 </body>
 </html>
