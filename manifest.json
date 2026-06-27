@@ -1,0 +1,22 @@
+{
+  "short_name": "Rescate PWA",
+  "name": "Rescate PWA - Alertas Sísmicas & Personas Desaparecidas",
+  "description": "Aplicación progresiva simplificada para la búsqueda de desaparecidos y alertas de sismología en tiempo real.",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=192&h=192&fit=crop",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=512&h=512&fit=crop",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Drivery - Red de Rescate",
+  "description": "Plataforma de geolocalización, contingencia humanitaria y alertas en tiempo real para búsqueda de desaparecidos en Caracas, Venezuela.",
+  "requestFramePermissions": ["geolocation", "microphone", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
