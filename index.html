@@ -1,16 +1,382 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>Rescate PWA - Sismología & Búsqueda</title>
-  </head>
-  <body class="bg-slate-950 text-slate-100 antialiased overflow-x-hidden selection:bg-rose-500/30 selection:text-rose-200">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drivery OS | Command Center</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --drivery-blue: #00d2ff; --drivery-green: #39ff14; --drivery-purple: #7b2cbf;
+            --glass-bg: rgba(6, 11, 20, 0.96); --glass-border: rgba(0, 210, 255, 0.2);
+            --font-tech: 'Orbitron', sans-serif; --font-main: 'Rajdhani', sans-serif;
+        }
+        body, html { margin: 0; padding: 0; height: 100%; background-color: #000; overflow: hidden; font-family: var(--font-main); color: #fff; }
+        #map { position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 1; background-color: #000; }
+        
+        #ui-layer { position: relative; z-index: 100; height: 100dvh; display: flex; flex-direction: column; pointer-events: none; align-items: center; justify-content: space-between; }
+        #ui-layer > * { pointer-events: auto; }
 
+        header { width: 100%; display: flex; justify-content: space-between; padding: 25px 30px; box-sizing: border-box; }
+        .logo-main { height: 42px; filter: drop-shadow(0 0 10px var(--drivery-blue)); }
+
+        #fleet-selection { position: absolute; top: 20px; width: 95%; display: none; justify-content: center; flex-wrap: wrap; gap: 10px; z-index: 1000; }
+        .car-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 12px; min-width: 90px; text-align: center; cursor: pointer; outline: none; transition: 0.3s; }
+        .car-card.selected { border-color: var(--drivery-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
+
+        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .orb-container { position: relative; width: 280px; height: 280px; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 500; }
+        .orb-master { width: 100%; height: 100%; cursor: pointer; touch-action: none; outline: none; }
+
+        .route-active .orb-container { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 75px; height: 75px; }
+        .route-active header { opacity: 0; pointer-events: none; }
+
+        #confirm-panel { position: fixed; bottom: 120px; display: none; width: 100%; justify-content: center; z-index: 200; }
+        .btn-action { background: var(--drivery-purple); color: #fff; border: none; padding: 12px 40px; border-radius: 30px; font-family: var(--font-tech); font-weight: 900; letter-spacing: 1px; cursor: pointer; outline: none; box-shadow: 0 0 15px rgba(123, 44, 191, 0.4); transition: 0.3s; }
+        .btn-action:hover { box-shadow: 0 0 25px var(--drivery-blue); }
+
+        #search-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        .loader { width: 45px; height: 45px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--drivery-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .driver-hud { display: none; width: 85%; max-width: 380px; background: rgba(10, 16, 26, 0.85); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 20px; padding: 25px; text-align: left; box-shadow: 0 0 35px rgba(0, 210, 255, 0.15); animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .driver-meta { display: flex; align-items: center; gap: 18px; margin-bottom: 15px; }
+        .driver-avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--drivery-blue); background-color: #111a2e; background-size: cover; background-position: center; }
+        .driver-info h4 { font-family: var(--font-tech); font-size: 14px; margin: 0; letter-spacing: 1px; }
+        .driver-info p { font-size: 13px; color: rgba(255,255,255,0.6); margin: 4px 0 0 0; }
+        .plate-badge { display: inline-block; background: var(--drivery-green); color: #000; font-family: var(--font-tech); font-weight: 900; font-size: 12px; padding: 3px 10px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
+        
+        .btn-close-hud { width: 100%; margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px; border-radius: 12px; cursor: pointer; font-family: var(--font-tech); font-size: 10px; letter-spacing: 1px; transition: 0.3s; }
+        .btn-close-hud:hover { border-color: var(--drivery-green); color: var(--drivery-green); }
+
+        /* MODAL DE AUTENTICACIÓN FLOTA MORADA */
+        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
+        .auth-container { background: var(--glass-bg); border: 1px solid var(--drivery-purple); padding: 30px; border-radius: 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(123, 44, 191, 0.25); }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: var(--font-tech); font-size: 14px; text-align: center; outline: none; box-sizing: border-box; }
+        .auth-input:focus { border-color: var(--drivery-purple); }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div id="auth-modal">
+        <div class="auth-container">
+            <h3 style="font-family: var(--font-tech); color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 5px;">VINCULAR CUENTA</h3>
+            <p style="font-size: 12px; color: var(--drivery-blue); margin-bottom: 20px; letter-spacing: 1px;">Flota Morada Gateway</p>
+            
+            <input type="tel" id="auth-phone" placeholder="Número Telefónico" class="auth-input">
+            <input type="password" id="auth-pass" placeholder="Contraseña o PIN" class="auth-input">
+            
+            <button class="btn-action" style="width: 100%; padding: 12px; background: var(--drivery-purple);" onclick="enviarAutenticacion()">INICIAR ENLACE</button>
+            <p id="auth-status" style="font-size: 12px; margin-top: 15px; color: var(--drivery-green); display: none; font-family: var(--font-tech);"></p>
+        </div>
+    </div>
+
+    <div id="search-modal">
+        <div id="searching-state" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <div class="loader"></div>
+            <h3 style="font-family:var(--font-tech); color:var(--drivery-blue); margin-top:20px; font-size:12px; letter-spacing:2px;">LOCALIZANDO UNIDAD</h3>
+            <p id="search-timer" style="font-size:14px; opacity:0.6; font-family: var(--font-tech);">00:00</p>
+        </div>
+
+        <div class="driver-hud" id="driver-hud">
+            <div style="font-family: var(--font-tech); font-size: 9px; color: var(--drivery-green); letter-spacing: 2px; margin-bottom: 15px;">SISTEMA ASIGNADO</div>
+            <div class="driver-meta">
+                <div class="driver-avatar" id="hud-avatar"></div>
+                <div class="driver-info">
+                    <h4 id="hud-name">Buscando...</h4>
+                    <p id="hud-vehicle">Detectando modelo...</p>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <span class="plate-badge" id="hud-plate">------</span>
+                <span style="font-size: 12px; opacity: 0.5; font-family: var(--font-tech);" id="hud-eta">ETA: 3 MIN</span>
+            </div>
+            <button class="btn-close-hud" onclick="cerrarModalViaje()">ABRIR INTERFAZ TÁCTICA</button>
+        </div>
+    </div>
+
+    <div id="ui-layer">
+        <header>
+            <img src="logo_app.png" class="logo-main" onerror="this.style.display='none'">
+            <div id="price-display" style="color:var(--drivery-green); font-family:var(--font-tech); font-weight:900; font-size:18px;">$0.00</div>
+        </header>
+        <div id="fleet-selection"></div>
+        <div id="confirm-panel"><button class="btn-action" onclick="confirmarViaje()">CONFIRMAR VIAJE</button></div>
+        <main>
+            <div class="orb-container" id="orb-wrapper"><div id="main-orbe" class="orb-master"></div></div>
+            <h2 id="orb-status" style="font-family:var(--font-tech); font-size:9px; color:var(--drivery-blue); margin-top:12px; letter-spacing:3px; opacity:0.8;">SISTEMA LISTO</h2>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
+            });
+        }
+
+        const API_URL = "https://drivery-backend.onrender.com";
+        const MAP_KEY = "AIzaSyAFwND09Y6rrNzVrhOdu5wGptY063y-fME";
+        let map, directionsRenderer, directionsService, sphere, coreMat, recognition, isRecording = false;
+        let userPos = { lat: 10.48, lng: -66.90 };
+        let pollingInterval = null;
+        let segundosCronometro = 0;
+        let intervaloCronometro = null;
+        let flotaSeleccionada = "eco";
+
+        function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'es-VE'; window.speechSynthesis.speak(m); }
+
+        function initMap() {
+            const style = [
+                { "elementType": "geometry", "stylers": [{ "color": "#0d1014" }] },
+                { "elementType": "labels.text.fill", "stylers": [{ "color": "#00d2ff" }] },
+                { "elementType": "labels.text.stroke", "stylers": [{ "color": "#0d1014" }, { "weight": 1 }] },
+                { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1f252d" }] },
+                { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2e3743" }] },
+                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#06090c" }] },
+                { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "transit", "stylers": [{ "visibility": "off" }] }
+            ];
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map: null, 
+                suppressMarkers: true, 
+                polylineOptions: { strokeColor: "#00d2ff", strokeWeight: 5, strokeOpacity: 0.8 } 
+            });
+            map = new google.maps.Map(document.getElementById("map"), { center: userPos, zoom: 16, styles: style, disableDefaultUI: true });
+            directionsRenderer.setMap(map);
+            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { 
+                userPos = { lat: p.coords.latitude, lng: p.coords.longitude }; 
+                map.setCenter(userPos); 
+            });
+            initThreeJS(); initVoice();
+        }
+
+        async function ejecutarComando(cmd) {
+            document.body.classList.add('route-active');
+            coreMat.color.setHex(0xffffff);
+            document.getElementById('orb-status').innerText = "SINCRONIZANDO...";
+            
+            try {
+                const res = await fetch(`${API_URL}/api/command`, { 
+                    method: "POST", headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ command: cmd, userCoords: userPos, tipoFlotaSeleccionada: flotaSeleccionada }) 
+                });
+                const data = await res.json();
+                
+                if(data.destCoords) {
+                    const icon = (color) => ({ path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: '#000', strokeWeight: 1, scale: 8 });
+                    new google.maps.Marker({ position: userPos, map: map, icon: icon('#39ff14') });
+                    new google.maps.Marker({ position: data.destCoords, map: map, icon: icon('#00d2ff') });
+                    
+                    directionsService.route({ origin: userPos, destination: data.destCoords, travelMode: 'DRIVING' }, (r, s) => { 
+                        if (s === 'OK') {
+                            directionsRenderer.setDirections(r);
+                            const bounds = new google.maps.LatLngBounds();
+                            bounds.extend(userPos);
+                            bounds.extend(data.destCoords);
+                            map.fitBounds(bounds, 50);
+                        } 
+                    });
+                    
+                    setTimeout(() => {
+                        mostrarFlota(data.display.fleet);
+                        speak(data.reply);
+                    }, 500);
+                } else if(data.reply) {
+                    speak(data.reply);
+                    document.getElementById('orb-status').innerText = "NÚCLEO ACTIVO";
+                }
+            } catch(e) { speak("Reintentando conexión."); } 
+            finally { coreMat.color.setHex(0x00d2ff); }
+        }
+
+        function mostrarFlota(f) {
+            const p = document.getElementById('fleet-selection');
+            p.innerHTML = ''; p.style.display = 'flex';
+            f.forEach((c, index) => {
+                const card = document.createElement('div');
+                card.className = 'car-card';
+                if(index === 0) {
+                    card.classList.add('selected');
+                    flotaSeleccionada = c.id;
+                    document.getElementById('price-display').innerText = `$${c.usd}`;
+                    document.getElementById('confirm-panel').style.display = 'flex';
+                }
+                card.innerHTML = `<div style="font-size:7px; color:var(--drivery-blue);">${c.name.toUpperCase()}</div><div style="font-size:16px; font-weight:900;">$${c.usd}</div><div style="font-size:9px; color:var(--drivery-green);">${c.bs} Bs.</div>`;
+                card.onclick = () => {
+                    document.querySelectorAll('.car-card').forEach(x => x.classList.remove('selected'));
+                    card.classList.add('selected');
+                    flotaSeleccionada = c.id;
+                    document.getElementById('price-display').innerText = `$${c.usd}`;
+                    document.getElementById('confirm-panel').style.display = 'flex';
+                };
+                p.appendChild(card);
+            });
+        }
+
+        async function confirmarViaje() {
+            document.getElementById('search-modal').style.display = 'flex';
+            document.getElementById('searching-state').style.display = 'flex';
+            document.getElementById('driver-hud').style.display = 'none';
+            
+            segundosCronometro = 0;
+            intervaloCronometro = setInterval(() => {
+                segundosCronometro++;
+                document.getElementById('search-timer').innerText = `${Math.floor(segundosCronometro/60).toString().padStart(2,'0')}:${(segundosCronometro%60).toString().padStart(2,'0')}`;
+            }, 1000);
+
+            speak("Inyectando solicitud en la plataforma remota.");
+
+            try {
+                const res = await fetch(`${API_URL}/api/trip/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                // Si el backend avisa que falta login o falló el token previo
+                if (data.status === "AUTH_REQUIRED" || data.success === false) {
+                    forzarLoginModulo();
+                    return;
+                }
+            } catch(e) { console.log("Error al despachar orden."); }
+
+            pollingInterval = setInterval(consultarEstatusAPIInversa, 2500);
+        }
+
+        async function consultarEstatusAPIInversa() {
+            try {
+                const res = await fetch(`${API_URL}/api/trip/status`);
+                
+                // Si el servidor backend responde con no autorizado, detenemos polling y abrimos login
+                if (res.status === 401) {
+                    forzarLoginModulo();
+                    return;
+                }
+
+                const viaje = await res.json();
+
+                if (viaje.status === "AUTH_REQUIRED") {
+                    forzarLoginModulo();
+                    return;
+                }
+
+                if (viaje.status === "ASIGNADO" && viaje.conductor) {
+                    clearInterval(pollingInterval);
+                    clearInterval(intervaloCronometro);
+                    
+                    speak("Unidad en camino. Datos sincronizados.");
+
+                    document.getElementById('searching-state').style.display = 'none';
+                    document.getElementById('driver-hud').style.display = 'block';
+
+                    document.getElementById('hud-name').innerText = viaje.conductor.nombre.toUpperCase();
+                    document.getElementById('hud-vehicle').innerText = viaje.conductor.modelo;
+                    document.getElementById('hud-plate').innerText = viaje.conductor.placa;
+                    
+                    if (viaje.conductor.foto) {
+                        const avatar = document.getElementById('hud-avatar');
+                        avatar.style.backgroundImage = `url('${viaje.conductor.foto}')`;
+                    }
+                }
+            } catch (err) {
+                console.error("Error leyendo flujo de API Inversa:", err);
+            }
+        }
+
+        // LÓGICA DE CONTROL PARA EL MODAL DE AUTENTICACIÓN
+        function forzarLoginModulo() {
+            clearInterval(pollingInterval);
+            clearInterval(intervaloCronometro);
+            document.getElementById('search-modal').style.display = 'none';
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        async function enviarAutenticacion() {
+            const phone = document.getElementById('auth-phone').value;
+            const password = document.getElementById('auth-pass').value;
+            const statusLabel = document.getElementById('auth-status');
+
+            statusLabel.style.display = 'block';
+            statusLabel.style.color = 'var(--drivery-blue)';
+            statusLabel.innerText = "PROCESANDO HANDSHAKE...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/yummy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusLabel.style.color = 'var(--drivery-green)';
+                    statusLabel.innerText = "CONEXIÓN ESTABLECIDA";
+                    speak("Flota vinculada con éxito.");
+                    setTimeout(() => {
+                        document.getElementById('auth-modal').style.display = 'none';
+                        // Reanudamos la confirmación automática del viaje colgado
+                        confirmarViaje();
+                    }, 1500);
+                } else {
+                    statusLabel.style.color = 'red';
+                    statusLabel.innerText = data.message || "FALLA DE CREDENCIALES";
+                }
+            } catch (e) {
+                statusLabel.style.color = 'red';
+                statusLabel.innerText = "FALLA DE CONEXIÓN DE RED";
+            }
+        }
+
+        function cerrarModalViaje() {
+            document.getElementById('search-modal').style.display = 'none';
+            document.getElementById('orb-status').innerText = "UNIDAD EN CAMINO";
+            coreMat.color.setHex(0x39ff14); 
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('main-orbe');
+            const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(280, 280);
+            container.appendChild(renderer.domElement);
+            sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 5), new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.15 }));
+            coreMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true, transparent: true, opacity: 0.6 });
+            const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 3), coreMat);
+            sphere.add(core); scene.add(sphere); camera.position.z = 2.4;
+            const animate = () => { requestAnimationFrame(animate); sphere.rotation.y += 0.003; core.rotation.y -= 0.006; renderer.render(scene, camera); }; animate();
+            
+            const startTalk = (e) => { e.preventDefault(); isRecording = true; coreMat.color.setHex(0xffffff); try { recognition.start(); } catch(err) {} };
+            const stopTalk = () => { if (isRecording) { isRecording = false; coreMat.color.setHex(0x00d2ff); recognition.stop(); } };
+            container.addEventListener('mousedown', startTalk); window.addEventListener('mouseup', stopTalk);
+            container.addEventListener('touchstart', startTalk); container.addEventListener('touchend', stopTalk);
+
+            new ResizeObserver(() => {
+                const w = container.clientWidth; renderer.setSize(w, w);
+                camera.aspect = 1; camera.updateProjectionMatrix();
+            }).observe(container);
+        }
+
+        function initVoice() { 
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); 
+            recognition.lang = 'es-VE'; 
+            recognition.onresult = (e) => ejecutarComando(e.results[0][0].transcript); 
+        }
+        
+        window.onload = () => { 
+            const s = document.createElement('script'); 
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&callback=initMap`; 
+            document.head.appendChild(s); 
+        };
+    </script>
+</body>
+</html>
